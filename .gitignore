@@ -1,0 +1,12 @@
+﻿# Build output
+bin/
+obj/
+*.suo
+*.user
+*.cache
+BuildAnalysis.txt
+
+# Build logs
+*.txt
+!PolymonSQL/*.txt
+!Documentation/*.txt
