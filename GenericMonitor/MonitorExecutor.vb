@@ -195,11 +195,16 @@ Namespace Monitors
 			mMetadata = New PolyMon.Monitors.MonitorMetadata(MonitorID)
 
             'Create Event Log - used for debugging
-            If Not EventLog.SourceExists("MonitorExecutor") Then
-                EventLog.CreateEventSource("MonitorExecutor", "Application")
-            End If
-            myEventLog = New EventLog
-            myEventLog.Source = "MonitorExecutor"
+            Try
+                If Not EventLog.SourceExists("MonitorExecutor") Then
+                    EventLog.CreateEventSource("MonitorExecutor", "Application")
+                End If
+                myEventLog = New EventLog
+                myEventLog.Source = "MonitorExecutor"
+            Catch ex As Security.SecurityException
+                'EventLog access requires admin privileges - skip if not available
+                myEventLog = Nothing
+            End Try
         End Sub
 
         Public Sub RunMonitor()
