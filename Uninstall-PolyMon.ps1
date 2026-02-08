@@ -264,9 +264,23 @@ else {
 }
 
 # ============================================================
-# Step 5: Remove install directory (prompt)
+# Step 5: Remove Add/Remove Programs entry
 # ============================================================
-Write-Step 'Step 5: Install directory cleanup'
+Write-Step 'Step 5: Removing Add/Remove Programs entry'
+
+$arpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PolyMon'
+if (Test-Path $arpKey) {
+    Remove-Item $arpKey -Force
+    Write-Ok 'Removed Add/Remove Programs entry.'
+}
+else {
+    Write-Ok 'No Add/Remove Programs entry found.'
+}
+
+# ============================================================
+# Step 6: Remove install directory (prompt)
+# ============================================================
+Write-Step 'Step 6: Install directory cleanup'
 
 if (Test-Path $InstallDir) {
     $remaining = Get-ChildItem $InstallDir -Recurse -File -ErrorAction SilentlyContinue

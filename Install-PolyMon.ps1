@@ -404,6 +404,13 @@ function Invoke-Rollback {
                         Remove-Item $smDir -Recurse -Force -ErrorAction SilentlyContinue
                     }
                 }
+                'AddRemovePrograms' {
+                    Write-Host '   Rolling back: Removing Add/Remove Programs entry...'
+                    $arpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PolyMon'
+                    if (Test-Path $arpKey) {
+                        Remove-Item $arpKey -Force -ErrorAction SilentlyContinue
+                    }
+                }
             }
         }
         catch {
@@ -631,6 +638,12 @@ try {
     $srcExec = Join-Path $PackageDir 'PolyMon Executive'
     Get-ChildItem $srcExec -File | ForEach-Object {
         Copy-Item $_.FullName -Destination $execDest -Force
+    }
+
+    # Uninstaller script (for Add/Remove Programs)
+    $srcUninstall = Join-Path $PackageDir 'Uninstall-PolyMon.ps1'
+    if (Test-Path $srcUninstall) {
+        Copy-Item $srcUninstall -Destination $InstallDir -Force
     }
 
     $totalFiles = (Get-ChildItem $InstallDir -Recurse -File).Count
@@ -870,7 +883,48 @@ catch {
 }
 
 # ============================================================
-# Step 11: Verification
+# Step 11: Add/Remove Programs registry entry
+# ============================================================
+Write-Step 'Registering in Add/Remove Programs'
+
+try {
+    $arpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PolyMon'
+    if (-not (Test-Path $arpKey)) {
+        New-Item -Path $arpKey -Force | Out-Null
+    }
+
+    $mgrExe = Join-Path $mgrDest 'PolyMonManager.exe'
+    $uninstallCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $InstallDir 'Uninstall-PolyMon.ps1')`""
+
+    # Try to read version from the Manager assembly
+    $displayVersion = '1.30'
+    try {
+        if (Test-Path $mgrExe) {
+            $asmVer = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($mgrExe)
+            if ($asmVer.FileVersion) { $displayVersion = $asmVer.FileVersion }
+        }
+    } catch {}
+
+    Set-ItemProperty -Path $arpKey -Name 'DisplayName'     -Value 'PolyMon'
+    Set-ItemProperty -Path $arpKey -Name 'DisplayVersion'  -Value $displayVersion
+    Set-ItemProperty -Path $arpKey -Name 'Publisher'        -Value 'Fred Baptiste'
+    Set-ItemProperty -Path $arpKey -Name 'InstallLocation' -Value $InstallDir
+    Set-ItemProperty -Path $arpKey -Name 'UninstallString' -Value $uninstallCmd
+    Set-ItemProperty -Path $arpKey -Name 'DisplayIcon'     -Value $mgrExe
+    Set-ItemProperty -Path $arpKey -Name 'NoModify'        -Value 1 -Type DWord
+    Set-ItemProperty -Path $arpKey -Name 'NoRepair'        -Value 1 -Type DWord
+    Set-ItemProperty -Path $arpKey -Name 'InstallDate'     -Value (Get-Date -Format 'yyyyMMdd')
+
+    Write-Ok 'Registered in Add/Remove Programs.'
+    $CompletedSteps.Add('AddRemovePrograms') | Out-Null
+}
+catch {
+    Write-Warn "Add/Remove Programs registration failed: $_"
+    Write-Warn 'PolyMon will still work, it just won''t appear in Add/Remove Programs.'
+}
+
+# ============================================================
+# Step 12: Verification
 # ============================================================
 Write-Step 'Verification'
 
