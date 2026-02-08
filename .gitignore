@@ -6,6 +6,9 @@ obj/
 *.cache
 BuildAnalysis.txt
 
+# Installer staging output
+PolyMonInstall/
+
 # Build logs
 *.txt
 !PolymonSQL/*.txt
