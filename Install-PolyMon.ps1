@@ -733,12 +733,23 @@ if ($Script:SqlMethod -ne 'Manual') {
                 '1.00' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.00 to 1.10.sql'); Desc = 'Update 1.00 -> 1.10' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.10 to 1.30.sql'); Desc = 'Update 1.10 -> 1.30' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.30 to 1.40.sql'); Desc = 'Update 1.30 -> 1.40' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.40 to 1.50.sql'); Desc = 'Update 1.40 -> 1.50' }
                 }
                 '1.10' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.10 to 1.30.sql'); Desc = 'Update 1.10 -> 1.30' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.30 to 1.40.sql'); Desc = 'Update 1.30 -> 1.40' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.40 to 1.50.sql'); Desc = 'Update 1.40 -> 1.50' }
                 }
                 '1.30' {
-                    Write-Ok 'Database is already at version 1.30. No updates needed.'
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.30 to 1.40.sql'); Desc = 'Update 1.30 -> 1.40' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.40 to 1.50.sql'); Desc = 'Update 1.40 -> 1.50' }
+                }
+                '1.40' {
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.40 to 1.50.sql'); Desc = 'Update 1.40 -> 1.50' }
+                }
+                '1.50' {
+                    Write-Ok 'Database is already at version 1.50. No updates needed.'
                 }
                 default {
                     Write-Warn "Unknown DB version '$dbVersion'. Skipping update scripts."

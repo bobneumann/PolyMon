@@ -18,7 +18,7 @@ Public Class frmMain
     Private mAllowClose As Boolean = False
 	Private mOpeningFromTray As Boolean = False
 
-	Private Const mDBVersion As Single = 1.1
+	Private Const mDBVersion As Single = 1.5
 	Private mForceClose As Boolean = False
 #End Region
 
@@ -491,11 +491,13 @@ Public Class frmMain
             SQLConn.Open()
             rdResults = SQLCmd.ExecuteReader(CommandBehavior.CloseConnection)
             While rdResults.Read()
-                ErrorsWarnings = True
-                If CInt(rdResults.Item("StatusID")) = 2 Then
+                Dim StatusID As Integer = CInt(rdResults.Item("StatusID"))
+                If StatusID = 2 Then
                     NumWarnings += 1
-                ElseIf CInt(rdResults.Item("StatusID")) = 3 Then
+                    ErrorsWarnings = True
+                ElseIf StatusID = 3 Then
                     NumFailures += 1
+                    ErrorsWarnings = True
                 End If
             End While
 

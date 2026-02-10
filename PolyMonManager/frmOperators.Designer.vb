@@ -41,6 +41,8 @@ Partial Class frmOperators
         Me.gbNotificationSettings = New System.Windows.Forms.GroupBox()
         Me.chkSummaryNotify = New System.Windows.Forms.CheckBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.txtPushAddress = New System.Windows.Forms.TextBox()
+        Me.lblPushAddress = New System.Windows.Forms.Label()
         Me.txtEmailAddress = New System.Windows.Forms.TextBox()
         Me.Label20 = New System.Windows.Forms.Label()
         Me.txtName = New System.Windows.Forms.TextBox()
@@ -224,7 +226,7 @@ Partial Class frmOperators
         Me.gbNotificationSettings.Controls.Add(Me.chkSummaryWarn)
         Me.gbNotificationSettings.Controls.Add(Me.Label2)
         Me.gbNotificationSettings.Controls.Add(Me.chkSummaryFail)
-        Me.gbNotificationSettings.Location = New System.Drawing.Point(8, 332)
+        Me.gbNotificationSettings.Location = New System.Drawing.Point(8, 360)
         Me.gbNotificationSettings.Name = "gbNotificationSettings"
         Me.gbNotificationSettings.Size = New System.Drawing.Size(391, 130)
         Me.gbNotificationSettings.TabIndex = 30
@@ -234,7 +236,7 @@ Partial Class frmOperators
         'chkSummaryNotify
         '
         Me.chkSummaryNotify.AutoSize = True
-        Me.chkSummaryNotify.Location = New System.Drawing.Point(12, 309)
+        Me.chkSummaryNotify.Location = New System.Drawing.Point(12, 337)
         Me.chkSummaryNotify.Name = "chkSummaryNotify"
         Me.chkSummaryNotify.Size = New System.Drawing.Size(235, 17)
         Me.chkSummaryNotify.TabIndex = 31
@@ -244,14 +246,34 @@ Partial Class frmOperators
         'Panel1
         '
         Me.Panel1.Controls.Add(Me.pnlOperatorID)
+        Me.Panel1.Controls.Add(Me.txtPushAddress)
+        Me.Panel1.Controls.Add(Me.lblPushAddress)
         Me.Panel1.Controls.Add(Me.txtEmailAddress)
         Me.Panel1.Controls.Add(Me.Label20)
         Me.Panel1.Controls.Add(Me.txtName)
         Me.Panel1.Controls.Add(Me.Label19)
         Me.Panel1.Location = New System.Drawing.Point(12, 18)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(387, 66)
+        Me.Panel1.Size = New System.Drawing.Size(387, 94)
         Me.Panel1.TabIndex = 32
+        '
+        'txtPushAddress
+        '
+        Me.txtPushAddress.Location = New System.Drawing.Point(97, 67)
+        Me.txtPushAddress.MaxLength = 255
+        Me.txtPushAddress.Name = "txtPushAddress"
+        Me.txtPushAddress.Size = New System.Drawing.Size(265, 20)
+        Me.txtPushAddress.TabIndex = 45
+        '
+        'lblPushAddress
+        '
+        Me.lblPushAddress.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPushAddress.Location = New System.Drawing.Point(3, 67)
+        Me.lblPushAddress.Name = "lblPushAddress"
+        Me.lblPushAddress.Size = New System.Drawing.Size(93, 20)
+        Me.lblPushAddress.TabIndex = 44
+        Me.lblPushAddress.Text = "Push Key"
+        Me.lblPushAddress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'txtEmailAddress
         '
@@ -385,7 +407,7 @@ Partial Class frmOperators
         Me.gbAvailability.Controls.Add(Me.pnlOfflineTime)
         Me.gbAvailability.Controls.Add(Me.radOffline)
         Me.gbAvailability.Controls.Add(Me.radAlwaysAvailable)
-        Me.gbAvailability.Location = New System.Drawing.Point(13, 90)
+        Me.gbAvailability.Location = New System.Drawing.Point(13, 118)
         Me.gbAvailability.Name = "gbAvailability"
         Me.gbAvailability.Size = New System.Drawing.Size(386, 123)
         Me.gbAvailability.TabIndex = 45
@@ -444,7 +466,7 @@ Partial Class frmOperators
         Me.gbAlertSettings.Controls.Add(Me.chkIncludeMessageBody)
         Me.gbAlertSettings.Controls.Add(Me.cboQueuedNotify)
         Me.gbAlertSettings.Controls.Add(Me.Label1)
-        Me.gbAlertSettings.Location = New System.Drawing.Point(12, 219)
+        Me.gbAlertSettings.Location = New System.Drawing.Point(12, 247)
         Me.gbAlertSettings.Name = "gbAlertSettings"
         Me.gbAlertSettings.Size = New System.Drawing.Size(387, 83)
         Me.gbAlertSettings.TabIndex = 46
@@ -461,7 +483,7 @@ Partial Class frmOperators
         Me.pnlOperator.Controls.Add(Me.chkSummaryNotify)
         Me.pnlOperator.Location = New System.Drawing.Point(0, 28)
         Me.pnlOperator.Name = "pnlOperator"
-        Me.pnlOperator.Size = New System.Drawing.Size(411, 478)
+        Me.pnlOperator.Size = New System.Drawing.Size(411, 506)
         Me.pnlOperator.TabIndex = 47
         '
         'errSummary
@@ -501,7 +523,7 @@ Partial Class frmOperators
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(411, 510)
+        Me.ClientSize = New System.Drawing.Size(411, 538)
         Me.Controls.Add(Me.pnlOperator)
         Me.Controls.Add(Me.ToolStrip1)
         Me.HelpButton = True
@@ -577,4 +599,6 @@ Partial Class frmOperators
     Friend WithEvents pnlOperatorID As System.Windows.Forms.Panel
     Friend WithEvents lblID As System.Windows.Forms.Label
     Friend WithEvents lblIDLabel As System.Windows.Forms.Label
+    Friend WithEvents txtPushAddress As System.Windows.Forms.TextBox
+    Friend WithEvents lblPushAddress As System.Windows.Forms.Label
 End Class

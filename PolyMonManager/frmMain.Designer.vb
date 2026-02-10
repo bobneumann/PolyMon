@@ -141,7 +141,7 @@ Partial Class frmMain
 		'
 		Me.AlertsToolStripMenuItem.Image = Global.PolyMonManager.My.Resources.Resources.Alerts
 		Me.AlertsToolStripMenuItem.Name = "AlertsToolStripMenuItem"
-		Me.AlertsToolStripMenuItem.ShortcutKeys = CType((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
+		Me.AlertsToolStripMenuItem.ShortcutKeys = CType(((System.Windows.Forms.Keys.Control Or System.Windows.Forms.Keys.Shift) Or System.Windows.Forms.Keys.A), System.Windows.Forms.Keys)
 		Me.AlertsToolStripMenuItem.Size = New System.Drawing.Size(236, 22)
 		Me.AlertsToolStripMenuItem.Text = "&Alerts"
 		'
@@ -400,7 +400,7 @@ Partial Class frmMain
 		Me.Panel1.Dock = System.Windows.Forms.DockStyle.Top
 		Me.Panel1.Location = New System.Drawing.Point(0, 0)
 		Me.Panel1.Name = "Panel1"
-		Me.Panel1.Size = New System.Drawing.Size(1010, 62)
+		Me.Panel1.Size = New System.Drawing.Size(1010, 64)
 		Me.Panel1.TabIndex = 9
 		'
 		'imglstStatus

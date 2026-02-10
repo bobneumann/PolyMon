@@ -319,6 +319,13 @@ Namespace Monitors
 		Public Sub DeleteData()
 			DeleteMonitorData()
 		End Sub
+		''' <summary>
+		''' Reverts the monitor to its previous saved version using MonitorHistory.
+		''' Returns 0 on success, -2 if no history is available.
+		''' </summary>
+		Public Function Revert() As Integer
+			Return RevertMonitor()
+		End Function
 		Public Class OfflineTime
 			Private mStartTime As String
 			Private mEndTime As String
@@ -561,6 +568,46 @@ Namespace Monitors
 				SQLConn.Dispose()
 			End Try
 		End Sub
+		Private Function RevertMonitor() As Integer
+			Dim SQLConn As New SqlConnection(mSQLConn)
+			Dim sp As String = "polymon_RevertMonitor"
+
+			Dim prmMonitorID As New SqlParameter
+			With prmMonitorID
+				.ParameterName = "@MonitorID"
+				.SqlDbType = SqlDbType.Int
+				.Direction = ParameterDirection.Input
+				.Value = mMonitorID
+			End With
+
+			Dim prmResult As New SqlParameter
+			With prmResult
+				.ParameterName = "@Result"
+				.SqlDbType = SqlDbType.Int
+				.Direction = ParameterDirection.Output
+			End With
+
+			Dim sqlCmd As New SqlCommand
+			With sqlCmd
+				.Connection = SQLConn
+				.CommandType = CommandType.StoredProcedure
+				.CommandText = sp
+				.Parameters.Add(prmMonitorID)
+				.Parameters.Add(prmResult)
+			End With
+
+			Try
+				SQLConn.Open()
+				sqlCmd.ExecuteNonQuery()
+				Return CInt(prmResult.Value)
+			Catch ex As Exception
+				Throw New System.Exception(ex.Message, ex)
+			Finally
+				sqlCmd.Dispose()
+				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
+				SQLConn.Dispose()
+			End Try
+		End Function
 		Private Sub ClearClassData()
 			mIsNewInstance = Nothing
 

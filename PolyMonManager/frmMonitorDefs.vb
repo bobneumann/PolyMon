@@ -68,23 +68,36 @@ Public Class frmMonitorDefs
 			mEditor.LoadTemplateDefaults()
 		End If
 	End Sub
-    Private Sub tsbCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbCancel.Click
-        Me.Cursor = Cursors.WaitCursor
-        If Not mCurrMonitorDef Is Nothing Then
-            If Me.mIsNewCurrMonitorDef Then
-                ClearMonitorData()
-            Else
-                LoadMonitorData(mCurrMonitorDef.MonitorID)
-            End If
-        Else
-            ClearMonitorData()
-        End If
-        Me.Cursor = Cursors.Default
-    End Sub
     Private Sub tsbSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbSave.Click
         Me.Cursor = Cursors.WaitCursor
         SaveMonitorData()
         Me.Cursor = Cursors.Default
+    End Sub
+    Private Sub tsbRevert_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbRevert.Click
+        If mCurrMonitorDef Is Nothing OrElse mIsNewCurrMonitorDef Then
+            MsgBox("No saved monitor selected to revert.", MsgBoxStyle.Information, "PolyMon")
+            Exit Sub
+        End If
+
+        Dim result As MsgBoxResult = MsgBox("Revert monitor to previous saved version?", MsgBoxStyle.Question Or MsgBoxStyle.YesNo, "PolyMon - Revert Monitor")
+        If result = MsgBoxResult.Yes Then
+            Me.Cursor = Cursors.WaitCursor
+            Try
+                Dim revertResult As Integer = mCurrMonitorDef.Revert()
+                If revertResult = -2 Then
+                    MsgBox("No history available for this monitor.", MsgBoxStyle.Information, "PolyMon")
+                ElseIf revertResult = 0 Then
+                    LoadMonitorList(mCurrMonitorDef.MonitorID)
+                    MsgBox("Monitor reverted to previous version.", MsgBoxStyle.Information, "PolyMon")
+                Else
+                    MsgBox("An error occurred during revert.", MsgBoxStyle.Exclamation, "PolyMon")
+                End If
+            Catch ex As Exception
+                MsgBox("Error reverting monitor:" & vbCrLf & ex.Message, MsgBoxStyle.Exclamation, "PolyMon Error...")
+            Finally
+                Me.Cursor = Cursors.Default
+            End Try
+        End If
     End Sub
     Private Sub tsbNewMonitor_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbNewMonitor.Click
         Me.Cursor = Cursors.WaitCursor
@@ -695,7 +708,7 @@ Public Class frmMonitorDefs
     Private Sub SetEditState(ByVal AllowEdits As Boolean)
         tabMonitors.Enabled = AllowEdits
         tsbSave.Enabled = AllowEdits
-		tsbCancel.Enabled = AllowEdits
+		tsbRevert.Enabled = AllowEdits
 		tsbDeleteData.Enabled = AllowEdits
         tsbDelete.Enabled = AllowEdits
 		tsbClone.Enabled = AllowEdits

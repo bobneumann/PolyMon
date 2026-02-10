@@ -12,11 +12,13 @@ Namespace Notifier
 		Private mSMTPClient As SmtpClient
 		Private mSMTPFromName As String
 		Private mSMTPFromAddress As String
+		Private mPushNotifier As PolyMonPushNotifier
 
 		Public Sub New()
 			mSQLConn = GetSQLConnStr()
 			If String.IsNullOrEmpty(mSQLConn) Then Throw New Exception("Database connection string was not found.")
 			BuildSMTPClient()
+			mPushNotifier = New PolyMonPushNotifier()
 		End Sub
 
 		Public Sub ProcessPendingEmailNotifications(Optional ByVal MaxBatchSize As Integer = 100)
@@ -88,6 +90,17 @@ Namespace Notifier
 								SendMail(EmailAddress, Name, MessageSubject, MessageBody, False)
 							Else
 								SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
+							End If
+
+							'Send push notification
+							Dim PushAddress As String = Nothing
+							If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
+							If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
+								Try
+									mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
+								Catch
+									' Push is best-effort; don't block email flow
+								End Try
 							End If
 
 							'And mark as sent
@@ -183,6 +196,17 @@ Namespace Notifier
 								SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
 							End If
 
+							'Send push notification
+							Dim PushAddress As String = Nothing
+							If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
+							If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
+								Try
+									mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
+								Catch
+									' Push is best-effort; don't block email flow
+								End Try
+							End If
+
 							'And mark as sent
 							prmAlertID.Value = AlertID
 							prmOperatorID.Value = OperatorID
@@ -269,6 +293,14 @@ Namespace Notifier
 
 					'Send Email
 					SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Notification Recap", EmailBody, True)
+
+					'Send push notification
+					If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(myOperator.PushAddress) Then
+						Try
+							mPushNotifier.SendPush(myOperator.PushAddress, "PolyMon - Notification Recap", "You have pending alert recaps. Check email for details.")
+						Catch
+						End Try
+					End If
 
 					'Mark Notifications as sent
 					prmOperatorID.Value = OperatorID
@@ -392,6 +424,14 @@ Namespace Notifier
 
 					'Send Email
 					SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Summary Notification", EmailBody, True)
+
+					'Send push notification
+					If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(myOperator.PushAddress) Then
+						Try
+							mPushNotifier.SendPush(myOperator.PushAddress, "PolyMon - Summary Notification", "Daily summary available. Check email for details.")
+						Catch
+						End Try
+					End If
 
 					'And mark as sent
 					prmSentOperatorID.Value = myOperator.OperatorID

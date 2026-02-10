@@ -19,6 +19,9 @@ Namespace General
 		Private mExtSMTPPwd As String
 		Private mExtSMTPUseSSL As Boolean
 		Private mDBVersion As Single
+		Private mPushService As String
+		Private mPushServerURL As String
+		Private mPushToken As String
 #End Region
 
 #Region "Public Interface"
@@ -124,6 +127,41 @@ Namespace General
 				Return mDBVersion
 			End Get
 		End Property
+		Public ReadOnly Property PushService() As String
+			Get
+				Return mPushService
+			End Get
+		End Property
+		Public ReadOnly Property PushServerURL() As String
+			Get
+				Return mPushServerURL
+			End Get
+		End Property
+		Public ReadOnly Property PushToken() As String
+			Get
+				Return mPushToken
+			End Get
+		End Property
+
+		Public Sub SetPushNotification(ByVal Service As String, ByVal ServerURL As String, ByVal Token As String)
+			If Service = Nothing OrElse Service.Trim.Length = 0 Then
+				mPushService = Nothing
+			Else
+				mPushService = Service.Trim()
+			End If
+
+			If ServerURL = Nothing OrElse ServerURL.Trim.Length = 0 Then
+				mPushServerURL = Nothing
+			Else
+				mPushServerURL = ServerURL.Trim()
+			End If
+
+			If Token = Nothing OrElse Token.Trim.Length = 0 Then
+				mPushToken = Nothing
+			Else
+				mPushToken = Token.Trim()
+			End If
+		End Sub
 
 		Public Sub SetSMTPFrom(ByVal FromName As String, ByVal FromAddress As String)
 			If FromName = Nothing OrElse FromName.Trim.Length = 0 Then
@@ -147,9 +185,16 @@ Namespace General
 				Throw New System.Exception("Specifying external SMTP settings is not allowed because UseInternalSMTP has been set to true.")
 			End If
 
+			' SMTP is optional — allow blank server (push-only notifications)
 			If SMTPServer = Nothing OrElse SMTPServer.Trim.Length = 0 Then
-				Throw New System.Exception("SMTP Server cannot be blank.")
+				mExtSMTPServer = Nothing
+				mExtSMTPPort = SMTPPort
+				mExtSMTPUserID = Nothing
+				mExtSMTPPwd = Nothing
+				mExtSMTPUseSSL = UseSSL
+				Exit Sub
 			End If
+
 			If SMTPServer.Trim.Length > 255 Then
 				Throw New System.Exception("SMTP Server cannot exceed 255 characters.")
 			End If
@@ -311,6 +356,45 @@ Namespace General
 				.Value = mExtSMTPUseSSL
 			End With
 
+			Dim prmPushService As New SqlParameter
+			With prmPushService
+				.ParameterName = "@PushService"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = 20
+				.Direction = ParameterDirection.Input
+				If mPushService Is Nothing Then
+					.Value = DBNull.Value
+				Else
+					.Value = mPushService
+				End If
+			End With
+
+			Dim prmPushServerURL As New SqlParameter
+			With prmPushServerURL
+				.ParameterName = "@PushServerURL"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = 255
+				.Direction = ParameterDirection.Input
+				If mPushServerURL Is Nothing Then
+					.Value = DBNull.Value
+				Else
+					.Value = mPushServerURL
+				End If
+			End With
+
+			Dim prmPushToken As New SqlParameter
+			With prmPushToken
+				.ParameterName = "@PushToken"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = 255
+				.Direction = ParameterDirection.Input
+				If mPushToken Is Nothing Then
+					.Value = DBNull.Value
+				Else
+					.Value = mPushToken
+				End If
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -329,6 +413,9 @@ Namespace General
                 .Parameters.Add(prmExtSMTPUserID)
 				.Parameters.Add(prmExtSMTPPwd)
 				.Parameters.Add(prmExtSMTPUseSSL)
+				.Parameters.Add(prmPushService)
+				.Parameters.Add(prmPushServerURL)
+				.Parameters.Add(prmPushToken)
             End With
 
             Try
@@ -362,28 +449,26 @@ Namespace General
                 Return False
             End If
 
-            If mSMTPFromName = Nothing Then
-                FailReason = "SMTP FromName cannot be blank."
-                Return False
-            End If
-
-            If mSMTPFromAddress = Nothing Then
-                FailReason = "SMTP FromAddress cannot be blank."
-                Return False
-            End If
-
-            If Not (mUseInternalSMTP) Then
-                If mExtSMTPServer = Nothing Then
-                    FailReason = "Ext SMTP Server cannot be blank when Use Internal SMTP is not enabled."
+            If mExtSMTPServer IsNot Nothing Then
+                If mSMTPFromName = Nothing Then
+                    FailReason = "SMTP FromName cannot be blank when an SMTP Server is specified."
                     Return False
                 End If
+
+                If mSMTPFromAddress = Nothing Then
+                    FailReason = "SMTP FromAddress cannot be blank when an SMTP Server is specified."
+                    Return False
+                End If
+            End If
+
+            If Not (mUseInternalSMTP) AndAlso mExtSMTPServer IsNot Nothing Then
                 If mExtSMTPPort = Nothing Then
-                    FailReason = "Ext SMTP Port cannot be blank when Use Internal SMTP is not enabled."
+                    FailReason = "Ext SMTP Port cannot be blank when an SMTP Server is specified."
                     Return False
                 End If
 
                 If mExtSMTPUserID = Nothing AndAlso Not (mExtSMTPPwd = Nothing) Then
-                    FailReason = "A blank Ext UserID is not allowed when an Ext Password is specified and Use Internal SMTP is not enabled."
+                    FailReason = "A blank Ext UserID is not allowed when an Ext Password is specified."
                     Return False
                 End If
             End If
@@ -437,6 +522,22 @@ Namespace General
 						End If
 						mExtSMTPUseSSL = CBool(.Item("ExtSMTPUseSSL"))
 
+						If Not (IsDBNull(.Item("PushService"))) Then
+							mPushService = CStr(.Item("PushService"))
+						Else
+							mPushService = Nothing
+						End If
+						If Not (IsDBNull(.Item("PushServerURL"))) Then
+							mPushServerURL = CStr(.Item("PushServerURL"))
+						Else
+							mPushServerURL = Nothing
+						End If
+						If Not (IsDBNull(.Item("PushToken"))) Then
+							mPushToken = CStr(.Item("PushToken"))
+						Else
+							mPushToken = Nothing
+						End If
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -456,6 +557,9 @@ Namespace General
                     mExtSMTPUserID = Nothing
 					mExtSMTPPwd = Nothing
 					mExtSMTPUseSSL = Nothing
+					mPushService = Nothing
+					mPushServerURL = Nothing
+					mPushToken = Nothing
 					mDBVersion = Nothing
                 End If
 

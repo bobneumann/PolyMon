@@ -79,6 +79,16 @@ Partial Class frmGeneralSettings
         Me.tsbSaveRetentionScheme = New System.Windows.Forms.ToolStripButton()
         Me.tsbCancelRetentionScheme = New System.Windows.Forms.ToolStripButton()
         Me.tpUserSettings = New System.Windows.Forms.TabPage()
+        Me.tpPushNotifications = New System.Windows.Forms.TabPage()
+        Me.gbPushNotifications = New System.Windows.Forms.GroupBox()
+        Me.cboPushService = New System.Windows.Forms.ComboBox()
+        Me.lblPushService = New System.Windows.Forms.Label()
+        Me.txtPushServerURL = New System.Windows.Forms.TextBox()
+        Me.lblPushServerURL = New System.Windows.Forms.Label()
+        Me.txtPushToken = New System.Windows.Forms.TextBox()
+        Me.lblPushToken = New System.Windows.Forms.Label()
+        Me.btnSendTestPush = New System.Windows.Forms.Button()
+        Me.lblPushHelp = New System.Windows.Forms.Label()
         Me.HelpProvider1 = New System.Windows.Forms.HelpProvider()
         Me.imglstStatus = New System.Windows.Forms.ImageList(Me.components)
         Me.tsGeneralSettingsEditor.SuspendLayout()
@@ -96,6 +106,8 @@ Partial Class frmGeneralSettings
         CType(Me.trRaw, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ToolStrip1.SuspendLayout()
         Me.tpUserSettings.SuspendLayout()
+        Me.tpPushNotifications.SuspendLayout()
+        Me.gbPushNotifications.SuspendLayout()
         Me.SuspendLayout()
         '
         'tsGeneralSettingsEditor
@@ -469,6 +481,7 @@ Partial Class frmGeneralSettings
         Me.TabControl1.Controls.Add(Me.tpSysSettings)
         Me.TabControl1.Controls.Add(Me.tpRetentionScheme)
         Me.TabControl1.Controls.Add(Me.tpUserSettings)
+        Me.TabControl1.Controls.Add(Me.tpPushNotifications)
         Me.TabControl1.Location = New System.Drawing.Point(5, 3)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
@@ -725,6 +738,109 @@ Partial Class frmGeneralSettings
         Me.tpUserSettings.TabIndex = 1
         Me.tpUserSettings.Text = "User Settings"
         '
+        'tpPushNotifications
+        '
+        Me.tpPushNotifications.BackColor = System.Drawing.SystemColors.Control
+        Me.tpPushNotifications.Controls.Add(Me.gbPushNotifications)
+        Me.tpPushNotifications.Location = New System.Drawing.Point(4, 22)
+        Me.tpPushNotifications.Name = "tpPushNotifications"
+        Me.tpPushNotifications.Padding = New System.Windows.Forms.Padding(3)
+        Me.tpPushNotifications.Size = New System.Drawing.Size(393, 497)
+        Me.tpPushNotifications.TabIndex = 3
+        Me.tpPushNotifications.Text = "Push Notifications"
+        '
+        'gbPushNotifications
+        '
+        Me.gbPushNotifications.Controls.Add(Me.cboPushService)
+        Me.gbPushNotifications.Controls.Add(Me.lblPushService)
+        Me.gbPushNotifications.Controls.Add(Me.txtPushServerURL)
+        Me.gbPushNotifications.Controls.Add(Me.lblPushServerURL)
+        Me.gbPushNotifications.Controls.Add(Me.txtPushToken)
+        Me.gbPushNotifications.Controls.Add(Me.lblPushToken)
+        Me.gbPushNotifications.Controls.Add(Me.btnSendTestPush)
+        Me.gbPushNotifications.Controls.Add(Me.lblPushHelp)
+        Me.gbPushNotifications.ForeColor = System.Drawing.Color.MediumBlue
+        Me.gbPushNotifications.Location = New System.Drawing.Point(6, 6)
+        Me.gbPushNotifications.Name = "gbPushNotifications"
+        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 310)
+        Me.gbPushNotifications.TabIndex = 0
+        Me.gbPushNotifications.TabStop = False
+        Me.gbPushNotifications.Text = "Push Notifications"
+        '
+        'cboPushService
+        '
+        Me.cboPushService.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboPushService.FormattingEnabled = True
+        Me.cboPushService.Location = New System.Drawing.Point(152, 24)
+        Me.cboPushService.Name = "cboPushService"
+        Me.cboPushService.Size = New System.Drawing.Size(204, 21)
+        Me.cboPushService.TabIndex = 0
+        '
+        'lblPushService
+        '
+        Me.lblPushService.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPushService.Location = New System.Drawing.Point(16, 24)
+        Me.lblPushService.Name = "lblPushService"
+        Me.lblPushService.Size = New System.Drawing.Size(128, 20)
+        Me.lblPushService.TabIndex = 1
+        Me.lblPushService.Text = "Push Service"
+        Me.lblPushService.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'txtPushServerURL
+        '
+        Me.txtPushServerURL.Location = New System.Drawing.Point(152, 56)
+        Me.txtPushServerURL.MaxLength = 255
+        Me.txtPushServerURL.Name = "txtPushServerURL"
+        Me.txtPushServerURL.Size = New System.Drawing.Size(204, 20)
+        Me.txtPushServerURL.TabIndex = 1
+        '
+        'lblPushServerURL
+        '
+        Me.lblPushServerURL.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPushServerURL.Location = New System.Drawing.Point(16, 56)
+        Me.lblPushServerURL.Name = "lblPushServerURL"
+        Me.lblPushServerURL.Size = New System.Drawing.Size(128, 20)
+        Me.lblPushServerURL.TabIndex = 3
+        Me.lblPushServerURL.Text = "Server URL"
+        Me.lblPushServerURL.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'txtPushToken
+        '
+        Me.txtPushToken.Location = New System.Drawing.Point(152, 88)
+        Me.txtPushToken.MaxLength = 255
+        Me.txtPushToken.Name = "txtPushToken"
+        Me.txtPushToken.Size = New System.Drawing.Size(204, 20)
+        Me.txtPushToken.TabIndex = 2
+        '
+        'lblPushToken
+        '
+        Me.lblPushToken.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPushToken.Location = New System.Drawing.Point(16, 88)
+        Me.lblPushToken.Name = "lblPushToken"
+        Me.lblPushToken.Size = New System.Drawing.Size(128, 20)
+        Me.lblPushToken.TabIndex = 5
+        Me.lblPushToken.Text = "Token / API Key"
+        Me.lblPushToken.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'btnSendTestPush
+        '
+        Me.btnSendTestPush.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.btnSendTestPush.Location = New System.Drawing.Point(260, 120)
+        Me.btnSendTestPush.Name = "btnSendTestPush"
+        Me.btnSendTestPush.Size = New System.Drawing.Size(96, 23)
+        Me.btnSendTestPush.TabIndex = 3
+        Me.btnSendTestPush.Text = "Send Test Push"
+        Me.btnSendTestPush.UseVisualStyleBackColor = True
+        '
+        'lblPushHelp
+        '
+        Me.lblPushHelp.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPushHelp.Location = New System.Drawing.Point(16, 160)
+        Me.lblPushHelp.Name = "lblPushHelp"
+        Me.lblPushHelp.Size = New System.Drawing.Size(340, 140)
+        Me.lblPushHelp.TabIndex = 7
+        Me.lblPushHelp.Text = "Select a push notification service to enable push alerts alongside email notifications."
+        '
         'HelpProvider1
         '
         Me.HelpProvider1.HelpNamespace = "polymon.chm"
@@ -770,6 +886,9 @@ Partial Class frmGeneralSettings
         Me.ToolStrip1.ResumeLayout(False)
         Me.ToolStrip1.PerformLayout()
         Me.tpUserSettings.ResumeLayout(False)
+        Me.gbPushNotifications.ResumeLayout(False)
+        Me.gbPushNotifications.PerformLayout()
+        Me.tpPushNotifications.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -833,4 +952,14 @@ Partial Class frmGeneralSettings
 	Friend WithEvents lblRaw As System.Windows.Forms.Label
 	Friend WithEvents Label21 As System.Windows.Forms.Label
 	Friend WithEvents imglstStatus As System.Windows.Forms.ImageList
+	Friend WithEvents tpPushNotifications As System.Windows.Forms.TabPage
+	Friend WithEvents gbPushNotifications As System.Windows.Forms.GroupBox
+	Friend WithEvents cboPushService As System.Windows.Forms.ComboBox
+	Friend WithEvents lblPushService As System.Windows.Forms.Label
+	Friend WithEvents txtPushServerURL As System.Windows.Forms.TextBox
+	Friend WithEvents lblPushServerURL As System.Windows.Forms.Label
+	Friend WithEvents txtPushToken As System.Windows.Forms.TextBox
+	Friend WithEvents lblPushToken As System.Windows.Forms.Label
+	Friend WithEvents btnSendTestPush As System.Windows.Forms.Button
+	Friend WithEvents lblPushHelp As System.Windows.Forms.Label
 End Class

@@ -18,6 +18,7 @@ Namespace Operators
 		Private mSummaryNotifyFail As Boolean
 		Private mSummaryNotifyTime As String
 		Private mSummaryNextNotifyDT As DateTime
+		Private mPushAddress As String
 #End Region
 
 #Region "Public Enums"
@@ -79,6 +80,11 @@ Namespace Operators
 					mSummaryNotifyFail = CBool(.Item("SummaryNotifyFail"))
 					mSummaryNotifyTime = CStr(.Item("SummaryNotifyTime"))
 					mSummaryNextNotifyDT = CDate(.Item("SummaryNextNotifyDT"))
+					If Not IsDBNull(.Item("PushAddress")) Then
+						mPushAddress = CStr(.Item("PushAddress"))
+					Else
+						mPushAddress = Nothing
+					End If
                 End With
             Catch ex As Exception
                 Throw New System.Exception(ex.Message, ex)
@@ -194,6 +200,18 @@ Namespace Operators
 			Get
 				Return mSummaryNextNotifyDT
 			End Get
+		End Property
+		Public Property PushAddress() As String
+			Get
+				Return mPushAddress
+			End Get
+			Set(ByVal Value As String)
+				If Value IsNot Nothing AndAlso Value.Length > 255 Then
+					Throw New System.Exception("Push Address cannot exceed 255 characters.")
+				Else
+					mPushAddress = Value
+				End If
+			End Set
 		End Property
 
         Public Function Save() As Integer
@@ -313,6 +331,19 @@ Namespace Operators
 				.Value = mSummaryNotifyTime
 			End With
 
+			Dim prmPushAddress As New SqlParameter
+			With prmPushAddress
+				.ParameterName = "@PushAddress"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = 255
+				.Direction = ParameterDirection.Input
+				If mPushAddress Is Nothing OrElse mPushAddress.Trim.Length = 0 Then
+					.Value = DBNull.Value
+				Else
+					.Value = mPushAddress
+				End If
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -332,6 +363,7 @@ Namespace Operators
 				.Parameters.Add(prmSummaryNotifyWarn)
 				.Parameters.Add(prmSummaryNotifyFail)
 				.Parameters.Add(prmSummaryNotifyTime)
+				.Parameters.Add(prmPushAddress)
             End With
 
             Try
@@ -436,6 +468,7 @@ Namespace Operators
             mEmailAddress = Nothing
             mIncludeMessageBody = True
             mOfflineTime = New IOfflineTime("00:00", "00:00")
+            mPushAddress = Nothing
         End Sub
 #End Region
 

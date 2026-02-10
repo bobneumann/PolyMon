@@ -18,6 +18,13 @@ Public Class frmGeneralSettings
             Me.cboMDIBackColor.Items.Add(ColName)
         Next
 
+        'Populate Push Service picker
+        cboPushService.Items.Clear()
+        cboPushService.Items.Add("None")
+        cboPushService.Items.Add("ntfy")
+        cboPushService.Items.Add("Pushover")
+        cboPushService.Items.Add("Telegram")
+
         'Load System Settings
         If mSysSettings Is Nothing Then LoadSysSettings()
 
@@ -58,6 +65,65 @@ Public Class frmGeneralSettings
                 Exit For
             End If
         Next
+	End Sub
+
+	Private Sub cboPushService_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cboPushService.SelectedIndexChanged
+		Dim svc As String = CStr(cboPushService.SelectedItem)
+		Select Case svc
+			Case "None"
+				txtPushServerURL.Enabled = False
+				txtPushToken.Enabled = False
+				btnSendTestPush.Enabled = False
+				lblPushServerURL.Text = "Server URL"
+				lblPushToken.Text = "Token / API Key"
+				lblPushServerURL.Visible = False
+				txtPushServerURL.Visible = False
+				lblPushHelp.Text = "Select a push notification service to enable push alerts alongside email notifications."
+			Case "ntfy"
+				txtPushServerURL.Enabled = True
+				txtPushToken.Enabled = True
+				btnSendTestPush.Enabled = True
+				lblPushServerURL.Text = "Server URL"
+				lblPushToken.Text = "Access Token (optional)"
+				lblPushServerURL.Visible = True
+				txtPushServerURL.Visible = True
+				lblPushHelp.Text = "Free, open-source push notifications. Create a unique topic name and subscribe to it in the ntfy app." & vbCrLf & vbCrLf & "Default server: ntfy.sh" & vbCrLf & "Docs: ntfy.sh/docs"
+			Case "Pushover"
+				txtPushServerURL.Enabled = False
+				txtPushToken.Enabled = True
+				btnSendTestPush.Enabled = True
+				lblPushServerURL.Visible = False
+				txtPushServerURL.Visible = False
+				lblPushToken.Text = "App API Token"
+				lblPushHelp.Text = "Simple push notifications ($5 one-time per device platform). Register an application at pushover.net to get your API token." & vbCrLf & vbCrLf & "Docs: pushover.net/api"
+			Case "Telegram"
+				txtPushServerURL.Enabled = False
+				txtPushToken.Enabled = True
+				btnSendTestPush.Enabled = True
+				lblPushServerURL.Visible = False
+				txtPushServerURL.Visible = False
+				lblPushToken.Text = "Bot Token"
+				lblPushHelp.Text = "Free push via Telegram. Create a bot with @BotFather to get a token. Each user sends /start to the bot, then uses their Chat ID as their key." & vbCrLf & vbCrLf & "Docs: core.telegram.org/bots"
+		End Select
+	End Sub
+
+	Private Sub btnSendTestPush_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSendTestPush.Click
+		Dim PushAddress As String = Nothing
+		PushAddress = InputBox("Please enter the push notification address/key to test." & vbCrLf & "(ntfy: topic name, Pushover: user key, Telegram: chat ID)", "PolyMon - Push Notification Test")
+		If String.IsNullOrEmpty(PushAddress) Then
+			MsgBox("Test not sent - address was blank or cancelled.")
+		Else
+			Try
+				Dim svc As String = CStr(cboPushService.SelectedItem)
+				Dim serverURL As String = txtPushServerURL.Text.Trim()
+				Dim token As String = txtPushToken.Text.Trim()
+				Dim pusher As New PolyMon.Notifier.PolyMonPushNotifier(svc, serverURL, token)
+				pusher.SendPush(PushAddress, "PolyMon - Test", "PolyMon push notification test. Please ignore.")
+				MsgBox("Test push notification sent successfully.", MsgBoxStyle.Information, "PolyMon")
+			Catch ex As Exception
+				MsgBox("An error occurred sending push notification." & vbCrLf & ex.ToString(), MsgBoxStyle.Exclamation Or MsgBoxStyle.OkOnly, "PolyMon - Push Notification Error")
+			End Try
+		End If
 	End Sub
 
 	Private Sub btnSendTestMail_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSendTestMail.Click
@@ -119,6 +185,15 @@ Public Class frmGeneralSettings
                 Me.txtSysSMTPFromName.Text = .SMTPFromName
 				Me.txtSysSMTPFromAddress.Text = .SMTPFromAddress
 				Me.chkSysSMTPUseSSL.Checked = .ExtSMTPUseSSL
+
+				'Push Notification settings
+				If Not String.IsNullOrEmpty(.PushService) Then
+					Me.cboPushService.SelectedItem = .PushService
+				Else
+					Me.cboPushService.SelectedIndex = 0 'None
+				End If
+				Me.txtPushServerURL.Text = If(.PushServerURL, "")
+				Me.txtPushToken.Text = If(.PushToken, "")
 			End With
 
 			mRetentionSettings = New PolyMon.General.DefaultRetentionSettings
@@ -142,7 +217,10 @@ Public Class frmGeneralSettings
 				.UseInternalSMTP = False 'For now we do not have an embedded SMTP service
 
 				.SetExtSMTP(Me.txtSysSMTPServer.Text, CInt(Me.upSysSMTPPort.Value), Me.txtSysSMTPUserID.Text, Me.txtSysSMTPPwd.Text, Me.chkSysSMTPUseSSL.Checked)
-                .SetSMTPFrom(Me.txtSysSMTPFromName.Text, Me.txtSysSMTPFromAddress.Text)
+				If Me.txtSysSMTPServer.Text.Trim().Length > 0 Then
+					.SetSMTPFrom(Me.txtSysSMTPFromName.Text, Me.txtSysSMTPFromAddress.Text)
+				End If
+				.SetPushNotification(CStr(Me.cboPushService.SelectedItem), Me.txtPushServerURL.Text, Me.txtPushToken.Text)
 
                 .Save()
             End With

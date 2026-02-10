@@ -40,6 +40,7 @@ Public Class frmOperators
                 Me.chkSummaryFail.Checked = .SummaryNotifyFail
                 Me.cboSummaryNotifyHour.Text = .SummaryNotifyTime.Split(CChar(":"))(0)
                 Me.cboSummaryNotifyMinute.Text = .SummaryNotifyTime.Split(CChar(":"))(1)
+                Me.txtPushAddress.Text = If(.PushAddress, "")
             End With
             pnlOperatorID.Visible = True
             lblID.Text = mCurrOperatorEdited.OperatorID.ToString
@@ -84,6 +85,7 @@ Public Class frmOperators
                 .SummaryNotifyWarn = Me.chkSummaryWarn.Checked
                 .SummaryNotifyFail = Me.chkSummaryFail.Checked
                 .SummaryNotifyTime = Me.cboSummaryNotifyHour.Text & ":" & Me.cboSummaryNotifyMinute.Text
+                .PushAddress = Me.txtPushAddress.Text.Trim()
                 .Save()
             End With
             mCurrOperatorIsNew = False
@@ -210,6 +212,7 @@ Public Class frmOperators
         Me.chkEnabled.Checked = False
         Me.txtName.Text = Nothing
         Me.txtEmailAddress.Text = Nothing
+        Me.txtPushAddress.Text = Nothing
 
         'Added code to init starts/end hours for offline times so they aren't blank at startup
         Me.cboStartHour.SelectedIndex = 0

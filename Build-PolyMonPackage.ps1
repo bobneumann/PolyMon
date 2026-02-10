@@ -375,6 +375,8 @@ $sqlFiles = @(
     @{ Src = (Join-Path $SqlCreate 'DB Version 1.30.sql'); Name = 'DB Version 1.30.sql' }
     @{ Src = (Join-Path $SqlUpdate 'Update DB 1.00 to 1.10.sql'); Name = 'Update DB 1.00 to 1.10.sql' }
     @{ Src = (Join-Path $SqlUpdate 'Update DB 1.10 to 1.30.sql'); Name = 'Update DB 1.10 to 1.30.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.30 to 1.40.sql'); Name = 'Update DB 1.30 to 1.40.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.40 to 1.50.sql'); Name = 'Update DB 1.40 to 1.50.sql' }
 )
 
 foreach ($sf in $sqlFiles) {
@@ -403,6 +405,20 @@ foreach ($script in $installerScripts) {
     }
 }
 
+# --- Copy PowerShell modules ---
+Write-Host 'Copying PowerShell modules...' -ForegroundColor Yellow
+$PSModulesSource = Join-Path $RepoRoot 'PSModules'
+$StagePSModules  = Join-Path $StagingRoot 'PSModules'
+
+if (Test-Path $PSModulesSource) {
+    Copy-Item $PSModulesSource -Destination $StagePSModules -Recurse -Force
+    $psModCount = (Get-ChildItem $StagePSModules -Recurse -File).Count
+    Write-Host "  $psModCount module files staged."
+}
+else {
+    Write-Warning "PSModules directory not found: $PSModulesSource"
+}
+
 # --- Strip PDB files and build artifacts ---
 Write-Host 'Cleaning build artifacts...' -ForegroundColor Yellow
 Get-ChildItem $StagingRoot -Recurse -Include '*.pdb','*.xml','*.application','*.manifest','*.InstallLog','*.InstallState' |
@@ -417,11 +433,13 @@ $managerCount = (Get-ChildItem $StageManager -File).Count
 $monitorsCount = (Get-ChildItem $StageMonitors -File).Count
 $execCount = (Get-ChildItem $StageExec -File).Count
 $sqlCount = (Get-ChildItem $StageSql -File).Count
+$psModCount = if (Test-Path $StagePSModules) { (Get-ChildItem $StagePSModules -Recurse -File).Count } else { 0 }
 
 Write-Host "  PolyMon Manager:     $managerCount files"
 Write-Host "  Manager\Monitors:    $monitorsCount files"
 Write-Host "  PolyMon Executive:   $execCount files"
 Write-Host "  SQL:                 $sqlCount files"
+Write-Host "  PSModules:           $psModCount files"
 Write-Host ''
 
 # List all files

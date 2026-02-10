@@ -110,9 +110,8 @@ Partial Class frmMonitorDefs
         Me.tsbNewMonitor = New System.Windows.Forms.ToolStripButton()
         Me.tsbClone = New System.Windows.Forms.ToolStripButton()
         Me.tsbSave = New System.Windows.Forms.ToolStripButton()
+        Me.tsbRevert = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
-        Me.tsbCancel = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripSeparator8 = New System.Windows.Forms.ToolStripSeparator()
         Me.tsbDeleteData = New System.Windows.Forms.ToolStripButton()
         Me.tsbDelete = New System.Windows.Forms.ToolStripButton()
         Me.pnlMonitors_Left = New System.Windows.Forms.Panel()
@@ -1092,7 +1091,7 @@ Partial Class frmMonitorDefs
         'tsMonitors
         '
         Me.tsMonitors.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden
-        Me.tsMonitors.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsbNewMonitor, Me.tsbClone, Me.tsbSave, Me.ToolStripSeparator7, Me.tsbCancel, Me.ToolStripSeparator8, Me.tsbDeleteData, Me.tsbDelete})
+        Me.tsMonitors.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsbNewMonitor, Me.tsbClone, Me.tsbSave, Me.tsbRevert, Me.ToolStripSeparator7, Me.tsbDeleteData, Me.tsbDelete})
         Me.tsMonitors.Location = New System.Drawing.Point(2, 2)
         Me.tsMonitors.Margin = New System.Windows.Forms.Padding(0, 0, 0, 10)
         Me.tsMonitors.Name = "tsMonitors"
@@ -1129,24 +1128,20 @@ Partial Class frmMonitorDefs
         Me.tsbSave.Size = New System.Drawing.Size(23, 22)
         Me.tsbSave.Text = "Save"
         '
+        'tsbRevert
+        '
+        Me.tsbRevert.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tsbRevert.Image = Global.PolyMonManager.My.Resources.Resources.Edit_UndoHS
+        Me.tsbRevert.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.tsbRevert.Name = "tsbRevert"
+        Me.tsbRevert.Size = New System.Drawing.Size(23, 22)
+        Me.tsbRevert.Text = "Revert"
+        Me.tsbRevert.ToolTipText = "Undo (revert to previous saved version)"
+        '
         'ToolStripSeparator7
         '
         Me.ToolStripSeparator7.Name = "ToolStripSeparator7"
         Me.ToolStripSeparator7.Size = New System.Drawing.Size(6, 25)
-        '
-        'tsbCancel
-        '
-        Me.tsbCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.tsbCancel.Image = Global.PolyMonManager.My.Resources.Resources.Edit_UndoHS
-        Me.tsbCancel.ImageTransparentColor = System.Drawing.Color.Magenta
-        Me.tsbCancel.Name = "tsbCancel"
-        Me.tsbCancel.Size = New System.Drawing.Size(23, 22)
-        Me.tsbCancel.Text = "Cancel"
-        '
-        'ToolStripSeparator8
-        '
-        Me.ToolStripSeparator8.Name = "ToolStripSeparator8"
-        Me.ToolStripSeparator8.Size = New System.Drawing.Size(6, 25)
         '
         'tsbDeleteData
         '
@@ -1299,10 +1294,9 @@ Partial Class frmMonitorDefs
 	Friend WithEvents tabTest As System.Windows.Forms.TabPage
 	Friend WithEvents tsMonitors As System.Windows.Forms.ToolStrip
 	Friend WithEvents tsbSave As System.Windows.Forms.ToolStripButton
-	Friend WithEvents tsbCancel As System.Windows.Forms.ToolStripButton
+	Friend WithEvents tsbRevert As System.Windows.Forms.ToolStripButton
 	Friend WithEvents ToolStripSeparator7 As System.Windows.Forms.ToolStripSeparator
 	Friend WithEvents tsbNewMonitor As System.Windows.Forms.ToolStripButton
-	Friend WithEvents ToolStripSeparator8 As System.Windows.Forms.ToolStripSeparator
 	Friend WithEvents tsbDelete As System.Windows.Forms.ToolStripButton
 	Friend WithEvents tabSettings As System.Windows.Forms.TabPage
 	Friend WithEvents Label31 As System.Windows.Forms.Label
