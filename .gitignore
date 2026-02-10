@@ -6,8 +6,10 @@ obj/
 *.cache
 BuildAnalysis.txt
 
-# Installer staging output
+# Installer staging and build output
 PolyMonInstall/
+Output/
+PolyMon-Setup.exe
 
 # Build logs
 *.txt
