@@ -12,6 +12,7 @@ Output/
 PolyMon-Setup.exe
 
 # Build logs
-*.txt
-!PolymonSQL/*.txt
-!Documentation/*.txt
+BuildAnalysis.txt
+
+# Keep resource/content txt files but exclude obj build logs
+obj/**/*.txt
