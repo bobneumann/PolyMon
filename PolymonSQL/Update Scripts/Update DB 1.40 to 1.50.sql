@@ -287,6 +287,10 @@ end
 GO
 
 
+-- Allow NULL email addresses (operators may use push-only)
+ALTER TABLE [dbo].[Operator] ALTER COLUMN [EmailAddress] varchar(255) NULL
+GO
+
 -- Alter polymon_hyb_SaveOperator to include PushAddress parameter
 ALTER PROCEDURE [dbo].[polymon_hyb_SaveOperator]
 @OperatorID int output,
