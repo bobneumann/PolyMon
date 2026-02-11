@@ -290,9 +290,9 @@ Public Class frmOperators
             errSummary.SetError(Me.txtName, "You must provide a valid name.")
             bIsValid = False
         End If
-        'validate email address field
-        If (String.IsNullOrEmpty(txtEmailAddress.Text)) Then
-            errSummary.SetError(Me.txtEmailAddress, "You must provide a valid email address.")
+        'validate contact method - at least one of email or push required
+        If String.IsNullOrEmpty(txtEmailAddress.Text) AndAlso String.IsNullOrEmpty(txtPushAddress.Text) Then
+            errSummary.SetError(Me.txtEmailAddress, "Provide an email address and/or push key.")
             bIsValid = False
         End If
 

@@ -71,11 +71,12 @@ Namespace Notifier
 					tblEmails = dsEmails.Tables(0)
 
 					For Each drEmail In tblEmails.Rows
-						'Process each email and mark sent
+						'Process each notification and mark sent
 						Dim AlertID As Integer = CInt(drEmail.Item("AlertID"))
 						Dim OperatorID As Integer = CInt(drEmail.Item("OperatorID"))
 						Dim Name As String = CStr(drEmail.Item("Name"))
-						Dim EmailAddress As String = CStr(drEmail.Item("EmailAddress"))
+						Dim EmailAddress As String = Nothing
+						If Not IsDBNull(drEmail.Item("EmailAddress")) Then EmailAddress = CStr(drEmail.Item("EmailAddress"))
 						Dim IncludeMessageBody As Boolean = CBool(drEmail.Item("IncludeMessageBody"))
 						Dim MessageSubject As String = CStr(drEmail.Item("MessageSubject"))
 						Dim MessageBody As String = Nothing
@@ -83,34 +84,34 @@ Namespace Notifier
 							MessageBody = CStr(drEmail.Item("MessageBody"))
 						End If
 
+						'Send email if address is present
+						If Not String.IsNullOrEmpty(EmailAddress) Then
+							Try
+								If IncludeMessageBody Then
+									SendMail(EmailAddress, Name, MessageSubject, MessageBody, False)
+								Else
+									SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
+								End If
+							Catch ex As Exception
+								'TODO: Log error somewhere???
+							End Try
+						End If
 
-						Try
-							'Send email
-							If IncludeMessageBody Then
-								SendMail(EmailAddress, Name, MessageSubject, MessageBody, False)
-							Else
-								SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
-							End If
+						'Send push notification (independent of email)
+						Dim PushAddress As String = Nothing
+						If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
+						If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
+							Try
+								mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
+							Catch
+								' Push is best-effort
+							End Try
+						End If
 
-							'Send push notification
-							Dim PushAddress As String = Nothing
-							If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
-							If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
-								Try
-									mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
-								Catch
-									' Push is best-effort; don't block email flow
-								End Try
-							End If
-
-							'And mark as sent
-							prmAlertID.Value = AlertID
-							prmOperatorID.Value = OperatorID
-							cmdMarkSent.ExecuteNonQuery()
-						Catch ex As Exception
-							'TODO: Log error somewhere???
-							'Ignore for now...
-						End Try
+						'Mark as sent
+						prmAlertID.Value = AlertID
+						prmOperatorID.Value = OperatorID
+						cmdMarkSent.ExecuteNonQuery()
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception
@@ -175,11 +176,12 @@ Namespace Notifier
 					tblEmails = dsEmails.Tables(0)
 
 					For Each drEmail In tblEmails.Rows
-						'Process each email and mark sent
+						'Process each notification and mark sent
 						Dim AlertID As Integer = CInt(drEmail.Item("AlertID"))
 						Dim OperatorID As Integer = CInt(drEmail.Item("OperatorID"))
 						Dim Name As String = CStr(drEmail.Item("Name"))
-						Dim EmailAddress As String = CStr(drEmail.Item("EmailAddress"))
+						Dim EmailAddress As String = Nothing
+						If Not IsDBNull(drEmail.Item("EmailAddress")) Then EmailAddress = CStr(drEmail.Item("EmailAddress"))
 						Dim IncludeMessageBody As Boolean = CBool(drEmail.Item("IncludeMessageBody"))
 						Dim MessageSubject As String = CStr(drEmail.Item("MessageSubject"))
 						Dim MessageBody As String = Nothing
@@ -187,34 +189,34 @@ Namespace Notifier
 							MessageBody = CStr(drEmail.Item("MessageBody"))
 						End If
 
+						'Send email if address is present
+						If Not String.IsNullOrEmpty(EmailAddress) Then
+							Try
+								If IncludeMessageBody Then
+									SendMail(EmailAddress, Name, MessageSubject, MessageBody, False)
+								Else
+									SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
+								End If
+							Catch ex As Exception
+								'TODO: Log error somewhere???
+							End Try
+						End If
 
-						Try
-							'Send email
-							If IncludeMessageBody Then
-								SendMail(EmailAddress, Name, MessageSubject, MessageBody, False)
-							Else
-								SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
-							End If
+						'Send push notification (independent of email)
+						Dim PushAddress As String = Nothing
+						If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
+						If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
+							Try
+								mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
+							Catch
+								' Push is best-effort
+							End Try
+						End If
 
-							'Send push notification
-							Dim PushAddress As String = Nothing
-							If Not IsDBNull(drEmail.Item("PushAddress")) Then PushAddress = CStr(drEmail.Item("PushAddress"))
-							If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
-								Try
-									mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
-								Catch
-									' Push is best-effort; don't block email flow
-								End Try
-							End If
-
-							'And mark as sent
-							prmAlertID.Value = AlertID
-							prmOperatorID.Value = OperatorID
-							cmdMarkSent.ExecuteNonQuery()
-						Catch ex As Exception
-							'TODO: Log error somewhere???
-							'Ignore for now...
-						End Try
+						'Mark as sent
+						prmAlertID.Value = AlertID
+						prmOperatorID.Value = OperatorID
+						cmdMarkSent.ExecuteNonQuery()
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception
@@ -291,10 +293,15 @@ Namespace Notifier
 					myXML.LoadXml(MessageXML)
 					Dim EmailBody As String = TransformXML(myXML, XSLT)
 
-					'Send Email
-					SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Notification Recap", EmailBody, True)
+					'Send Email if address is present
+					If Not String.IsNullOrEmpty(myOperator.EmailAddress) Then
+						Try
+							SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Notification Recap", EmailBody, True)
+						Catch
+						End Try
+					End If
 
-					'Send push notification
+					'Send push notification (independent of email)
 					If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(myOperator.PushAddress) Then
 						Try
 							mPushNotifier.SendPush(myOperator.PushAddress, "PolyMon - Notification Recap", "You have pending alert recaps. Check email for details.")
@@ -422,10 +429,15 @@ Namespace Notifier
 					'Transform data using XSLT
 					Dim EmailBody As String = TransformXML(xmlData, XSLT)
 
-					'Send Email
-					SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Summary Notification", EmailBody, True)
+					'Send Email if address is present
+					If Not String.IsNullOrEmpty(myOperator.EmailAddress) Then
+						Try
+							SendMail(myOperator.EmailAddress, myOperator.Name, "PolyMon - Summary Notification", EmailBody, True)
+						Catch
+						End Try
+					End If
 
-					'Send push notification
+					'Send push notification (independent of email)
 					If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(myOperator.PushAddress) Then
 						Try
 							mPushNotifier.SendPush(myOperator.PushAddress, "PolyMon - Summary Notification", "Daily summary available. Check email for details.")
