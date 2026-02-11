@@ -70,7 +70,11 @@ Namespace Operators
                 With drOperator
                     mName = CStr(.Item("Name"))
                     mIsEnabled = CBool(.Item("IsEnabled"))
-                    mEmailAddress = CStr(.Item("EmailAddress"))
+                    If Not IsDBNull(.Item("EmailAddress")) Then
+                        mEmailAddress = CStr(.Item("EmailAddress"))
+                    Else
+                        mEmailAddress = Nothing
+                    End If
                     mOfflineTime = New IOfflineTime(CStr(.Item("OfflineTimeStart")), CStr(.Item("OfflineTimeEnd")))
 					mIncludeMessageBody = CBool(.Item("IncludeMessageBody"))
 					mQueuedNotify = CType(.Item("QueuedNotify"), QueuedNotifyFlags)
@@ -253,7 +257,11 @@ Namespace Operators
                 .SqlDbType = SqlDbType.VarChar
                 .Size = 255
                 .Direction = ParameterDirection.Input
-                .Value = mEmailAddress
+                If mEmailAddress Is Nothing OrElse mEmailAddress.Trim.Length = 0 Then
+                    .Value = DBNull.Value
+                Else
+                    .Value = mEmailAddress
+                End If
             End With
 
             Dim prmOfflineTimeStart As New SqlParameter

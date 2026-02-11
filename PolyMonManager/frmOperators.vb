@@ -27,7 +27,7 @@ Public Class frmOperators
             With mCurrOperatorEdited
                 Me.chkEnabled.Checked = .IsEnabled
                 Me.txtName.Text = .Name
-                Me.txtEmailAddress.Text = .EmailAddress
+                Me.txtEmailAddress.Text = If(.EmailAddress, "")
                 Me.cboStartHour.Text = .OfflineTime.StartTime.Split(CChar(":"))(0)
                 Me.cboStartMinute.Text = .OfflineTime.StartTime.Split(CChar(":"))(1)
                 Me.cboEndHour.Text = .OfflineTime.EndTime.Split(CChar(":"))(0)
