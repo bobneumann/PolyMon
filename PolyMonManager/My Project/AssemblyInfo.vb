@@ -10,9 +10,9 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyTitle("PolyMon Manager")> 
 <Assembly: AssemblyDescription("System Monitoring and Trending Application")> 
-<Assembly: AssemblyCompany("Fred Baptiste")> 
-<Assembly: AssemblyProduct("PolyMon (CodePlex)")> 
-<Assembly: AssemblyCopyright("Copyright © PolyMon 2008")> 
+<Assembly: AssemblyCompany("PolyMon")>
+<Assembly: AssemblyProduct("PolyMon")>
+<Assembly: AssemblyCopyright("Copyright © PolyMon 2008-2026")>
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(True)> 
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.2.0.*")> 
-<Assembly: AssemblyFileVersion("1.2.0.0")> 
+<Assembly: AssemblyVersion("1.5.0.*")>
+<Assembly: AssemblyFileVersion("1.5.0.0")>

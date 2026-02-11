@@ -18,16 +18,13 @@ Public NotInheritable Class frmAboutPolyMon
 		With sbDescription
 			.Append("{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fcharset0 Arial;}{\f1\fnil\fcharset2 Symbol;}}")
 			.Append("{\colortbl ;\red0\green0\blue128;\red0\green128\blue0;}")
-			.Append("{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\cf1\b\f0\fs20 PolyMon\cf0\b0  is an open source distributed monitoring system that provides monitoring, alerting and historical analysis that uses the .NET 2.0 framework and Microsoft SQL Server.\par ")
+			.Append("{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\cf1\b\f0\fs20 PolyMon\cf0\b0  is a distributed monitoring system that provides monitoring, alerting and historical analysis using the .NET framework and Microsoft SQL Server.\par ")
 			.Append("\par ")
-			.Append("Licensing information, source code and further information can be found at http://www.codeplex.com/polymon \par ")
+			.Append("Source code: https://github.com/bobneumann/PolyMon \par ")
 			.Append("\par ")
 			.Append("\b Acknowledgements\par")
-			.Append("\b0 Many thanks to the following people:\par")
-			.Append("\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li360\cf2\b CodePlex \cf0\b0 (http://www.codeplex.com) for providing the project hosting environment\par")
-			.Append("\cf2\b{\pntext\f1\'B7\tab}ZedGraph \cf0\b0 (http://zedgraph.org) for fantastic Charting components\par")
-			.Append("\cf2\b{\pntext\f1\'B7\tab}WiX \cf0\b0 (http://wix.sourceforge.net) for an oustanding Windows Installer toolset\par")
-			.Append("\cf2\b{\pntext\f1\'B7\tab}Ascend.Net \cf0\b0 (http://www.codeplex.com/ascendnet) for great GUI components\par")
+			.Append("\b0 Originally created by Fred Baptiste. Many thanks to:\par")
+			.Append("\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li360\cf2\b ZedGraph \cf0\b0 (http://zedgraph.org) for charting components\par")
 			.Append("}")
 		End With
 
