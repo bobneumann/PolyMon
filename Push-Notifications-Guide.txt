@@ -1,0 +1,246 @@
+PolyMon Push Notifications Guide
+=================================
+
+PolyMon can send push notifications alongside email alerts using one
+of three services: ntfy, Pushover, or Telegram. Push notifications
+are sent in addition to email -- they do not replace email alerts.
+If an operator has both an email address and a push key configured,
+they will receive both.
+
+There are two parts to configure:
+
+  1. System-wide: Choose a push service and enter credentials
+     (General Settings > Push Notifications tab)
+
+  2. Per-operator: Enter each operator's push key/address
+     (Operators > "Push Key" field)
+
+
+=============================================
+CHOOSING A SERVICE
+=============================================
+
+  ntfy        Free, open-source. Self-hostable or use ntfy.sh.
+              No account required for basic use. Best for simple
+              setups or self-hosted environments.
+
+  Pushover    Polished mobile app. $5 one-time purchase per platform
+              (iOS, Android, desktop). 10,000 messages/month free.
+              Best if you want a reliable, no-fuss mobile app.
+
+  Telegram    Free. Uses Telegram's bot API. Requires Telegram
+              accounts. Best if your team already uses Telegram.
+
+
+=============================================
+OPTION 1: ntfy
+=============================================
+
+ntfy is a simple pub/sub notification service. You publish to a
+"topic" (just a unique name), and anyone subscribed to that topic
+receives the message.
+
+SETUP STEPS:
+
+  1. Install the ntfy app on your phone:
+       - Android: Google Play Store, search "ntfy"
+       - iOS: App Store, search "ntfy"
+
+  2. In the ntfy app, subscribe to a topic name. Pick something
+     unique and hard to guess since topics are public by default.
+     Example: polymon-alerts-yourcompany-x7k2
+
+  3. In PolyMon Manager, go to General Settings > Push Notifications:
+       - Push Service:  ntfy
+       - Server URL:    https://ntfy.sh  (default, or your self-hosted URL)
+       - Access Token:  (leave blank unless your server requires auth)
+
+  4. Click Save.
+
+  5. For each operator, go to Operators and enter their topic name
+     in the "Push Key" field.
+     Example: polymon-alerts-yourcompany-x7k2
+
+  6. Click "Send Test Push" to verify. When prompted, enter the
+     topic name. You should receive a notification on your phone.
+
+NOTES:
+  - Each operator can use a different topic, or share the same one.
+  - If you self-host ntfy, enter your server URL (e.g. https://ntfy.example.com).
+  - If your ntfy server uses access tokens, enter the token in the
+    "Access Token" field. Otherwise leave it blank.
+  - Topics on the public ntfy.sh server are not private. Use a long
+    random topic name, or self-host ntfy for sensitive environments.
+
+
+=============================================
+OPTION 2: Pushover
+=============================================
+
+Pushover is a commercial push notification service with polished
+mobile and desktop apps.
+
+SETUP STEPS:
+
+  1. Create a Pushover account at https://pushover.net
+
+  2. Install the Pushover app on your phone:
+       - Android: Google Play Store, search "Pushover"
+       - iOS: App Store, search "Pushover"
+     Log in with your Pushover account.
+     (There is a $5 one-time purchase per platform after a 30-day trial.)
+
+  3. Register an application in Pushover:
+       - Log in at https://pushover.net
+       - Go to "Your Applications" > "Create an Application/API Token"
+       - Name it something like "PolyMon"
+       - Copy the API Token/Key it generates
+
+  4. In PolyMon Manager, go to General Settings > Push Notifications:
+       - Push Service:    Pushover
+       - App API Token:   (paste the API token from step 3)
+
+  5. Click Save.
+
+  6. For each operator, they need their Pushover User Key:
+       - Log in at https://pushover.net
+       - The User Key is shown at the top of the dashboard
+     Enter this key in the operator's "Push Key" field.
+
+  7. Click "Send Test Push" to verify. When prompted, enter the
+     operator's user key. You should receive a notification.
+
+NOTES:
+  - There is one API token for PolyMon (system-wide). Each operator
+    has their own unique user key.
+  - Pushover supports up to 10,000 messages per month per application.
+  - Group keys are also supported -- create a delivery group at
+    pushover.net and use the group key as the operator's push key
+    to notify multiple people from one operator entry.
+
+
+=============================================
+OPTION 3: Telegram
+=============================================
+
+Telegram uses bots to send messages. You create a bot, and each
+operator starts a chat with the bot. PolyMon sends messages through
+the bot to each operator's chat.
+
+SETUP STEPS:
+
+  1. Create a Telegram bot:
+       - Open Telegram and search for @BotFather
+       - Send /newbot
+       - Follow the prompts to name your bot
+       - BotFather will give you a Bot Token (looks like:
+         123456789:ABCdefGHIjklMNOpqrsTUVwxyz)
+       - Copy this token
+
+  2. In PolyMon Manager, go to General Settings > Push Notifications:
+       - Push Service:  Telegram
+       - Bot Token:     (paste the bot token from step 1)
+
+  3. Click Save.
+
+  4. Each operator needs to get their Chat ID:
+       a. Open Telegram and find your new bot (search its name)
+       b. Send /start to the bot (this is required before the bot
+          can send messages to you)
+       c. To find your Chat ID, open this URL in a browser:
+            https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
+          (replace <YOUR_BOT_TOKEN> with the actual token)
+       d. Look for "chat":{"id":XXXXXXXX in the response.
+          That number is the Chat ID.
+
+     Alternatively, search for @userinfobot on Telegram and send
+     it any message -- it will reply with your Chat ID.
+
+  5. Enter the operator's Chat ID in the "Push Key" field.
+
+  6. Click "Send Test Push" to verify. When prompted, enter the
+     Chat ID. You should receive a message from the bot in Telegram.
+
+NOTES:
+  - Each operator MUST send /start to the bot before they can
+    receive messages. The bot cannot message users who haven't
+    initiated a conversation.
+  - Chat IDs are numeric (e.g. 123456789).
+  - You can also use group chat IDs (negative numbers) if you want
+    the bot to post alerts to a Telegram group. Add the bot to the
+    group first, then get the group's chat ID from getUpdates.
+
+
+=============================================
+HOW ALERTS ARE DELIVERED
+=============================================
+
+When an alert triggers:
+  - If the operator has an email address, they receive an email
+    (with the full alert details, same as before).
+  - If the operator has a push key AND push notifications are
+    configured system-wide, they also receive a push notification
+    with the alert subject and message body.
+
+For recap and summary notifications, the push message is a brief
+note ("You have pending alert recaps. Check email for details.")
+since the full HTML content is not suitable for push.
+
+Push delivery is best-effort. If a push fails (network issue,
+bad key, etc.), the email still sends normally. Push failures
+are silently ignored and do not block the notification pipeline.
+
+
+=============================================
+TESTING
+=============================================
+
+Use the "Send Test Push" button on the Push Notifications tab
+to send a test notification at any time. It will prompt you for
+the address/key to send to:
+  - ntfy:     enter the topic name
+  - Pushover: enter the user key
+  - Telegram: enter the chat ID
+
+The test uses the current values in the form (not the saved values),
+so you can test before clicking Save.
+
+
+=============================================
+TROUBLESHOOTING
+=============================================
+
+Push not arriving:
+
+  1. Use "Send Test Push" to isolate the problem. If the test
+     works but live alerts don't, check that:
+       - The operator's "Push Key" field is filled in
+       - The operator's alert rules are configured to trigger
+
+  2. ntfy: Make sure the topic name matches exactly between the
+     operator's Push Key and what's subscribed in the ntfy app.
+     Topics are case-sensitive.
+
+  3. Pushover: Verify the App API Token and the operator's User Key.
+     Check your Pushover dashboard at pushover.net for delivery logs.
+
+  4. Telegram: Make sure the operator sent /start to the bot.
+     Verify the Chat ID is correct (numeric, no spaces).
+     Check https://api.telegram.org/bot<TOKEN>/getUpdates
+     to see if the bot can see the user's chat.
+
+  5. If your PolyMon server has restricted outbound internet access,
+     make sure it can reach:
+       - ntfy:     ntfy.sh (or your self-hosted server) on port 443
+       - Pushover: api.pushover.net on port 443
+       - Telegram: api.telegram.org on port 443
+
+Error on "Send Test Push":
+
+  - Check the error message for details. Common causes:
+    - Missing or invalid token/key
+    - Network/firewall blocking outbound HTTPS
+    - ntfy: 401 Unauthorized = access token required or invalid
+    - Pushover: 400 Bad Request = invalid token or user key
+    - Telegram: 400 Bad Request = invalid bot token or chat ID
+    - Telegram: 403 Forbidden = user hasn't sent /start to bot

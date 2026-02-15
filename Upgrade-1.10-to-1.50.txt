@@ -1,0 +1,225 @@
+PolyMon Upgrade Guide: Version 1.10 -> 1.50
+=============================================
+Production Environment - Manual Upgrade Steps
+
+This covers upgrading from DB version 1.10 to 1.50.
+Three SQL update scripts must be run in order.
+Application binaries must be replaced.
+
+WHAT'S NEW IN THIS UPGRADE
+---------------------------
+
+  1.10 -> 1.30  Stored procedure updates (SaveOperator, etc.)
+  1.30 -> 1.40  Monitor History (undo/revert), MonitorXML column
+                 migration from text to varchar(max)
+  1.40 -> 1.50  Bug fix: "Notify on failure" now fires on the FIRST
+                 failure (was delayed until 2nd consecutive failure
+                 when FailToOK alerts were disabled).
+                 New feature: Push notifications (ntfy/Pushover/Telegram)
+
+
+=============================================
+PRE-UPGRADE CHECKLIST
+=============================================
+
+  [ ] Back up the PolyMon database (full backup)
+  [ ] Back up the existing install directory (default: C:\Program Files\PolyMon)
+  [ ] Note the current ExecutiveID from PolyMonExecutive.exe.config
+      (appSettings key "ExecutiveID")
+  [ ] Note the current SQL connection string from the same config file
+      (appSettings key "SQLConn")
+  [ ] Build the new package (see "Building the Package" below)
+
+
+=============================================
+STEP 1: BUILD THE INSTALL PACKAGE
+=============================================
+
+On the dev machine, open PowerShell in the repo root:
+
+    cd C:\Users\Bob\Projects\PolyMon-Original
+    .\Build-PolyMonPackage.ps1 -Build -Zip
+
+This creates:
+  - PolyMonInstall\           (staging folder with all files)
+  - PolyMonInstall.zip        (portable archive)
+
+Copy PolyMonInstall.zip to the production server and extract it.
+
+
+=============================================
+STEP 2: STOP THE SERVICE
+=============================================
+
+On the production server (run as Administrator):
+
+    Stop-Service PolyMonExecutive
+
+Verify it stopped:
+
+    Get-Service PolyMonExecutive
+
+
+=============================================
+STEP 3: BACK UP EXISTING FILES
+=============================================
+
+Copy the entire install directory to a backup location:
+
+    Copy-Item "C:\Program Files\PolyMon" "C:\Program Files\_backup_PolyMon" -Recurse
+
+
+=============================================
+STEP 4: RUN SQL UPDATE SCRIPTS
+=============================================
+
+Connect to the PolyMon database in SSMS and run these three scripts
+IN ORDER. Each script is in the extracted PolyMonInstall\SQL\ folder.
+
+  Script 1:  Update DB 1.10 to 1.30.sql
+  -----------------------------------------------
+  - Alters polymon_hyb_SaveOperator (adds summary notification params)
+  - Alters polymon_hyb_SaveMonitorEventAlerts (operator alert proc)
+  - Updates DB version to 1.30
+
+  Script 2:  Update DB 1.30 to 1.40.sql
+  -----------------------------------------------
+  - Migrates Monitor.MonitorXML from text to varchar(max)
+  - Creates MonitorHistory table + index
+  - Drops/recreates AuditUpdateDT trigger (captures history on save)
+  - Creates polymon_RevertMonitor stored procedure
+  - Updates DB version to 1.40
+
+  Script 3:  Update DB 1.40 to 1.50.sql
+  -----------------------------------------------
+  - Bug fix: Alters polymon_ins_EvaluateEventAlertStatus
+    (fixes failure notification delay - uses previous event status
+    instead of last alert status for transition detection)
+  - Adds columns to SysSettings: PushService, PushServerURL, PushToken
+  - Adds column to Operator: PushAddress
+  - Alters polymon_hyb_SaveSysSettings (3 new push params)
+  - Alters polymon_hyb_SaveOperator (PushAddress param)
+  - Alters polymon_sel_PendingEmailAlerts (adds PushAddress)
+  - Alters polymon_sel_QueuedEmailAlerts (adds PushAddress)
+  - Updates DB version to 1.50
+
+  OPTIONAL:  TSData-Extend.sql
+  -----------------------------------------------
+  - Extends TS lookup tables (TSDaily/TSWeekly/TSMonthly) through 2035
+  - Safe to re-run (uses IF NOT EXISTS checks)
+  - Run this if your TS tables don't go far enough into the future
+
+After running, verify the version:
+
+    SELECT DBVersion FROM SysSettings
+    -- Should return: 1.50
+
+
+=============================================
+STEP 5: UNINSTALL THE OLD SERVICE
+=============================================
+
+    $installUtil = "$env:SystemRoot\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe"
+    & $installUtil /u "C:\Program Files\PolyMon\PolyMon Executive\PolyMonExecutive.exe"
+
+
+=============================================
+STEP 6: COPY NEW FILES
+=============================================
+
+From the extracted PolyMonInstall folder, copy the new binaries
+over the existing install:
+
+    # Manager files
+    Copy-Item "PolyMonInstall\PolyMon Manager\*" "C:\Program Files\PolyMon\PolyMon Manager\" -Force
+
+    # Monitor DLLs
+    Copy-Item "PolyMonInstall\PolyMon Manager\Monitors\*" "C:\Program Files\PolyMon\PolyMon Manager\Monitors\" -Force
+
+    # Executive files
+    Copy-Item "PolyMonInstall\PolyMon Executive\*" "C:\Program Files\PolyMon\PolyMon Executive\" -Force
+
+
+=============================================
+STEP 7: RESTORE CONFIG SETTINGS
+=============================================
+
+The file copy overwrites the .config files with defaults.
+Update both config files with your production values.
+
+  PolyMon Executive\PolyMonExecutive.exe.config:
+    - Set the "SQLConn" value to your production connection string
+    - Set the "ExecutiveID" value to the value you noted earlier
+
+  PolyMon Manager\PolyMonManager.exe.config:
+    - Set the "SQLConn" value to your production connection string
+
+
+=============================================
+STEP 8: INSTALL AND START THE NEW SERVICE
+=============================================
+
+    $installUtil = "$env:SystemRoot\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe"
+    & $installUtil "C:\Program Files\PolyMon\PolyMon Executive\PolyMonExecutive.exe"
+
+    Start-Service PolyMonExecutive
+
+Verify:
+
+    Get-Service PolyMonExecutive
+    # Status should be: Running
+
+
+=============================================
+POST-UPGRADE VERIFICATION
+=============================================
+
+  [ ] Service is running (Get-Service PolyMonExecutive)
+  [ ] Open PolyMon Manager - should connect without DB version mismatch
+  [ ] Monitors list loads and shows current data
+  [ ] Check Event Viewer > Application log for errors
+  [ ] General Settings: new "Push Notifications" tab is visible
+  [ ] Operators: new "Push Key" field is visible on operator panel
+
+To test the failure notification bug fix:
+  - Configure a monitor with "Notify on failure" enabled and
+    "Notify fail to OK" disabled
+  - Force the monitor to fail -> alert should fire
+  - Let it recover to OK -> no alert (correct, fail-to-OK is off)
+  - Force it to fail again -> alert should fire (this was broken before)
+
+To configure push notifications (optional):
+  1. General Settings > Push Notifications tab
+  2. Select a service (ntfy, Pushover, or Telegram)
+  3. Enter the token/API key for that service
+  4. Click "Send Test Push" to verify
+  5. On each Operator, enter their push key/address in the "Push Key" field
+  Push notifications are sent alongside email, not instead of it.
+
+
+=============================================
+ROLLBACK
+=============================================
+
+If something goes wrong:
+
+  1. Stop the service:
+       Stop-Service PolyMonExecutive
+
+  2. Uninstall the new service:
+       & $installUtil /u "C:\Program Files\PolyMon\PolyMon Executive\PolyMonExecutive.exe"
+
+  3. Restore files from backup:
+       Remove-Item "C:\Program Files\PolyMon\*" -Recurse -Force
+       Copy-Item "C:\Program Files\_backup_PolyMon\*" "C:\Program Files\PolyMon\" -Recurse
+
+  4. Restore the database from backup
+
+  5. Reinstall and start the old service:
+       & $installUtil "C:\Program Files\PolyMon\PolyMon Executive\PolyMonExecutive.exe"
+       Start-Service PolyMonExecutive
+
+Note: The SQL schema changes (new columns, altered procs) are
+backwards-compatible. The old binaries will still work with the
+updated database -- they simply ignore the new columns. So a
+database restore is only needed if something is actually broken.
