@@ -2,7 +2,7 @@ PolyMon Push Notifications Guide
 =================================
 
 PolyMon can send push notifications alongside email alerts using one
-of three services: ntfy, Pushover, or Telegram. Push notifications
+of four services: ntfy, Pushover, Telegram, or Matrix. Push notifications
 are sent in addition to email -- they do not replace email alerts.
 If an operator has both an email address and a push key configured,
 they will receive both.
@@ -30,6 +30,10 @@ CHOOSING A SERVICE
 
   Telegram    Free. Uses Telegram's bot API. Requires Telegram
               accounts. Best if your team already uses Telegram.
+
+  Matrix      Free, self-hosted. Send alerts to a Matrix room.
+              Can be bridged to Signal, Slack, Discord, etc.
+              Best if you want alerts on Signal or already use Matrix.
 
 
 =============================================
@@ -172,6 +176,63 @@ NOTES:
 
 
 =============================================
+OPTION 4: Matrix (with Signal bridge)
+=============================================
+
+Matrix is a decentralized messaging protocol. PolyMon sends alerts
+to a Matrix room, and a bridge (mautrix-signal) forwards them to
+Signal on each operator's phone. No extra app needed -- just Signal.
+
+OUR SETUP:
+  - Homeserver: (see PolyMon General Settings for URL)
+  - Bridge: mautrix-signal (forwards Matrix messages to Signal)
+  - Bot Signal number: (ask your PolyMon admin)
+
+SYSTEM-WIDE SETUP (already done):
+  In PolyMon Manager, General Settings > Push Notifications:
+    - Push Service:    Matrix
+    - Homeserver URL:  (your Matrix homeserver URL)
+    - Access Token:    (your Matrix access token)
+  Click Save.
+
+ADDING A NEW OPERATOR (coworker):
+
+  1. The coworker needs Signal on their phone (they probably
+     already have it). No other apps are needed.
+
+  2. From the coworker's phone, open Signal and send any message
+     to the PolyMon bot Signal number (ask your admin). This
+     creates the bridge connection. They can just send "hello".
+
+  3. Log into Element (https://app.element.io) with the admin
+     Matrix account.
+
+  4. You should see a new DM room appear (from the bridge) for
+     that coworker's Signal conversation. Open it.
+
+  5. Get the room ID:
+       - In Element: click the room name > Settings > Advanced
+       - Copy the "Internal room ID" (starts with !)
+       - Example: !AbCdEfGhIjKlMnOpQr:your.homeserver.com
+
+  6. In PolyMon Manager, go to Operators, find that operator,
+     and paste the room ID into the "Push Key" field. Save.
+
+  7. Test: Click "Send Test Push" on the Push Notifications tab.
+     When prompted, enter the room ID. The coworker should receive
+     the test message on Signal within a few seconds.
+
+NOTES:
+  - Each operator gets their own room ID (one per Signal contact).
+  - The coworker MUST message the bot number first from Signal to
+    establish the bridge. The bot cannot initiate contact.
+  - Messages flow: PolyMon -> Matrix room -> mautrix-signal bridge
+    -> Signal -> coworker's phone.
+  - If a coworker changes their phone number, the room ID stays
+    the same as long as they keep their Signal account.
+
+
+=============================================
 HOW ALERTS ARE DELIVERED
 =============================================
 
@@ -201,6 +262,7 @@ the address/key to send to:
   - ntfy:     enter the topic name
   - Pushover: enter the user key
   - Telegram: enter the chat ID
+  - Matrix:   enter the room ID (starts with !)
 
 The test uses the current values in the form (not the saved values),
 so you can test before clicking Save.
@@ -229,11 +291,16 @@ Push not arriving:
      Check https://api.telegram.org/bot<TOKEN>/getUpdates
      to see if the bot can see the user's chat.
 
-  5. If your PolyMon server has restricted outbound internet access,
+  5. Matrix: Verify the room ID is correct (starts with !).
+     Make sure the coworker messaged the bot Signal number first.
+     Log into Element to confirm the bridged room exists.
+
+  6. If your PolyMon server has restricted outbound internet access,
      make sure it can reach:
        - ntfy:     ntfy.sh (or your self-hosted server) on port 443
        - Pushover: api.pushover.net on port 443
        - Telegram: api.telegram.org on port 443
+       - Matrix:   your Matrix homeserver on port 443
 
 Error on "Send Test Push":
 
@@ -244,3 +311,5 @@ Error on "Send Test Push":
     - Pushover: 400 Bad Request = invalid token or user key
     - Telegram: 400 Bad Request = invalid bot token or chat ID
     - Telegram: 403 Forbidden = user hasn't sent /start to bot
+    - Matrix: 403 Forbidden = access token invalid or not in room
+    - Matrix: 404 = bad room ID or homeserver URL
