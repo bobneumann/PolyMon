@@ -24,6 +24,7 @@ Public Class frmGeneralSettings
         cboPushService.Items.Add("ntfy")
         cboPushService.Items.Add("Pushover")
         cboPushService.Items.Add("Telegram")
+        cboPushService.Items.Add("Matrix")
 
         'Load System Settings
         If mSysSettings Is Nothing Then LoadSysSettings()
@@ -104,12 +105,21 @@ Public Class frmGeneralSettings
 				txtPushServerURL.Visible = False
 				lblPushToken.Text = "Bot Token"
 				lblPushHelp.Text = "Free push via Telegram. Create a bot with @BotFather to get a token. Each user sends /start to the bot, then uses their Chat ID as their key." & vbCrLf & vbCrLf & "Docs: core.telegram.org/bots"
+			Case "Matrix"
+				txtPushServerURL.Enabled = True
+				txtPushToken.Enabled = True
+				btnSendTestPush.Enabled = True
+				lblPushServerURL.Text = "Homeserver URL"
+				lblPushToken.Text = "Access Token"
+				lblPushServerURL.Visible = True
+				txtPushServerURL.Visible = True
+				lblPushHelp.Text = "Send alerts to a Matrix room (can be bridged to Signal, Slack, etc.)." & vbCrLf & vbCrLf & "Enter your homeserver URL and an access token. Each operator's Push Key is their Matrix room ID."
 		End Select
 	End Sub
 
 	Private Sub btnSendTestPush_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSendTestPush.Click
 		Dim PushAddress As String = Nothing
-		PushAddress = InputBox("Please enter the push notification address/key to test." & vbCrLf & "(ntfy: topic name, Pushover: user key, Telegram: chat ID)", "PolyMon - Push Notification Test")
+		PushAddress = InputBox("Please enter the push notification address/key to test." & vbCrLf & "(ntfy: topic name, Pushover: user key, Telegram: chat ID, Matrix: room ID)", "PolyMon - Push Notification Test")
 		If String.IsNullOrEmpty(PushAddress) Then
 			MsgBox("Test not sent - address was blank or cancelled.")
 		Else

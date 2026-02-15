@@ -44,6 +44,8 @@ Namespace Notifier
 					SendPushover(Address, Subject, Body)
 				Case "Telegram"
 					SendTelegram(Address, Subject, Body)
+				Case "Matrix"
+					SendMatrix(Address, Subject, Body)
 			End Select
 		End Sub
 
@@ -127,5 +129,40 @@ Namespace Notifier
 				' Success if no exception thrown
 			End Using
 		End Sub
+		Private Sub SendMatrix(ByVal RoomId As String, ByVal Subject As String, ByVal Body As String)
+			Dim ServerURL As String = mPushServerURL
+			If String.IsNullOrEmpty(ServerURL) Then Exit Sub
+			ServerURL = ServerURL.TrimEnd("/"c)
+
+			Dim messageText As String = If(Subject, "")
+			If Not String.IsNullOrEmpty(Body) Then
+				messageText = messageText & vbLf & Body
+			End If
+
+			Dim txnId As String = Guid.NewGuid().ToString()
+			Dim url As String = ServerURL & "/_matrix/client/v3/rooms/" & Uri.EscapeDataString(RoomId) & "/send/m.room.message/" & txnId
+			Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+			request.Method = "PUT"
+			request.ContentType = "application/json"
+			request.Headers.Add("Authorization", "Bearer " & If(mPushToken, ""))
+
+			Dim jsonBody As String = "{""msgtype"":""m.text"",""body"":" & JsonEscape(messageText) & "}"
+			Dim data As Byte() = Encoding.UTF8.GetBytes(jsonBody)
+			request.ContentLength = data.Length
+
+			Using stream As Stream = request.GetRequestStream()
+				stream.Write(data, 0, data.Length)
+			End Using
+
+			Using response As HttpWebResponse = CType(request.GetResponse(), HttpWebResponse)
+				' Success if no exception thrown
+			End Using
+		End Sub
+
+		Private Shared Function JsonEscape(ByVal s As String) As String
+			If s Is Nothing Then Return """"""
+			s = s.Replace("\", "\\").Replace("""", "\""").Replace(vbCr, "").Replace(vbLf, "\n").Replace(vbTab, "\t")
+			Return """" & s & """"
+		End Function
 	End Class
 End Namespace
