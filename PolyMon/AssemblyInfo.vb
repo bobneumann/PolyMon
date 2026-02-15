@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("")> 
 <Assembly: AssemblyCompany("Fred Baptiste")> 
 <Assembly: AssemblyProduct("PolyMon (CodePlex)")> 
-<Assembly: AssemblyCopyright("Copyright © PolyMon 2008")> 
+<Assembly: AssemblyCopyright("Copyright ï¿½ PolyMon 2008")> 
 <Assembly: AssemblyTrademark("")> 
 <Assembly: CLSCompliant(True)> 
 
@@ -29,6 +29,6 @@ Imports System.Runtime.InteropServices
 ' You can specify all the values or you can default the Build and Revision Numbers 
 ' by using the '*' as shown below:
 
-<Assembly: AssemblyVersion("1.2.0.*")> 
+<Assembly: AssemblyVersion("1.5.0.*")>
 
-<Assembly: AssemblyFileVersionAttribute("1.2.0.0")> 
+<Assembly: AssemblyFileVersionAttribute("1.5.0.0")> 
