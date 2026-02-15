@@ -1,6 +1,12 @@
 ﻿# Build output
 bin/
 obj/
+
+# Include deployment binaries
+!PolyMonExecutive/bin/
+!PolyMonManager/bin/
+*.InstallLog
+*.InstallState
 *.suo
 *.user
 *.cache
