@@ -22,3 +22,6 @@ BuildAnalysis.txt
 
 # Keep resource/content txt files but exclude obj build logs
 obj/**/*.txt
+
+# Ansible playbooks (infrastructure, not part of PolyMon app)
+ansible/
