@@ -64,7 +64,7 @@ $Counter += ,@('DiskFreeGB', $health.disk_free_gb)
 $Counter += ,@('BackupAgeHrs', $health.last_backup_age_hours)
 
 # Check health.json freshness (if older than 15 min, cron may be broken)
-$healthAge = (Get-Date).ToUniversalTime() - [datetime]::Parse($health.timestamp)
+$healthAge = (Get-Date).ToUniversalTime() - ([datetime]::Parse($health.timestamp)).ToUniversalTime()
 if ($healthAge.TotalMinutes -gt 15) {
     if ($errlvl -ne "fail") { $errlvl = "warn" }
     $messages += "Health data stale ($([int]$healthAge.TotalMinutes) min old)"
