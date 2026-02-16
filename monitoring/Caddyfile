@@ -1,4 +1,4 @@
-matrix.thebuildist.com {
+matrix.yourdomain.com {
     # Serve health check JSON
     handle /health.json {
         root * /var/www/health
@@ -7,11 +7,11 @@ matrix.thebuildist.com {
 
     # Handle .well-known paths specifically
     handle /.well-known/matrix/client {
-        respond `{"m.homeserver": {"base_url": "https://matrix.thebuildist.com"}}` 200
+        respond `{"m.homeserver": {"base_url": "https://matrix.yourdomain.com"}}` 200
     }
 
     handle /.well-known/matrix/server {
-        respond `{"m.server": "matrix.thebuildist.com:443"}` 200
+        respond `{"m.server": "matrix.yourdomain.com:443"}` 200
     }
 
     # Main reverse proxy for everything else (including /_matrix/*)
