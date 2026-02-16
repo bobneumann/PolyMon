@@ -245,7 +245,9 @@ Partial Class frmOperators
         '
         'Panel1
         '
+        Me.btnBrowseRooms = New System.Windows.Forms.Button()
         Me.Panel1.Controls.Add(Me.pnlOperatorID)
+        Me.Panel1.Controls.Add(Me.btnBrowseRooms)
         Me.Panel1.Controls.Add(Me.txtPushAddress)
         Me.Panel1.Controls.Add(Me.lblPushAddress)
         Me.Panel1.Controls.Add(Me.txtEmailAddress)
@@ -262,8 +264,17 @@ Partial Class frmOperators
         Me.txtPushAddress.Location = New System.Drawing.Point(97, 67)
         Me.txtPushAddress.MaxLength = 255
         Me.txtPushAddress.Name = "txtPushAddress"
-        Me.txtPushAddress.Size = New System.Drawing.Size(265, 20)
+        Me.txtPushAddress.Size = New System.Drawing.Size(235, 20)
         Me.txtPushAddress.TabIndex = 45
+        '
+        'btnBrowseRooms
+        '
+        Me.btnBrowseRooms.Location = New System.Drawing.Point(335, 66)
+        Me.btnBrowseRooms.Name = "btnBrowseRooms"
+        Me.btnBrowseRooms.Size = New System.Drawing.Size(27, 22)
+        Me.btnBrowseRooms.TabIndex = 46
+        Me.btnBrowseRooms.Text = "..."
+        Me.btnBrowseRooms.UseVisualStyleBackColor = True
         '
         'lblPushAddress
         '
@@ -601,4 +612,5 @@ Partial Class frmOperators
     Friend WithEvents lblIDLabel As System.Windows.Forms.Label
     Friend WithEvents txtPushAddress As System.Windows.Forms.TextBox
     Friend WithEvents lblPushAddress As System.Windows.Forms.Label
+    Friend WithEvents btnBrowseRooms As System.Windows.Forms.Button
 End Class

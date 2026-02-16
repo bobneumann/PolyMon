@@ -101,6 +101,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -198,6 +199,12 @@
       <DependentUpon>frmMonitorTypes.vb</DependentUpon>
     </Compile>
     <Compile Include="frmMonitorTypes.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMatrixRoomBrowser.Designer.vb">
+      <DependentUpon>frmMatrixRoomBrowser.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmMatrixRoomBrowser.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmOperators.Designer.vb">

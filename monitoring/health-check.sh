@@ -29,10 +29,10 @@ else
     BACKUP_AGE_HOURS=-1
 fi
 
-# Last successful bridge send (Matrix -> Signal)
-# Grep docker logs for successful outbound sends (response_status=200 on "send content" action)
+# Last successful bridge event processing (Matrix -> bridge)
+# Grep docker logs for bridge event processing (implicit read receipt for m.notice heartbeats)
 # Strip ANSI color codes first since docker logs include them
-LAST_DELIVERY=$(docker logs mautrix-signal --since 24h 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep 'send content' | grep 'response_status=200' | tail -1 | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}' || echo "")
+LAST_DELIVERY=$(docker logs mautrix-signal --since 24h 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep 'implicit read receipt' | tail -1 | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}' || echo "")
 if [ -n "$LAST_DELIVERY" ]; then
     DELIVERY_EPOCH=$(date -d "$LAST_DELIVERY" +%s 2>/dev/null || echo 0)
     NOW_EPOCH=$(date +%s)

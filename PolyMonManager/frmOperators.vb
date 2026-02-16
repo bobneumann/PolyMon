@@ -153,6 +153,27 @@ Public Class frmOperators
         errSummary.Clear()
         Me.pnlOfflineTime.Enabled = True
     End Sub
+    Private Sub btnBrowseRooms_Click(sender As Object, e As EventArgs) Handles btnBrowseRooms.Click
+        Try
+            Dim settings As New PolyMon.General.SysSettings()
+            If String.IsNullOrEmpty(settings.PushService) OrElse settings.PushService <> "Matrix" Then
+                MessageBox.Show("Push service must be set to Matrix in General Settings.", "Not Available", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Exit Sub
+            End If
+            If String.IsNullOrEmpty(settings.PushServerURL) OrElse String.IsNullOrEmpty(settings.PushToken) Then
+                MessageBox.Show("Matrix server URL and access token must be configured in General Settings.", "Missing Configuration", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Exit Sub
+            End If
+
+            Using dlg As New frmMatrixRoomBrowser(settings.PushServerURL, settings.PushToken)
+                If dlg.ShowDialog(Me) = DialogResult.OK AndAlso Not String.IsNullOrEmpty(dlg.SelectedRoomId) Then
+                    txtPushAddress.Text = dlg.SelectedRoomId
+                End If
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error reading push settings: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+        End Try
+    End Sub
 #End Region
 
 #Region "Private Methods"
