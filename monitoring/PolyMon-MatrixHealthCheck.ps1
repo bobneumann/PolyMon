@@ -1,9 +1,12 @@
 # Matrix/Signal Bridge Health Monitor
 # PolyMon PowerShell Monitor — paste into a new PowerShell monitor definition
-# Checks: server alive, disk usage, container status, backup freshness
+# Checks: server alive, disk usage, container status, backup freshness,
+#         and end-to-end Matrix message send
 # Works both inside PolyMon and standalone in PowerShell ISE
 
-$BaseUrl = "https://matrix.yourdomain.com"          # <-- Change to your Matrix homeserver URL
+$BaseUrl    = "https://matrix.yourdomain.com"       # <-- Change to your Matrix homeserver URL
+$MatrixToken = "your-access-token-here"             # <-- Matrix access token (Bearer token)
+$TestRoomId  = "!your-test-room-id:yourdomain.com"  # <-- Room ID for end-to-end send test
 
 ##########Script Contents Below######################
 
@@ -15,7 +18,7 @@ $messages = @()
 ###########"Display Data" function#####################
 function display_data {
     $displaymessage = if ($messages.Count -eq 0) {
-        "All OK | Disk: $($health.disk_pct)% | Up: $($health.uptime_hours)h | Backup: $($health.last_backup_age_hours)h ago"
+        "All OK | Disk: $($health.disk_pct)% | Up: $($health.uptime_hours)h | Backup: $($health.last_backup_age_hours)h ago | Bridge: $($health.bridge_age_min)m ago"
     } else {
         $messages -join "; "
     }
@@ -62,6 +65,9 @@ try {
 $Counter += ,@('DiskPct', $health.disk_pct)
 $Counter += ,@('DiskFreeGB', $health.disk_free_gb)
 $Counter += ,@('BackupAgeHrs', $health.last_backup_age_hours)
+if ($health.bridge_age_min -ge 0) {
+    $Counter += ,@('BridgeAgeMin', $health.bridge_age_min)
+}
 
 # Check health.json freshness (if older than 15 min, cron may be broken)
 $healthAge = (Get-Date).ToUniversalTime() - ([datetime]::Parse($health.timestamp)).ToUniversalTime()
@@ -96,6 +102,35 @@ if ($health.last_backup_age_hours -lt 0) {
 } elseif ($health.last_backup_age_hours -gt 48) {
     if ($errlvl -ne "fail") { $errlvl = "warn" }
     $messages += "Backup stale: $($health.last_backup_age_hours)h ago"
+}
+
+# Bridge delivery check (did mautrix-signal actually deliver to Signal recently?)
+if ($health.bridge_age_min -lt 0) {
+    if ($errlvl -ne "fail") { $errlvl = "warn" }
+    $messages += "No bridge deliveries found in last 24h"
+} elseif ($health.bridge_age_min -gt 30) {
+    if ($errlvl -ne "fail") { $errlvl = "warn" }
+    $messages += "Bridge delivery stale ($($health.bridge_age_min) min ago)"
+}
+
+# Check 3: End-to-end Matrix message send
+# Sends a silent heartbeat message to a test room, proving auth + Conduit + room are working
+try {
+    $txnId = [guid]::NewGuid().ToString()
+    $sendUrl = "$BaseUrl/_matrix/client/v3/rooms/$([Uri]::EscapeDataString($TestRoomId))/send/m.room.message/$txnId"
+    $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC")
+    $body = @{
+        msgtype = "m.notice"
+        body    = "health check heartbeat $timestamp"
+    } | ConvertTo-Json -Compress
+    $headers = @{ Authorization = "Bearer $MatrixToken" }
+    $sendResult = Invoke-RestMethod -Uri $sendUrl -Method Put -ContentType "application/json" -Body $body -Headers $headers -TimeoutSec 15
+    if (-not $sendResult.event_id) {
+        throw "No event_id returned"
+    }
+} catch {
+    $errlvl = "fail"
+    $messages += "Matrix send failed: $($_.Exception.Message)"
 }
 
 display_data

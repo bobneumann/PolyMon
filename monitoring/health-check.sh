@@ -29,6 +29,19 @@ else
     BACKUP_AGE_HOURS=-1
 fi
 
+# Last successful bridge send (Matrix -> Signal delivery receipt)
+# Grep docker logs for delivery receipts, grab the most recent timestamp
+LAST_DELIVERY=$(docker logs mautrix-signal --since 24h 2>&1 | grep 'RemoteEventDeliveryReceipt' | tail -1 | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}' || echo "")
+if [ -n "$LAST_DELIVERY" ]; then
+    DELIVERY_EPOCH=$(date -d "$LAST_DELIVERY" +%s 2>/dev/null || echo 0)
+    NOW_EPOCH=$(date +%s)
+    BRIDGE_AGE_MIN=$(( (NOW_EPOCH - DELIVERY_EPOCH) / 60 ))
+    LAST_BRIDGE_SEND="$LAST_DELIVERY"
+else
+    BRIDGE_AGE_MIN=-1
+    LAST_BRIDGE_SEND="none"
+fi
+
 # Write JSON
 cat > "$OUTPUT" <<EOF
 {
@@ -37,6 +50,8 @@ cat > "$OUTPUT" <<EOF
   "disk_free_gb": $DISK_FREE_GB,
   "containers": {"conduit": "$CONDUIT_STATUS", "mautrix-signal": "$SIGNAL_STATUS"},
   "uptime_hours": $UPTIME_HOURS,
-  "last_backup_age_hours": $BACKUP_AGE_HOURS
+  "last_backup_age_hours": $BACKUP_AGE_HOURS,
+  "last_bridge_send": "$LAST_BRIDGE_SEND",
+  "bridge_age_min": $BRIDGE_AGE_MIN
 }
 EOF
