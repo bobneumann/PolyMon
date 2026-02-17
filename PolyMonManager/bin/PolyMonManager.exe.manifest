@@ -4,7 +4,7 @@
   <description asmv2:iconFile="PolyMon (32x32).ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="PolyMonManager" version="1.5.0.28041" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="PolyMonManager" version="1.5.0.12757" language="neutral" processorArchitecture="msil" />
     <commandLine file="PolyMonManager.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -423,14 +423,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="778240">
-      <assemblyIdentity name="PolyMonManager" version="1.5.0.28041" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="778752">
+      <assemblyIdentity name="PolyMonManager" version="1.5.0.12757" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>GsE8SNYqU1DTT+7Wb5tan22Y/r+In2Szabg3mDNvD58=</dsig:DigestValue>
+        <dsig:DigestValue>LyxtC7puTze+p79IFj53L5jWGXmK/AL6p3RLdM9xzoc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

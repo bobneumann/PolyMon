@@ -1,5 +1,7 @@
 Imports System.IO
 Imports System.Net
+Imports System.Net.Security
+Imports System.Security.Cryptography.X509Certificates
 Imports System.Text
 Imports System.Web.Script.Serialization
 
@@ -48,6 +50,10 @@ Public Class frmMatrixRoomBrowser
         btnRefresh.Enabled = False
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
+
+        ' Bypass SSL cert validation (corporate proxies may intercept HTTPS)
+        ServicePointManager.ServerCertificateValidationCallback =
+            Function(s As Object, cert As X509Certificate, chain As X509Chain, errs As SslPolicyErrors) True
 
         Try
             ' Step 1: Get joined rooms
