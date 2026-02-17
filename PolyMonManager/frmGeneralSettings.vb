@@ -37,6 +37,11 @@ Public Class frmGeneralSettings
         SaveSysSettings()
         Me.Cursor = Cursors.Default
     End Sub
+	Private Sub tsbSavePush_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbSavePush.Click
+		Me.Cursor = Cursors.WaitCursor
+		SaveSysSettings()
+		Me.Cursor = Cursors.Default
+	End Sub
     Private Sub tsbCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tsbCancel.Click
         Me.Cursor = Cursors.WaitCursor
         LoadSysSettings()
@@ -204,6 +209,7 @@ Public Class frmGeneralSettings
 				End If
 				Me.txtPushServerURL.Text = If(.PushServerURL, "")
 				Me.txtPushToken.Text = If(.PushToken, "")
+				Me.txtPushNotes.Text = If(.Notes, "")
 			End With
 
 			mRetentionSettings = New PolyMon.General.DefaultRetentionSettings
@@ -231,6 +237,7 @@ Public Class frmGeneralSettings
 					.SetSMTPFrom(Me.txtSysSMTPFromName.Text, Me.txtSysSMTPFromAddress.Text)
 				End If
 				.SetPushNotification(CStr(Me.cboPushService.SelectedItem), Me.txtPushServerURL.Text, Me.txtPushToken.Text)
+				.Notes = Me.txtPushNotes.Text
 
                 .Save()
             End With

@@ -22,6 +22,7 @@ Namespace General
 		Private mPushService As String
 		Private mPushServerURL As String
 		Private mPushToken As String
+		Private mNotes As String
 #End Region
 
 #Region "Public Interface"
@@ -141,6 +142,14 @@ Namespace General
 			Get
 				Return mPushToken
 			End Get
+		End Property
+		Public Property Notes() As String
+			Get
+				Return mNotes
+			End Get
+			Set(ByVal Value As String)
+				mNotes = Value
+			End Set
 		End Property
 
 		Public Sub SetPushNotification(ByVal Service As String, ByVal ServerURL As String, ByVal Token As String)
@@ -395,6 +404,19 @@ Namespace General
 				End If
 			End With
 
+			Dim prmNotes As New SqlParameter
+			With prmNotes
+				.ParameterName = "@Notes"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = -1
+				.Direction = ParameterDirection.Input
+				If mNotes Is Nothing OrElse mNotes.Trim.Length = 0 Then
+					.Value = DBNull.Value
+				Else
+					.Value = mNotes
+				End If
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -416,6 +438,7 @@ Namespace General
 				.Parameters.Add(prmPushService)
 				.Parameters.Add(prmPushServerURL)
 				.Parameters.Add(prmPushToken)
+				.Parameters.Add(prmNotes)
             End With
 
             Try
@@ -538,6 +561,12 @@ Namespace General
 							mPushToken = Nothing
 						End If
 
+						If Not (IsDBNull(.Item("Notes"))) Then
+							mNotes = CStr(.Item("Notes"))
+						Else
+							mNotes = Nothing
+						End If
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -560,6 +589,7 @@ Namespace General
 					mPushService = Nothing
 					mPushServerURL = Nothing
 					mPushToken = Nothing
+					mNotes = Nothing
 					mDBVersion = Nothing
                 End If
 

@@ -89,6 +89,10 @@ Partial Class frmGeneralSettings
         Me.lblPushToken = New System.Windows.Forms.Label()
         Me.btnSendTestPush = New System.Windows.Forms.Button()
         Me.lblPushHelp = New System.Windows.Forms.Label()
+        Me.txtPushNotes = New System.Windows.Forms.TextBox()
+        Me.lblPushNotes = New System.Windows.Forms.Label()
+        Me.tsPushToolbar = New System.Windows.Forms.ToolStrip()
+        Me.tsbSavePush = New System.Windows.Forms.ToolStripButton()
         Me.HelpProvider1 = New System.Windows.Forms.HelpProvider()
         Me.imglstStatus = New System.Windows.Forms.ImageList(Me.components)
         Me.tsGeneralSettingsEditor.SuspendLayout()
@@ -108,6 +112,7 @@ Partial Class frmGeneralSettings
         Me.tpUserSettings.SuspendLayout()
         Me.tpPushNotifications.SuspendLayout()
         Me.gbPushNotifications.SuspendLayout()
+        Me.tsPushToolbar.SuspendLayout()
         Me.SuspendLayout()
         '
         'tsGeneralSettingsEditor
@@ -742,6 +747,7 @@ Partial Class frmGeneralSettings
         '
         Me.tpPushNotifications.BackColor = System.Drawing.SystemColors.Control
         Me.tpPushNotifications.Controls.Add(Me.gbPushNotifications)
+        Me.tpPushNotifications.Controls.Add(Me.tsPushToolbar)
         Me.tpPushNotifications.Location = New System.Drawing.Point(4, 22)
         Me.tpPushNotifications.Name = "tpPushNotifications"
         Me.tpPushNotifications.Padding = New System.Windows.Forms.Padding(3)
@@ -759,10 +765,12 @@ Partial Class frmGeneralSettings
         Me.gbPushNotifications.Controls.Add(Me.lblPushToken)
         Me.gbPushNotifications.Controls.Add(Me.btnSendTestPush)
         Me.gbPushNotifications.Controls.Add(Me.lblPushHelp)
+        Me.gbPushNotifications.Controls.Add(Me.lblPushNotes)
+        Me.gbPushNotifications.Controls.Add(Me.txtPushNotes)
         Me.gbPushNotifications.ForeColor = System.Drawing.Color.MediumBlue
-        Me.gbPushNotifications.Location = New System.Drawing.Point(6, 6)
+        Me.gbPushNotifications.Location = New System.Drawing.Point(6, 28)
         Me.gbPushNotifications.Name = "gbPushNotifications"
-        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 310)
+        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 460)
         Me.gbPushNotifications.TabIndex = 0
         Me.gbPushNotifications.TabStop = False
         Me.gbPushNotifications.Text = "Push Notifications"
@@ -837,9 +845,48 @@ Partial Class frmGeneralSettings
         Me.lblPushHelp.ForeColor = System.Drawing.SystemColors.ControlText
         Me.lblPushHelp.Location = New System.Drawing.Point(16, 160)
         Me.lblPushHelp.Name = "lblPushHelp"
-        Me.lblPushHelp.Size = New System.Drawing.Size(340, 140)
+        Me.lblPushHelp.Size = New System.Drawing.Size(340, 80)
         Me.lblPushHelp.TabIndex = 7
         Me.lblPushHelp.Text = "Select a push notification service to enable push alerts alongside email notifications."
+        '
+        'lblPushNotes
+        '
+        Me.lblPushNotes.ForeColor = System.Drawing.Color.MediumBlue
+        Me.lblPushNotes.Location = New System.Drawing.Point(16, 248)
+        Me.lblPushNotes.Name = "lblPushNotes"
+        Me.lblPushNotes.Size = New System.Drawing.Size(128, 20)
+        Me.lblPushNotes.TabIndex = 8
+        Me.lblPushNotes.Text = "Notes"
+        Me.lblPushNotes.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'txtPushNotes
+        '
+        Me.txtPushNotes.Location = New System.Drawing.Point(16, 270)
+        Me.txtPushNotes.MaxLength = 0
+        Me.txtPushNotes.Multiline = True
+        Me.txtPushNotes.Name = "txtPushNotes"
+        Me.txtPushNotes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
+        Me.txtPushNotes.Size = New System.Drawing.Size(340, 180)
+        Me.txtPushNotes.TabIndex = 9
+        '
+        'tsPushToolbar
+        '
+        Me.tsPushToolbar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden
+        Me.tsPushToolbar.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsbSavePush})
+        Me.tsPushToolbar.Location = New System.Drawing.Point(0, 0)
+        Me.tsPushToolbar.Name = "tsPushToolbar"
+        Me.tsPushToolbar.Size = New System.Drawing.Size(393, 25)
+        Me.tsPushToolbar.TabIndex = 10
+        '
+        'tsbSavePush
+        '
+        Me.tsbSavePush.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tsbSavePush.Image = Global.PolyMonManager.My.Resources.Resources.saveHS
+        Me.tsbSavePush.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.tsbSavePush.Name = "tsbSavePush"
+        Me.tsbSavePush.Size = New System.Drawing.Size(23, 22)
+        Me.tsbSavePush.Text = "Save"
+        Me.tsbSavePush.ToolTipText = "Save Settings"
         '
         'HelpProvider1
         '
@@ -888,7 +935,10 @@ Partial Class frmGeneralSettings
         Me.tpUserSettings.ResumeLayout(False)
         Me.gbPushNotifications.ResumeLayout(False)
         Me.gbPushNotifications.PerformLayout()
+        Me.tsPushToolbar.ResumeLayout(False)
+        Me.tsPushToolbar.PerformLayout()
         Me.tpPushNotifications.ResumeLayout(False)
+        Me.tpPushNotifications.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -962,4 +1012,8 @@ Partial Class frmGeneralSettings
 	Friend WithEvents lblPushToken As System.Windows.Forms.Label
 	Friend WithEvents btnSendTestPush As System.Windows.Forms.Button
 	Friend WithEvents lblPushHelp As System.Windows.Forms.Label
+	Friend WithEvents txtPushNotes As System.Windows.Forms.TextBox
+	Friend WithEvents lblPushNotes As System.Windows.Forms.Label
+	Friend WithEvents tsPushToolbar As System.Windows.Forms.ToolStrip
+	Friend WithEvents tsbSavePush As System.Windows.Forms.ToolStripButton
 End Class

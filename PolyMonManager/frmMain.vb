@@ -18,7 +18,7 @@ Public Class frmMain
     Private mAllowClose As Boolean = False
 	Private mOpeningFromTray As Boolean = False
 
-	Private Const mDBVersion As Single = 1.5
+	Private Const mDBVersion As Single = 1.51
 	Private mForceClose As Boolean = False
 #End Region
 
