@@ -26,8 +26,8 @@ IMAP_PASS = "xxxx xxxx xxxx xxxx"        # Gmail App Password (Settings → Secu
 MATRIX_HOMESERVER = "https://matrix.thebuildist.com"
 MATRIX_TOKEN      = "your-matrix-access-token"
 MATRIX_ROOM_IDS   = [
-    "!your-room-id:matrix.thebuildist.com",       # Bob
-    # "!another-room-id:matrix.thebuildist.com",  # Coworker
+    "!your-room-id",       # Bob (room ID only, no server suffix — Conduit requirement)
+    # "!another-room-id",  # Coworker
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 
