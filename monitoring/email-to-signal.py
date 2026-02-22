@@ -25,13 +25,16 @@ IMAP_PASS = "xxxx xxxx xxxx xxxx"        # Gmail App Password (Settings → Secu
 
 MATRIX_HOMESERVER = "https://matrix.thebuildist.com"
 MATRIX_TOKEN      = "your-matrix-access-token"
-MATRIX_ROOM_ID    = "!your-room-id:matrix.thebuildist.com"
+MATRIX_ROOM_IDS   = [
+    "!your-room-id:matrix.thebuildist.com",       # Bob
+    # "!another-room-id:matrix.thebuildist.com",  # Coworker
+]
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def matrix_send(text):
+def matrix_send(room_id, text):
     txn_id = str(uuid.uuid4())
-    room_encoded = urllib.parse.quote(MATRIX_ROOM_ID, safe="")
+    room_encoded = urllib.parse.quote(room_id, safe="")
     url = f"{MATRIX_HOMESERVER}/_matrix/client/v3/rooms/{room_encoded}/send/m.room.message/{txn_id}"
     payload = json.dumps({"msgtype": "m.text", "body": text}).encode("utf-8")
     req = urllib.request.Request(
@@ -45,6 +48,19 @@ def matrix_send(text):
     )
     with urllib.request.urlopen(req, timeout=15) as resp:
         return resp.status == 200
+
+
+def matrix_send_all(text):
+    all_ok = True
+    for room_id in MATRIX_ROOM_IDS:
+        try:
+            if not matrix_send(room_id, text):
+                print(f"  Matrix returned non-200 for room {room_id}")
+                all_ok = False
+        except Exception as e:
+            print(f"  ERROR sending to room {room_id}: {e}")
+            all_ok = False
+    return all_ok
 
 
 def decode_header(value):
@@ -97,16 +113,12 @@ def main():
             if body:
                 matrix_text += f"\n\n{body}"
 
-            try:
-                if matrix_send(matrix_text):
-                    imap.store(msg_id, "+FLAGS", "\\Seen")
-                    print(f"  forwarded: {subject}")
-                else:
-                    # Leave unread — will retry next run
-                    print(f"  Matrix returned non-200 for: {subject}")
-            except Exception as e:
+            if matrix_send_all(matrix_text):
+                imap.store(msg_id, "+FLAGS", "\\Seen")
+                print(f"  forwarded: {subject}")
+            else:
                 # Leave unread — will retry next run
-                print(f"  ERROR forwarding '{subject}': {e}")
+                print(f"  partial/failed forward, leaving unread: {subject}")
 
 
 if __name__ == "__main__":
