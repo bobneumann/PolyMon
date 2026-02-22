@@ -1,0 +1,23 @@
+# /etc/msmtprc — msmtp configuration for health-check email alerts
+# Install: apt install msmtp
+# Deploy:  cp msmtprc.example /etc/msmtprc && chmod 640 /etc/msmtprc
+#
+# Test:    echo "Subject: test" | msmtp alerts@example.com
+
+defaults
+    tls             on
+    tls_starttls    on
+    syslog          on
+
+account default
+    host            smtp.example.com    # your SMTP relay
+    port            587                 # 587=STARTTLS, 465=SSL, 25=plain internal relay
+    from            dbserver@example.com
+
+    # Comment out auth lines if using an unauthenticated internal relay
+    auth            on
+    user            smtp-username
+    password        smtp-password
+
+    # If using a self-signed cert on internal relay:
+    # tls_certcheck   off
