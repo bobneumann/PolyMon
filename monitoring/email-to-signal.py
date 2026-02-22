@@ -20,7 +20,7 @@ from datetime import datetime
 # ── Configuration ─────────────────────────────────────────────────────────────
 IMAP_HOST = "imap.gmail.com"
 IMAP_PORT = 993
-IMAP_USER = "your-alert-address@gmail.com"
+IMAP_USER = "polymonbot@gmail.com"
 IMAP_PASS = "xxxx xxxx xxxx xxxx"        # Gmail App Password (Settings → Security → App Passwords)
 
 MATRIX_HOMESERVER = "https://matrix.thebuildist.com"
