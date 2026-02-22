@@ -201,6 +201,12 @@
     <Compile Include="frmMonitorTypes.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmEmailRelayConfig.Designer.vb">
+      <DependentUpon>frmEmailRelayConfig.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmEmailRelayConfig.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmMatrixRoomBrowser.Designer.vb">
       <DependentUpon>frmMatrixRoomBrowser.vb</DependentUpon>
     </Compile>

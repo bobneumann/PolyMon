@@ -1,0 +1,12 @@
+[Unit]
+Description=PolyMon Email Relay API
+After=network.target
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/python3 /home/ubuntu/email-relay-api.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

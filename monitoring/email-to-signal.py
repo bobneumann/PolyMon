@@ -11,7 +11,9 @@ import email
 import email.header
 import imaplib
 import json
+import os
 import ssl
+import sys
 import urllib.parse
 import urllib.request
 import uuid
@@ -25,11 +27,26 @@ IMAP_PASS = "xxxx xxxx xxxx xxxx"        # Gmail App Password (Settings → Secu
 
 MATRIX_HOMESERVER = "https://matrix.thebuildist.com"
 MATRIX_TOKEN      = "your-matrix-access-token"
-MATRIX_ROOM_IDS   = [
-    "!your-room-id",       # Bob (room ID only, no server suffix — Conduit requirement)
-    # "!another-room-id",  # Coworker
-]
+
+ROOMS_FILE = "/home/ubuntu/email-to-signal-rooms.json"
 # ─────────────────────────────────────────────────────────────────────────────
+
+
+def load_room_ids():
+    """Load forwarding room IDs from JSON file managed by PolyMon email relay config GUI."""
+    try:
+        with open(ROOMS_FILE, "r") as f:
+            data = json.load(f)
+        rooms = data.get("rooms", [])
+        if not rooms:
+            print(f"WARNING: No rooms configured in {ROOMS_FILE} — skipping forwarding", file=sys.stderr)
+        return rooms
+    except FileNotFoundError:
+        print(f"WARNING: {ROOMS_FILE} not found — skipping forwarding", file=sys.stderr)
+        return []
+    except Exception as e:
+        print(f"ERROR reading {ROOMS_FILE}: {e}", file=sys.stderr)
+        return []
 
 
 def matrix_send(room_id, text):
@@ -51,8 +68,11 @@ def matrix_send(room_id, text):
 
 
 def matrix_send_all(text):
+    room_ids = load_room_ids()
+    if not room_ids:
+        return True  # nothing to do, not a failure
     all_ok = True
-    for room_id in MATRIX_ROOM_IDS:
+    for room_id in room_ids:
         try:
             if not matrix_send(room_id, text):
                 print(f"  Matrix returned non-200 for room {room_id}")

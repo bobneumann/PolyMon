@@ -91,6 +91,7 @@ Partial Class frmGeneralSettings
         Me.lblPushHelp = New System.Windows.Forms.Label()
         Me.txtPushNotes = New System.Windows.Forms.TextBox()
         Me.lblPushNotes = New System.Windows.Forms.Label()
+        Me.btnConfigureEmailRelay = New System.Windows.Forms.Button()
         Me.tsPushToolbar = New System.Windows.Forms.ToolStrip()
         Me.tsbSavePush = New System.Windows.Forms.ToolStripButton()
         Me.HelpProvider1 = New System.Windows.Forms.HelpProvider()
@@ -767,10 +768,11 @@ Partial Class frmGeneralSettings
         Me.gbPushNotifications.Controls.Add(Me.lblPushHelp)
         Me.gbPushNotifications.Controls.Add(Me.lblPushNotes)
         Me.gbPushNotifications.Controls.Add(Me.txtPushNotes)
+        Me.gbPushNotifications.Controls.Add(Me.btnConfigureEmailRelay)
         Me.gbPushNotifications.ForeColor = System.Drawing.Color.MediumBlue
         Me.gbPushNotifications.Location = New System.Drawing.Point(6, 28)
         Me.gbPushNotifications.Name = "gbPushNotifications"
-        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 460)
+        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 488)
         Me.gbPushNotifications.TabIndex = 0
         Me.gbPushNotifications.TabStop = False
         Me.gbPushNotifications.Text = "Push Notifications"
@@ -868,6 +870,17 @@ Partial Class frmGeneralSettings
         Me.txtPushNotes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.txtPushNotes.Size = New System.Drawing.Size(340, 180)
         Me.txtPushNotes.TabIndex = 9
+        '
+        'btnConfigureEmailRelay
+        '
+        Me.btnConfigureEmailRelay.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.btnConfigureEmailRelay.Location = New System.Drawing.Point(16, 456)
+        Me.btnConfigureEmailRelay.Name = "btnConfigureEmailRelay"
+        Me.btnConfigureEmailRelay.Size = New System.Drawing.Size(180, 23)
+        Me.btnConfigureEmailRelay.TabIndex = 10
+        Me.btnConfigureEmailRelay.Text = "Configure Email Relay Rooms..."
+        Me.btnConfigureEmailRelay.UseVisualStyleBackColor = True
+        Me.btnConfigureEmailRelay.Visible = False
         '
         'tsPushToolbar
         '
@@ -1016,4 +1029,5 @@ Partial Class frmGeneralSettings
 	Friend WithEvents lblPushNotes As System.Windows.Forms.Label
 	Friend WithEvents tsPushToolbar As System.Windows.Forms.ToolStrip
 	Friend WithEvents tsbSavePush As System.Windows.Forms.ToolStripButton
+	Friend WithEvents btnConfigureEmailRelay As System.Windows.Forms.Button
 End Class

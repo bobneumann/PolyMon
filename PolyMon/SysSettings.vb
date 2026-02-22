@@ -23,6 +23,7 @@ Namespace General
 		Private mPushServerURL As String
 		Private mPushToken As String
 		Private mNotes As String
+		Private mEmailRelayKey As String
 #End Region
 
 #Region "Public Interface"
@@ -143,6 +144,11 @@ Namespace General
 				Return mPushToken
 			End Get
 		End Property
+		Public ReadOnly Property EmailRelayKey() As String
+			Get
+				Return mEmailRelayKey
+			End Get
+		End Property
 		Public Property Notes() As String
 			Get
 				Return mNotes
@@ -151,6 +157,14 @@ Namespace General
 				mNotes = Value
 			End Set
 		End Property
+
+		Public Sub SetEmailRelayKey(ByVal key As String)
+			If key = Nothing OrElse key.Trim.Length = 0 Then
+				mEmailRelayKey = Nothing
+			Else
+				mEmailRelayKey = key.Trim()
+			End If
+		End Sub
 
 		Public Sub SetPushNotification(ByVal Service As String, ByVal ServerURL As String, ByVal Token As String)
 			If Service = Nothing OrElse Service.Trim.Length = 0 Then
@@ -417,6 +431,19 @@ Namespace General
 				End If
 			End With
 
+			Dim prmEmailRelayKey As New SqlParameter
+			With prmEmailRelayKey
+				.ParameterName = "@EmailRelayKey"
+				.SqlDbType = SqlDbType.VarChar
+				.Size = 255
+				.Direction = ParameterDirection.Input
+				If mEmailRelayKey Is Nothing Then
+					.Value = DBNull.Value
+				Else
+					.Value = mEmailRelayKey
+				End If
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -439,6 +466,7 @@ Namespace General
 				.Parameters.Add(prmPushServerURL)
 				.Parameters.Add(prmPushToken)
 				.Parameters.Add(prmNotes)
+				.Parameters.Add(prmEmailRelayKey)
             End With
 
             Try
@@ -567,6 +595,12 @@ Namespace General
 							mNotes = Nothing
 						End If
 
+						If Not (IsDBNull(.Item("EmailRelayKey"))) Then
+							mEmailRelayKey = CStr(.Item("EmailRelayKey"))
+						Else
+							mEmailRelayKey = Nothing
+						End If
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -590,6 +624,7 @@ Namespace General
 					mPushServerURL = Nothing
 					mPushToken = Nothing
 					mNotes = Nothing
+					mEmailRelayKey = Nothing
 					mDBVersion = Nothing
                 End If
 

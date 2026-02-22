@@ -14,6 +14,11 @@ matrix.yourdomain.com {
         respond `{"m.server": "matrix.yourdomain.com:443"}` 200
     }
 
+    # Email relay room management API (PolyMon GUI)
+    handle /email-relay/* {
+        reverse_proxy localhost:8765
+    }
+
     # Main reverse proxy for everything else (including /_matrix/*)
     reverse_proxy localhost:6167
 }

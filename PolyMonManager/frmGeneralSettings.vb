@@ -119,7 +119,18 @@ Public Class frmGeneralSettings
 				lblPushServerURL.Visible = True
 				txtPushServerURL.Visible = True
 				lblPushHelp.Text = "Send alerts to a Matrix room (can be bridged to Signal, Slack, etc.)." & vbCrLf & vbCrLf & "Enter your homeserver URL and an access token. Each operator's Push Key is their Matrix room ID."
+				btnConfigureEmailRelay.Visible = True
 		End Select
+		If svc <> "Matrix" Then btnConfigureEmailRelay.Visible = False
+	End Sub
+
+	Private Sub btnConfigureEmailRelay_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnConfigureEmailRelay.Click
+		If mSysSettings Is Nothing Then LoadSysSettings()
+		Using dlg As New frmEmailRelayConfig(mSysSettings)
+			dlg.ShowDialog(Me)
+		End Using
+		' Reload SysSettings to pick up any saved EmailRelayKey
+		LoadSysSettings()
 	End Sub
 
 	Private Sub btnSendTestPush_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSendTestPush.Click
