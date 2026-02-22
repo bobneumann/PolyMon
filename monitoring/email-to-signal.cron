@@ -3,4 +3,4 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * ubuntu /usr/bin/python3 /home/ubuntu/email-to-signal.py >> /var/log/email-to-signal.log 2>&1
+* * * * * ubuntu /usr/bin/python3 /home/ubuntu/email-to-signal.py >> /var/log/email-to-signal.log 2>&1
