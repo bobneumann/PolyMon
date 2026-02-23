@@ -772,7 +772,7 @@ Partial Class frmGeneralSettings
         Me.gbPushNotifications.ForeColor = System.Drawing.Color.MediumBlue
         Me.gbPushNotifications.Location = New System.Drawing.Point(6, 28)
         Me.gbPushNotifications.Name = "gbPushNotifications"
-        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 488)
+        Me.gbPushNotifications.Size = New System.Drawing.Size(376, 460)
         Me.gbPushNotifications.TabIndex = 0
         Me.gbPushNotifications.TabStop = False
         Me.gbPushNotifications.Text = "Push Notifications"
@@ -868,13 +868,13 @@ Partial Class frmGeneralSettings
         Me.txtPushNotes.Multiline = True
         Me.txtPushNotes.Name = "txtPushNotes"
         Me.txtPushNotes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtPushNotes.Size = New System.Drawing.Size(340, 180)
+        Me.txtPushNotes.Size = New System.Drawing.Size(340, 130)
         Me.txtPushNotes.TabIndex = 9
         '
         'btnConfigureEmailRelay
         '
         Me.btnConfigureEmailRelay.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.btnConfigureEmailRelay.Location = New System.Drawing.Point(16, 456)
+        Me.btnConfigureEmailRelay.Location = New System.Drawing.Point(16, 410)
         Me.btnConfigureEmailRelay.Name = "btnConfigureEmailRelay"
         Me.btnConfigureEmailRelay.Size = New System.Drawing.Size(180, 23)
         Me.btnConfigureEmailRelay.TabIndex = 10

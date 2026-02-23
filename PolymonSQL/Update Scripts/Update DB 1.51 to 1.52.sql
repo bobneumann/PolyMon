@@ -35,7 +35,11 @@ select
 	PushToken,
 	Notes,
 	EmailRelayKey,
-	DBVersion
+	DBVersion,
+	RetentionMaxMonthsRaw,
+	RetentionMaxMonthsDaily,
+	RetentionMaxMonthsWeekly,
+	RetentionMaxMonthsMonthly
 from SysSettings
 GO
 
