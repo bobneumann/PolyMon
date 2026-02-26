@@ -50,6 +50,9 @@ Partial Class frmGeneralSettings
         Me.txtSysName = New System.Windows.Forms.TextBox()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.gbGraphDefaults = New System.Windows.Forms.GroupBox()
+        Me.chkGraphDefaultStatusFreq = New System.Windows.Forms.CheckBox()
+        Me.chkGraphDefaultUptime = New System.Windows.Forms.CheckBox()
         Me.cboMDIBackColor = New System.Windows.Forms.ComboBox()
         Me.Label12 = New System.Windows.Forms.Label()
         Me.chkBalloonAlerts = New System.Windows.Forms.CheckBox()
@@ -102,6 +105,7 @@ Partial Class frmGeneralSettings
         Me.GroupBox1.SuspendLayout()
         CType(Me.upSysSMTPPort, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox3.SuspendLayout()
+        Me.gbGraphDefaults.SuspendLayout()
         Me.TabControl1.SuspendLayout()
         Me.tpSysSettings.SuspendLayout()
         Me.tpRetentionScheme.SuspendLayout()
@@ -471,6 +475,40 @@ Partial Class frmGeneralSettings
         Me.Label14.Text = "Status Refresh Interval"
         Me.Label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'gbGraphDefaults
+        '
+        Me.gbGraphDefaults.Controls.Add(Me.chkGraphDefaultStatusFreq)
+        Me.gbGraphDefaults.Controls.Add(Me.chkGraphDefaultUptime)
+        Me.gbGraphDefaults.ForeColor = System.Drawing.Color.MediumBlue
+        Me.gbGraphDefaults.Location = New System.Drawing.Point(6, 155)
+        Me.gbGraphDefaults.Name = "gbGraphDefaults"
+        Me.gbGraphDefaults.Size = New System.Drawing.Size(376, 80)
+        Me.gbGraphDefaults.TabIndex = 15
+        Me.gbGraphDefaults.TabStop = False
+        Me.gbGraphDefaults.Text = "Graph Defaults"
+        '
+        'chkGraphDefaultStatusFreq
+        '
+        Me.chkGraphDefaultStatusFreq.AutoSize = True
+        Me.chkGraphDefaultStatusFreq.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.chkGraphDefaultStatusFreq.Location = New System.Drawing.Point(10, 22)
+        Me.chkGraphDefaultStatusFreq.Name = "chkGraphDefaultStatusFreq"
+        Me.chkGraphDefaultStatusFreq.Size = New System.Drawing.Size(230, 17)
+        Me.chkGraphDefaultStatusFreq.TabIndex = 0
+        Me.chkGraphDefaultStatusFreq.Text = "Show Status Frequency charts by default"
+        Me.chkGraphDefaultStatusFreq.UseVisualStyleBackColor = True
+        '
+        'chkGraphDefaultUptime
+        '
+        Me.chkGraphDefaultUptime.AutoSize = True
+        Me.chkGraphDefaultUptime.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.chkGraphDefaultUptime.Location = New System.Drawing.Point(10, 48)
+        Me.chkGraphDefaultUptime.Name = "chkGraphDefaultUptime"
+        Me.chkGraphDefaultUptime.Size = New System.Drawing.Size(180, 17)
+        Me.chkGraphDefaultUptime.TabIndex = 1
+        Me.chkGraphDefaultUptime.Text = "Show % Uptime charts by default"
+        Me.chkGraphDefaultUptime.UseVisualStyleBackColor = True
+        '
         'Label2
         '
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -737,6 +775,7 @@ Partial Class frmGeneralSettings
         '
         Me.tpUserSettings.BackColor = System.Drawing.SystemColors.Control
         Me.tpUserSettings.Controls.Add(Me.GroupBox3)
+        Me.tpUserSettings.Controls.Add(Me.gbGraphDefaults)
         Me.tpUserSettings.Location = New System.Drawing.Point(4, 22)
         Me.tpUserSettings.Name = "tpUserSettings"
         Me.tpUserSettings.Padding = New System.Windows.Forms.Padding(3)
@@ -934,6 +973,8 @@ Partial Class frmGeneralSettings
         Me.GroupBox1.PerformLayout()
         CType(Me.upSysSMTPPort, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox3.ResumeLayout(False)
+        Me.gbGraphDefaults.ResumeLayout(False)
+        Me.gbGraphDefaults.PerformLayout()
         Me.TabControl1.ResumeLayout(False)
         Me.tpSysSettings.ResumeLayout(False)
         Me.tpSysSettings.PerformLayout()
@@ -981,6 +1022,9 @@ Partial Class frmGeneralSettings
 	Friend WithEvents txtSysName As System.Windows.Forms.TextBox
 	Friend WithEvents Label1 As System.Windows.Forms.Label
 	Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+	Friend WithEvents gbGraphDefaults As System.Windows.Forms.GroupBox
+	Friend WithEvents chkGraphDefaultStatusFreq As System.Windows.Forms.CheckBox
+	Friend WithEvents chkGraphDefaultUptime As System.Windows.Forms.CheckBox
 	Friend WithEvents cboTimerIntervals As System.Windows.Forms.ComboBox
 	Friend WithEvents chkAudioAlert As System.Windows.Forms.CheckBox
 	Friend WithEvents Label14 As System.Windows.Forms.Label

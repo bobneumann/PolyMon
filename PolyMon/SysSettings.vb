@@ -24,6 +24,8 @@ Namespace General
 		Private mPushToken As String
 		Private mNotes As String
 		Private mEmailRelayKey As String
+		Private mGraphDefaultStatusFreq As Boolean
+		Private mGraphDefaultUptime As Boolean
 #End Region
 
 #Region "Public Interface"
@@ -149,6 +151,16 @@ Namespace General
 				Return mEmailRelayKey
 			End Get
 		End Property
+		Public ReadOnly Property GraphDefaultStatusFreq() As Boolean
+			Get
+				Return mGraphDefaultStatusFreq
+			End Get
+		End Property
+		Public ReadOnly Property GraphDefaultUptime() As Boolean
+			Get
+				Return mGraphDefaultUptime
+			End Get
+		End Property
 		Public Property Notes() As String
 			Get
 				Return mNotes
@@ -164,6 +176,11 @@ Namespace General
 			Else
 				mEmailRelayKey = key.Trim()
 			End If
+		End Sub
+
+		Public Sub SetGraphDefaults(ByVal graphDefaultStatusFreq As Boolean, ByVal graphDefaultUptime As Boolean)
+			mGraphDefaultStatusFreq = graphDefaultStatusFreq
+			mGraphDefaultUptime = graphDefaultUptime
 		End Sub
 
 		Public Sub SetPushNotification(ByVal Service As String, ByVal ServerURL As String, ByVal Token As String)
@@ -444,6 +461,22 @@ Namespace General
 				End If
 			End With
 
+			Dim prmGraphDefaultStatusFreq As New SqlParameter
+			With prmGraphDefaultStatusFreq
+				.ParameterName = "@GraphDefaultStatusFreq"
+				.SqlDbType = SqlDbType.Bit
+				.Direction = ParameterDirection.Input
+				.Value = mGraphDefaultStatusFreq
+			End With
+
+			Dim prmGraphDefaultUptime As New SqlParameter
+			With prmGraphDefaultUptime
+				.ParameterName = "@GraphDefaultUptime"
+				.SqlDbType = SqlDbType.Bit
+				.Direction = ParameterDirection.Input
+				.Value = mGraphDefaultUptime
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -467,6 +500,8 @@ Namespace General
 				.Parameters.Add(prmPushToken)
 				.Parameters.Add(prmNotes)
 				.Parameters.Add(prmEmailRelayKey)
+				.Parameters.Add(prmGraphDefaultStatusFreq)
+				.Parameters.Add(prmGraphDefaultUptime)
             End With
 
             Try
@@ -601,6 +636,26 @@ Namespace General
 							mEmailRelayKey = Nothing
 						End If
 
+						Try
+							If Not (IsDBNull(.Item("GraphDefaultStatusFreq"))) Then
+								mGraphDefaultStatusFreq = CBool(.Item("GraphDefaultStatusFreq"))
+							Else
+								mGraphDefaultStatusFreq = True
+							End If
+						Catch
+							mGraphDefaultStatusFreq = True
+						End Try
+
+						Try
+							If Not (IsDBNull(.Item("GraphDefaultUptime"))) Then
+								mGraphDefaultUptime = CBool(.Item("GraphDefaultUptime"))
+							Else
+								mGraphDefaultUptime = True
+							End If
+						Catch
+							mGraphDefaultUptime = True
+						End Try
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -625,6 +680,8 @@ Namespace General
 					mPushToken = Nothing
 					mNotes = Nothing
 					mEmailRelayKey = Nothing
+					mGraphDefaultStatusFreq = True
+					mGraphDefaultUptime = True
 					mDBVersion = Nothing
                 End If
 

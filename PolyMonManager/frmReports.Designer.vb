@@ -22,6 +22,7 @@ Partial Class frmReports
         Me.components = New System.ComponentModel.Container()
         Me.tctlReports = New System.Windows.Forms.TabControl()
         Me.tabOverview = New System.Windows.Forms.TabPage()
+        Me.flpChartsOverview = New System.Windows.Forms.FlowLayoutPanel()
         Me.btnRefresh = New System.Windows.Forms.Button()
         Me.ChartsOverview = New System.Windows.Forms.TableLayoutPanel()
         Me.lblFailure = New System.Windows.Forms.Label()
@@ -31,6 +32,7 @@ Partial Class frmReports
         Me.Label1 = New System.Windows.Forms.Label()
         Me.lblLifetimePercUptime = New System.Windows.Forms.Label()
         Me.tabDaily = New System.Windows.Forms.TabPage()
+        Me.flpChartsDaily = New System.Windows.Forms.FlowLayoutPanel()
         Me.btnViewData_Daily = New System.Windows.Forms.Button()
         Me.ChartsDaily = New System.Windows.Forms.TableLayoutPanel()
         Me.lblDailyStartDT = New System.Windows.Forms.Label()
@@ -41,6 +43,7 @@ Partial Class frmReports
         Me.dtpDailyEndDT = New System.Windows.Forms.DateTimePicker()
         Me.dtpDailyStartDT = New System.Windows.Forms.DateTimePicker()
         Me.tabWeekly = New System.Windows.Forms.TabPage()
+        Me.flpChartsWeekly = New System.Windows.Forms.FlowLayoutPanel()
         Me.btnViewData_Weekly = New System.Windows.Forms.Button()
         Me.ChartsWeekly = New System.Windows.Forms.TableLayoutPanel()
         Me.lblWeeklyStartDT = New System.Windows.Forms.Label()
@@ -51,6 +54,7 @@ Partial Class frmReports
         Me.dtpWeeklyEndDT = New System.Windows.Forms.DateTimePicker()
         Me.dtpWeeklyStartDT = New System.Windows.Forms.DateTimePicker()
         Me.tabMonthly = New System.Windows.Forms.TabPage()
+        Me.flpChartsMonthly = New System.Windows.Forms.FlowLayoutPanel()
         Me.btnViewData_Monthly = New System.Windows.Forms.Button()
         Me.ChartsMonthly = New System.Windows.Forms.TableLayoutPanel()
         Me.lblMonthlyStartDT = New System.Windows.Forms.Label()
@@ -61,6 +65,7 @@ Partial Class frmReports
         Me.dtpMonthlyEndDT = New System.Windows.Forms.DateTimePicker()
         Me.dtpMonthlyStartDT = New System.Windows.Forms.DateTimePicker()
         Me.tabRaw = New System.Windows.Forms.TabPage()
+        Me.flpChartsCustom = New System.Windows.Forms.FlowLayoutPanel()
         Me.btnViewData_Custom = New System.Windows.Forms.Button()
         Me.ChartsCustom = New System.Windows.Forms.TableLayoutPanel()
         Me.btnRunCustom = New System.Windows.Forms.Button()
@@ -87,6 +92,11 @@ Partial Class frmReports
         Me.tabRaw.SuspendLayout()
         CType(Me.nudCustomFrequency, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel1.SuspendLayout()
+        Me.flpChartsOverview.SuspendLayout()
+        Me.flpChartsDaily.SuspendLayout()
+        Me.flpChartsWeekly.SuspendLayout()
+        Me.flpChartsMonthly.SuspendLayout()
+        Me.flpChartsCustom.SuspendLayout()
         Me.SuspendLayout()
         '
         'tctlReports
@@ -108,6 +118,7 @@ Partial Class frmReports
         'tabOverview
         '
         Me.tabOverview.Controls.Add(Me.btnRefresh)
+        Me.tabOverview.Controls.Add(Me.flpChartsOverview)
         Me.tabOverview.Controls.Add(Me.ChartsOverview)
         Me.tabOverview.Controls.Add(Me.lblFailure)
         Me.tabOverview.Controls.Add(Me.lblWarning)
@@ -146,12 +157,23 @@ Partial Class frmReports
         Me.ChartsOverview.ColumnCount = 2
         Me.ChartsOverview.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsOverview.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsOverview.Location = New System.Drawing.Point(10, 48)
+        Me.ChartsOverview.Location = New System.Drawing.Point(10, 74)
         Me.ChartsOverview.Name = "ChartsOverview"
         Me.ChartsOverview.RowCount = 1
         Me.ChartsOverview.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 0.0!))
-        Me.ChartsOverview.Size = New System.Drawing.Size(606, 389)
+        Me.ChartsOverview.Size = New System.Drawing.Size(606, 363)
         Me.ChartsOverview.TabIndex = 8
+        '
+        'flpChartsOverview
+        '
+        Me.flpChartsOverview.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsOverview.AutoSize = True
+        Me.flpChartsOverview.Location = New System.Drawing.Point(10, 48)
+        Me.flpChartsOverview.Name = "flpChartsOverview"
+        Me.flpChartsOverview.Size = New System.Drawing.Size(606, 26)
+        Me.flpChartsOverview.TabIndex = 12
+        Me.flpChartsOverview.WrapContents = True
         '
         'lblFailure
         '
@@ -224,6 +246,7 @@ Partial Class frmReports
         'tabDaily
         '
         Me.tabDaily.Controls.Add(Me.btnViewData_Daily)
+        Me.tabDaily.Controls.Add(Me.flpChartsDaily)
         Me.tabDaily.Controls.Add(Me.ChartsDaily)
         Me.tabDaily.Controls.Add(Me.lblDailyStartDT)
         Me.tabDaily.Controls.Add(Me.lblDailyEndDT)
@@ -260,13 +283,24 @@ Partial Class frmReports
         Me.ChartsDaily.ColumnCount = 2
         Me.ChartsDaily.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsDaily.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsDaily.Location = New System.Drawing.Point(6, 47)
+        Me.ChartsDaily.Location = New System.Drawing.Point(6, 73)
         Me.ChartsDaily.Name = "ChartsDaily"
         Me.ChartsDaily.RowCount = 2
         Me.ChartsDaily.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsDaily.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsDaily.Size = New System.Drawing.Size(612, 400)
+        Me.ChartsDaily.Size = New System.Drawing.Size(612, 374)
         Me.ChartsDaily.TabIndex = 16
+        '
+        'flpChartsDaily
+        '
+        Me.flpChartsDaily.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsDaily.AutoSize = True
+        Me.flpChartsDaily.Location = New System.Drawing.Point(6, 47)
+        Me.flpChartsDaily.Name = "flpChartsDaily"
+        Me.flpChartsDaily.Size = New System.Drawing.Size(612, 26)
+        Me.flpChartsDaily.TabIndex = 18
+        Me.flpChartsDaily.WrapContents = True
         '
         'lblDailyStartDT
         '
@@ -337,6 +371,7 @@ Partial Class frmReports
         'tabWeekly
         '
         Me.tabWeekly.Controls.Add(Me.btnViewData_Weekly)
+        Me.tabWeekly.Controls.Add(Me.flpChartsWeekly)
         Me.tabWeekly.Controls.Add(Me.ChartsWeekly)
         Me.tabWeekly.Controls.Add(Me.lblWeeklyStartDT)
         Me.tabWeekly.Controls.Add(Me.lblWeeklyEndDT)
@@ -372,13 +407,24 @@ Partial Class frmReports
         Me.ChartsWeekly.ColumnCount = 2
         Me.ChartsWeekly.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsWeekly.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsWeekly.Location = New System.Drawing.Point(9, 47)
+        Me.ChartsWeekly.Location = New System.Drawing.Point(9, 73)
         Me.ChartsWeekly.Name = "ChartsWeekly"
         Me.ChartsWeekly.RowCount = 2
         Me.ChartsWeekly.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsWeekly.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsWeekly.Size = New System.Drawing.Size(607, 400)
+        Me.ChartsWeekly.Size = New System.Drawing.Size(607, 374)
         Me.ChartsWeekly.TabIndex = 20
+        '
+        'flpChartsWeekly
+        '
+        Me.flpChartsWeekly.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsWeekly.AutoSize = True
+        Me.flpChartsWeekly.Location = New System.Drawing.Point(9, 47)
+        Me.flpChartsWeekly.Name = "flpChartsWeekly"
+        Me.flpChartsWeekly.Size = New System.Drawing.Size(607, 26)
+        Me.flpChartsWeekly.TabIndex = 22
+        Me.flpChartsWeekly.WrapContents = True
         '
         'lblWeeklyStartDT
         '
@@ -449,6 +495,7 @@ Partial Class frmReports
         'tabMonthly
         '
         Me.tabMonthly.Controls.Add(Me.btnViewData_Monthly)
+        Me.tabMonthly.Controls.Add(Me.flpChartsMonthly)
         Me.tabMonthly.Controls.Add(Me.ChartsMonthly)
         Me.tabMonthly.Controls.Add(Me.lblMonthlyStartDT)
         Me.tabMonthly.Controls.Add(Me.lblMonthlyEndDT)
@@ -484,13 +531,24 @@ Partial Class frmReports
         Me.ChartsMonthly.ColumnCount = 2
         Me.ChartsMonthly.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsMonthly.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsMonthly.Location = New System.Drawing.Point(9, 47)
+        Me.ChartsMonthly.Location = New System.Drawing.Point(9, 73)
         Me.ChartsMonthly.Name = "ChartsMonthly"
         Me.ChartsMonthly.RowCount = 2
         Me.ChartsMonthly.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsMonthly.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsMonthly.Size = New System.Drawing.Size(607, 400)
+        Me.ChartsMonthly.Size = New System.Drawing.Size(607, 374)
         Me.ChartsMonthly.TabIndex = 24
+        '
+        'flpChartsMonthly
+        '
+        Me.flpChartsMonthly.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsMonthly.AutoSize = True
+        Me.flpChartsMonthly.Location = New System.Drawing.Point(9, 47)
+        Me.flpChartsMonthly.Name = "flpChartsMonthly"
+        Me.flpChartsMonthly.Size = New System.Drawing.Size(607, 26)
+        Me.flpChartsMonthly.TabIndex = 26
+        Me.flpChartsMonthly.WrapContents = True
         '
         'lblMonthlyStartDT
         '
@@ -561,6 +619,7 @@ Partial Class frmReports
         'tabRaw
         '
         Me.tabRaw.Controls.Add(Me.btnViewData_Custom)
+        Me.tabRaw.Controls.Add(Me.flpChartsCustom)
         Me.tabRaw.Controls.Add(Me.ChartsCustom)
         Me.tabRaw.Controls.Add(Me.btnRunCustom)
         Me.tabRaw.Controls.Add(Me.Label11)
@@ -600,13 +659,24 @@ Partial Class frmReports
         Me.ChartsCustom.ColumnCount = 2
         Me.ChartsCustom.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsCustom.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsCustom.Location = New System.Drawing.Point(9, 86)
+        Me.ChartsCustom.Location = New System.Drawing.Point(9, 112)
         Me.ChartsCustom.Name = "ChartsCustom"
         Me.ChartsCustom.RowCount = 2
         Me.ChartsCustom.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsCustom.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsCustom.Size = New System.Drawing.Size(607, 351)
+        Me.ChartsCustom.Size = New System.Drawing.Size(607, 325)
         Me.ChartsCustom.TabIndex = 35
+        '
+        'flpChartsCustom
+        '
+        Me.flpChartsCustom.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsCustom.AutoSize = True
+        Me.flpChartsCustom.Location = New System.Drawing.Point(9, 86)
+        Me.flpChartsCustom.Name = "flpChartsCustom"
+        Me.flpChartsCustom.Size = New System.Drawing.Size(607, 26)
+        Me.flpChartsCustom.TabIndex = 37
+        Me.flpChartsCustom.WrapContents = True
         '
         'btnRunCustom
         '
@@ -780,6 +850,16 @@ Partial Class frmReports
         Me.tabRaw.PerformLayout()
         CType(Me.nudCustomFrequency, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Panel1.ResumeLayout(False)
+        Me.flpChartsOverview.ResumeLayout(False)
+        Me.flpChartsOverview.PerformLayout()
+        Me.flpChartsDaily.ResumeLayout(False)
+        Me.flpChartsDaily.PerformLayout()
+        Me.flpChartsWeekly.ResumeLayout(False)
+        Me.flpChartsWeekly.PerformLayout()
+        Me.flpChartsMonthly.ResumeLayout(False)
+        Me.flpChartsMonthly.PerformLayout()
+        Me.flpChartsCustom.ResumeLayout(False)
+        Me.flpChartsCustom.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -818,9 +898,13 @@ Partial Class frmReports
     Friend WithEvents lblMonthlyEndDT As System.Windows.Forms.Label
     Friend WithEvents Label13 As System.Windows.Forms.Label
     Friend WithEvents ChartsOverview As System.Windows.Forms.TableLayoutPanel
+    Friend WithEvents flpChartsOverview As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents ChartsDaily As System.Windows.Forms.TableLayoutPanel
+    Friend WithEvents flpChartsDaily As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents ChartsWeekly As System.Windows.Forms.TableLayoutPanel
+    Friend WithEvents flpChartsWeekly As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents ChartsMonthly As System.Windows.Forms.TableLayoutPanel
+    Friend WithEvents flpChartsMonthly As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents chkCustomGrouped As System.Windows.Forms.CheckBox
     Friend WithEvents lblCustomStartDT As System.Windows.Forms.Label
     Friend WithEvents lblCustomEndDT As System.Windows.Forms.Label
@@ -832,6 +916,7 @@ Partial Class frmReports
     Friend WithEvents cboCustomTimePeriods As System.Windows.Forms.ComboBox
     Friend WithEvents nudCustomFrequency As System.Windows.Forms.NumericUpDown
     Friend WithEvents ChartsCustom As System.Windows.Forms.TableLayoutPanel
+    Friend WithEvents flpChartsCustom As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents btnRunCustom As System.Windows.Forms.Button
     Friend WithEvents btnRefresh As System.Windows.Forms.Button
 	Friend WithEvents btnViewData_Daily As System.Windows.Forms.Button

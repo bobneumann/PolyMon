@@ -2,9 +2,11 @@
 bin/
 obj/
 
-# Include deployment binaries
+# Include deployment binaries (but never .config — contains connection strings)
 !PolyMonExecutive/bin/
 !PolyMonManager/bin/
+PolyMonExecutive/bin/*.config
+PolyMonManager/bin/*.config
 *.InstallLog
 *.InstallState
 *.suo

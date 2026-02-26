@@ -4,7 +4,7 @@
   <description asmv2:iconFile="PolyMon (32x32).ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="PolyMonManager" version="1.5.2.34785" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="PolyMonManager" version="1.5.2.40308" language="neutral" processorArchitecture="msil" />
     <commandLine file="PolyMonManager.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -364,13 +364,13 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="GenericMonitor.dll" size="14336">
-      <assemblyIdentity name="GenericMonitor" version="1.2.0.34098" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="GenericMonitor" version="1.2.0.34563" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>xszeTADrz3eJlt9LMC4yHmOBkSZFmyxV+4L5IhvI+Pc=</dsig:DigestValue>
+        <dsig:DigestValue>CfyeZZiQKVPh/px3+eMzv9FbKtAfYpx9FG+V1zTtd/8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -411,50 +411,62 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMon.dll" size="71168">
-      <assemblyIdentity name="PolyMon" version="1.5.1.34098" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMon.dll" size="72192">
+      <assemblyIdentity name="PolyMon" version="1.5.1.34563" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>GsrjMWAm5AAi2RmNLWbsNQisQM/ARCYZ/b5QlWujo8o=</dsig:DigestValue>
+        <dsig:DigestValue>ON8QeDg3eGnm4y4NGpbwnKKBZk0qu1Kvs+CTWT+Fh6s=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="793088">
-      <assemblyIdentity name="PolyMonManager" version="1.5.2.34785" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="PolyMonManager" version="1.5.2.40308" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>cozOh+jsIuSZzaauIfBNFwARGmHjQ/2O4qSPUtRaBfg=</dsig:DigestValue>
+        <dsig:DigestValue>7XAA6hu+RT9SRnI16vgqH+yBEjrp0ZPZVnHUa7vHmjc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonNotifier.dll" size="22016">
-      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.34784" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.34564" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>9vA27XjqpVfPwRILCmFJWGZmtuf6HStQC5DwR8tyHg4=</dsig:DigestValue>
+        <dsig:DigestValue>/Jb2IG7phBC84fcoWKTCLyjd6MCffin+jE+NFxJXnYQ=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ZedGraph.dll" size="278528">
-      <assemblyIdentity name="ZedGraph" version="5.0.4.13542" publicKeyToken="02A83CBD123FCD60" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ScottPlot.dll" size="696320">
+      <assemblyIdentity name="ScottPlot" version="4.1.71.0" publicKeyToken="86698DC10387C39E" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>3/0++X8qnxarL/wKre0C4E8/CxKx7lnEb/eXgLbF+Oo=</dsig:DigestValue>
+        <dsig:DigestValue>VEGISnOSAwZkTWenPbskurasQ6Dd+7fEED1W8JItsDA=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ScottPlot.WinForms.dll" size="34304">
+      <assemblyIdentity name="ScottPlot.WinForms" version="4.1.71.0" publicKeyToken="86698DC10387C39E" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>iSvoHS4xprFXeAytHdsrlTI/AbG4kPCjPb6H2FrlOV0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

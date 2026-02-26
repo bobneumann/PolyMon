@@ -230,6 +230,10 @@ Public Class frmGeneralSettings
 				Me.trDaily.Value = .Daily
 				Me.trRaw.Value = .Raw
 			End With
+
+			' Graph defaults
+			Me.chkGraphDefaultStatusFreq.Checked = mSysSettings.GraphDefaultStatusFreq
+			Me.chkGraphDefaultUptime.Checked = mSysSettings.GraphDefaultUptime
         Catch ex As Exception
             MsgBox("Error retrieving data from database:" & vbCrLf & ex.Message & vbCrLf & vbCrLf & ex.InnerException.Message, MsgBoxStyle.Exclamation, "PolyMon Error")
         End Try
@@ -249,6 +253,7 @@ Public Class frmGeneralSettings
 				End If
 				.SetPushNotification(CStr(Me.cboPushService.SelectedItem), Me.txtPushServerURL.Text, Me.txtPushToken.Text)
 				.Notes = Me.txtPushNotes.Text
+				.SetGraphDefaults(Me.chkGraphDefaultStatusFreq.Checked, Me.chkGraphDefaultUptime.Checked)
 
                 .Save()
             End With
@@ -297,6 +302,15 @@ Public Class frmGeneralSettings
 
         'MDI Back Color
         Me.cboMDIBackColor.Text = mUserSettings.MDIBackColor.Name
+
+        'Graph Defaults
+        If mSysSettings IsNot Nothing Then
+            Me.chkGraphDefaultStatusFreq.Checked = mSysSettings.GraphDefaultStatusFreq
+            Me.chkGraphDefaultUptime.Checked = mSysSettings.GraphDefaultUptime
+        Else
+            Me.chkGraphDefaultStatusFreq.Checked = True
+            Me.chkGraphDefaultUptime.Checked = True
+        End If
     End Sub
 #End Region
 

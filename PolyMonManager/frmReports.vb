@@ -1,24 +1,21 @@
 Imports System.Data.SqlClient
-Imports ZedGraph
 
 Public Class frmReports
 #Region "Private Attributes"
 	Private mMonitorID As Integer
 	Private mSQLConn As String
+	Private mSysSettings As PolyMon.General.SysSettings
+
+	' Chart toggle tracking: maps TableLayoutPanel -> (chart title -> FormsPlot)
+	Private mChartRegistry As New Dictionary(Of TableLayoutPanel, Dictionary(Of String, ScottPlot.FormsPlot))
 
 	Private Const cFormatDate As String = "MMM dd, yyyy"
 	Private Const cFormatDateHM As String = "MMM dd, yyyy HH:mm"
 	Private Const cFormatDateHMS As String = "MMM dd, yyyy HH:mm:ss"
 	Private Const cFormatDateHMSm As String = "MMM dd, yyyy HH:mm:ss.fff"
 
-	Private mPointSymbolType As ZedGraph.SymbolType = SymbolType.Circle
-	Private mPointSymbolFillColor As System.Drawing.Color = Color.Blue
-	Private mPointSymbolFillIsVisible As Boolean = True
-	Private mPointSymbolBorderIsVisible As Boolean = False
-	Private mPointSymbolSize As Single = 7
-
 	Private Const cChartWidth As Integer = 460
-	Private Const cChartHeight As Integer = 180
+	Private Const cChartHeight As Integer = 220
 
 	Private mMonitorStatusDateRanges As MonitorStatusDateRanges
 
@@ -63,16 +60,41 @@ Public Class frmReports
 		Finally
 			'Do nothing!
 		End Try
+
+		Try
+			mSysSettings = New PolyMon.General.SysSettings()
+		Catch ex As Exception
+			' If settings can't be loaded, mSysSettings remains Nothing; defaults will apply
+		End Try
 	End Sub
 #End Region
 
 #Region "Event Handlers"
 	Private Sub frmReports_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Me.Cursor = Cursors.WaitCursor
+        WireFlpPanel(flpChartsOverview, ChartsOverview)
+        WireFlpPanel(flpChartsDaily, ChartsDaily)
+        WireFlpPanel(flpChartsWeekly, ChartsWeekly)
+        WireFlpPanel(flpChartsMonthly, ChartsMonthly)
+        WireFlpPanel(flpChartsCustom, ChartsCustom)
         RefreshOverview()
         Me.Cursor = Cursors.Default
     End Sub
-    
+
+    ''' <summary>
+    ''' Constrains a FlowLayoutPanel to wrap checkboxes within its width,
+    ''' and repositions the TableLayoutPanel below it when it grows.
+    ''' </summary>
+    Private Sub WireFlpPanel(ByVal flp As FlowLayoutPanel, ByVal tlp As TableLayoutPanel)
+        flp.MaximumSize = New System.Drawing.Size(flp.Width, 0)
+        AddHandler flp.SizeChanged, Sub(s As Object, ev As EventArgs)
+            tlp.Top = flp.Bottom + 4
+            If tlp.Parent IsNot Nothing Then
+                tlp.Height = tlp.Parent.ClientSize.Height - tlp.Top - 4
+            End If
+        End Sub
+    End Sub
+
 	Private Sub btnRunDaily_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnRunDaily.Click
 		Me.Cursor = Cursors.WaitCursor
 		RunDaily()
@@ -337,7 +359,6 @@ Public Class frmReports
 		Me.dtpMonthlyStartDT.Value = mMonitorStatusDateRanges.MonthlyStartDT
 		Me.dtpMonthlyEndDT.Value = mMonitorStatusDateRanges.MonthlyEndDT
 
-
 		Me.lblMonthlyStartDT.Text = Format(mMonitorStatusDateRanges.MonthlyStartDT, cFormatDate)
 		Me.lblMonthlyEndDT.Text = Format(mMonitorStatusDateRanges.MonthlyEndDT, cFormatDate)
 
@@ -346,7 +367,6 @@ Public Class frmReports
 		Me.dtpCustomStartDT.MaxDate = mMonitorStatusDateRanges.RawEndDT
 		Me.dtpCustomEndDT.MinDate = mMonitorStatusDateRanges.RawStartDT
 		Me.dtpCustomEndDT.MaxDate = mMonitorStatusDateRanges.RawEndDT
-
 
 		Me.dtpCustomEndDT.Value = mMonitorStatusDateRanges.RawEndDT
 
@@ -358,7 +378,6 @@ Public Class frmReports
 
 		Me.lblCustomStartDT.Text = Format(mMonitorStatusDateRanges.RawStartDT, cFormatDate)
 		Me.lblCustomEndDT.Text = Format(mMonitorStatusDateRanges.RawEndDT, cFormatDate)
-
 
 		'Time Periods
 		With Me.cboCustomTimePeriods
@@ -382,12 +401,7 @@ Public Class frmReports
 
 		Dim CurrDate As Date = Now()
 
-		Dim ChartList As Dictionary(Of Integer, ZedGraphControl)
-
-		'Raw Chart
-		'Dim ChartStatusRaw As ZedGraphControl = GenChartStatusRaw(mMonitorID, DateAdd(DateInterval.Day, -24, Now()), Now())
-		'ChartStatusRaw.Size = New System.Drawing.Size(400, 150)
-		'Me.fpnlOverview.Controls.Add(ChartStatusRaw)
+		Dim ChartList As Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		With ChartsOverview
 			.ColumnCount = 2
@@ -395,36 +409,38 @@ Public Class frmReports
 			.RowCount = 1
 			.RowStyles.Clear()
 		End With
+		flpChartsOverview.Controls.Clear()
+		If mChartRegistry.ContainsKey(ChartsOverview) Then mChartRegistry.Remove(ChartsOverview)
 
 		'Daily Status Charts
 		ChartList = GenChartsStatusDaily(mMonitorID, DateAdd(DateInterval.Day, -14, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
-
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Weekly Status Charts
 		ChartList = GenChartsStatusWeekly(mMonitorID, DateAdd(DateInterval.WeekOfYear, -12, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Monthly Status Charts
 		ChartList = GenChartsStatusMonthly(mMonitorID, DateAdd(DateInterval.Month, -24, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Raw Counter Charts
 		ChartList = GenChartsCountersRaw(mMonitorID, DateAdd(DateInterval.Hour, -24, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Daily Counter Charts
 		ChartList = GenChartsCountersDaily(mMonitorID, DateAdd(DateInterval.Day, -14, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Weekly Counter Charts
 		ChartList = GenChartsCountersWeekly(mMonitorID, DateAdd(DateInterval.WeekOfYear, -12, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 
 		'Monthly Counter Charts
 		ChartList = GenChartsCountersMonthly(mMonitorID, DateAdd(DateInterval.Month, -24, CurrDate), CurrDate)
-		AddChartsToPanel(ChartList, ChartsOverview, 1)
+		AddChartsToPanel(ChartList, ChartsOverview, 1, flpChartsOverview)
 	End Sub
+
 	Private Sub RunDaily()
 		With ChartsDaily
 			.ColumnCount = 2
@@ -432,6 +448,8 @@ Public Class frmReports
 			.RowCount = 1
 			.RowStyles.Clear()
 		End With
+		flpChartsDaily.Controls.Clear()
+		If mChartRegistry.ContainsKey(ChartsDaily) Then mChartRegistry.Remove(ChartsDaily)
 
 		Me.btnViewData_Daily.Enabled = True
 		mStatusData_Daily = Nothing
@@ -444,17 +462,17 @@ Public Class frmReports
 		StartDT = CDate(Format(StartDT, "MMM dd, yyyy") & " 00:00:00")
 		EndDT = CDate(Format(EndDT, "MMM dd, yyyy") & " 23:59:59")
 
-		Dim ChartList As Dictionary(Of Integer, ZedGraphControl)
+		Dim ChartList As Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		'Daily Status Charts
 		ChartList = GenChartsStatusDaily(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsDaily, 1)
+		AddChartsToPanel(ChartList, ChartsDaily, 1, flpChartsDaily)
 
 		'Daily Counter Charts
-		'ChartList = GenChartsCountersDaily(mMonitorID, StartDT, EndDT)
 		ChartList = GenChartsCountersDaily(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsDaily, 1)
+		AddChartsToPanel(ChartList, ChartsDaily, 1, flpChartsDaily)
 	End Sub
+
 	Private Sub RunWeekly()
 		With ChartsWeekly
 			.ColumnCount = 2
@@ -462,6 +480,8 @@ Public Class frmReports
 			.RowCount = 1
 			.RowStyles.Clear()
 		End With
+		flpChartsWeekly.Controls.Clear()
+		If mChartRegistry.ContainsKey(ChartsWeekly) Then mChartRegistry.Remove(ChartsWeekly)
 		btnViewData_Weekly.Enabled = True
 
 		Dim StartDT As Date = dtpWeeklyStartDT.Value
@@ -471,16 +491,17 @@ Public Class frmReports
 		StartDT = CDate(Format(StartDT, "MMM dd, yyyy") & " 00:00:00")
 		EndDT = CDate(Format(EndDT, "MMM dd, yyyy") & " 23:59:59")
 
-		Dim ChartList As Dictionary(Of Integer, ZedGraphControl)
+		Dim ChartList As Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		'Weekly Status Charts
 		ChartList = GenChartsStatusWeekly(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsWeekly, 1)
+		AddChartsToPanel(ChartList, ChartsWeekly, 1, flpChartsWeekly)
 
 		'Weekly Counter Charts
 		ChartList = GenChartsCountersWeekly(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsWeekly, 1)
+		AddChartsToPanel(ChartList, ChartsWeekly, 1, flpChartsWeekly)
 	End Sub
+
 	Private Sub RunMonthly()
 		With ChartsMonthly
 			.ColumnCount = 2
@@ -488,6 +509,8 @@ Public Class frmReports
 			.RowCount = 1
 			.RowStyles.Clear()
 		End With
+		flpChartsMonthly.Controls.Clear()
+		If mChartRegistry.ContainsKey(ChartsMonthly) Then mChartRegistry.Remove(ChartsMonthly)
 		btnViewData_Monthly.Enabled = True
 
 		Dim StartDT As Date = dtpMonthlyStartDT.Value
@@ -497,23 +520,24 @@ Public Class frmReports
 		StartDT = CDate(Format(StartDT, "MMM dd, yyyy") & " 00:00:00")
 		EndDT = CDate(Format(EndDT, "MMM dd, yyyy") & " 23:59:59")
 
-		Dim ChartList As Dictionary(Of Integer, ZedGraphControl)
+		Dim ChartList As Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		'Monthly Status Charts
 		ChartList = GenChartsStatusMonthly(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsMonthly, 1)
+		AddChartsToPanel(ChartList, ChartsMonthly, 1, flpChartsMonthly)
 
 		'Monthly Counter Charts
 		ChartList = GenChartsCountersMonthly(mMonitorID, StartDT, EndDT)
-		AddChartsToPanel(ChartList, ChartsMonthly, 1)
+		AddChartsToPanel(ChartList, ChartsMonthly, 1, flpChartsMonthly)
 	End Sub
+
 	Private Sub RunCustom()
 		Dim StartDT As Date = dtpCustomStartDT.Value
 		Dim EndDT As Date = dtpCustomEndDT.Value
 		Dim IsGrouped As Boolean = Me.chkCustomGrouped.Checked
 		Dim Frequency As Integer
 		Dim FrequencyMinutes As Integer
-		Dim ChartList As Dictionary(Of Integer, ZedGraphControl)
+		Dim ChartList As Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		With ChartsCustom
 			.ColumnCount = 2
@@ -521,12 +545,13 @@ Public Class frmReports
 			.RowCount = 1
 			.RowStyles.Clear()
 		End With
+		flpChartsCustom.Controls.Clear()
+		If mChartRegistry.ContainsKey(ChartsCustom) Then mChartRegistry.Remove(ChartsCustom)
 		btnViewData_Custom.Enabled = True
 
 		'Strip out any times...
 		StartDT = CDate(Format(StartDT, "MMM dd, yyyy") & " 00:00:00")
 		EndDT = CDate(Format(EndDT, "MMM dd, yyyy") & " 23:59:59")
-
 
 		If IsGrouped Then
 			Frequency = CInt(Me.nudCustomFrequency.Value)
@@ -541,79 +566,122 @@ Public Class frmReports
 
 			'Generate Status Frequency Charts
 			ChartList = GenChartsStatusCustom(mMonitorID, StartDT, EndDT, FrequencyMinutes)
-			AddChartsToPanel(ChartList, ChartsCustom, 2)
+			AddChartsToPanel(ChartList, ChartsCustom, 2, flpChartsCustom)
 
 			'Generate Grouped (Averaged) Counter Charts
 			ChartList = GenChartsCountersCustom(mMonitorID, StartDT, EndDT, FrequencyMinutes)
-			AddChartsToPanel(ChartList, ChartsCustom, 2)
+			AddChartsToPanel(ChartList, ChartsCustom, 2, flpChartsCustom)
 		Else
 			'Status Charts
 			ChartList = GenChartsStatusRaw(mMonitorID, StartDT, EndDT)
-			AddChartsToPanel(ChartList, ChartsCustom, 2)
-
+			AddChartsToPanel(ChartList, ChartsCustom, 2, flpChartsCustom)
 
 			'Generate Counter Charts
 			ChartList = GenChartsCountersRaw(mMonitorID, StartDT, EndDT)
-			AddChartsToPanel(ChartList, ChartsCustom, 2)
+			AddChartsToPanel(ChartList, ChartsCustom, 2, flpChartsCustom)
 		End If
 	End Sub
 
+	Private Sub AddChartsToPanel(ByRef Charts As Dictionary(Of Integer, ScottPlot.FormsPlot), ByRef Panel As TableLayoutPanel, ByVal ColSpan As Integer, Optional ByVal CheckboxPanel As FlowLayoutPanel = Nothing)
+		' Ensure registry entry exists for this panel
+		If Not mChartRegistry.ContainsKey(Panel) Then
+			mChartRegistry(Panel) = New Dictionary(Of String, ScottPlot.FormsPlot)
+		End If
 
-	Private Sub AddChartsToPanel(ByRef Charts As Dictionary(Of Integer, ZedGraphControl), ByRef Panel As TableLayoutPanel, ByVal ColSpan As Integer)
-		Dim Cnt As Integer = 0
-		Dim Column As Integer = 0
-		Dim NumRows As Integer = Panel.RowCount
-		Dim CurrRow As Integer
-		Dim Chart As ZedGraphControl
+		Dim localPanel As TableLayoutPanel = Panel
 
-		If ColSpan > 2 Then ColSpan = 2
-		If ColSpan < 1 Then ColSpan = 1
+		For Each ChartNum As Integer In Charts.Keys
+			Dim Chart As ScottPlot.FormsPlot = Charts.Item(ChartNum)
+			Dim chartTitle As String = CStr(Chart.Tag)
 
-		Dim ChartNum As Integer
+			' Register chart (overwrites if same title — handles re-run)
+			mChartRegistry(Panel)(chartTitle) = Chart
 
-		For Each ChartNum In Charts.Keys
-			Chart = Charts.Item(ChartNum)
-			If ColSpan = 1 Then
-				'2 Charts per row
-				Cnt += 1
-				If Cnt Mod 2 = 1 Then
-					'If panel has no child controls, then we are starting with
-					'a blank panel and an empty row already exists, so use it
-					'instead of moving to next row.
-					If Panel.Controls.Count > 0 Then
-						Panel.RowCount += 1
-						CurrRow = Panel.RowCount - 1
-					Else
-						CurrRow = 0
-					End If
-					Panel.RowStyles.Add(New RowStyle(SizeType.Absolute, cChartHeight + Panel.Padding.Vertical + Panel.Margin.Vertical))
-					Column = 0
-				Else
-					Column = 1
-				End If
-
-				Chart.Dock = DockStyle.Fill
-				Chart.MinimumSize = New System.Drawing.Size(0, 180)
-				Chart.MaximumSize = New System.Drawing.Size(0, 180)
-				Panel.Controls.Add(Chart, Column, CurrRow)
-			Else
-				'1 Chart per row - each chart will span 2 columns
-				Cnt += 1
-				If Panel.Controls.Count > 0 Then
-					Panel.RowCount += 1
-					'CurrRow = NumRows
-					CurrRow = Panel.RowCount - 1
-				Else
-					CurrRow = 0
-				End If
-				Panel.RowStyles.Add(New RowStyle(SizeType.Absolute, cChartHeight + Panel.Padding.Vertical + Panel.Margin.Vertical))
-				Chart.Dock = DockStyle.Fill
-				Chart.MinimumSize = New System.Drawing.Size(0, 180)
-				Chart.MaximumSize = New System.Drawing.Size(0, 180)
-				Panel.Controls.Add(Chart, 0, CurrRow)
-				Panel.SetColumnSpan(Chart, 2)
+			' Create checkbox if a checkbox panel was provided
+			If CheckboxPanel IsNot Nothing Then
+				Dim cb As New CheckBox()
+				cb.Text = chartTitle
+				cb.Checked = GetDefaultChecked(chartTitle)
+				cb.AutoSize = True
+				AddHandler cb.CheckedChanged, Sub(s As Object, e As EventArgs)
+					RelayoutCharts(localPanel)
+				End Sub
+				CheckboxPanel.Controls.Add(cb)
 			End If
 		Next
+
+		' Apply layout now (respects current checkbox state, including defaults)
+		RelayoutCharts(Panel)
+	End Sub
+
+	Private Function GetDefaultChecked(ByVal chartTitle As String) As Boolean
+		If chartTitle.StartsWith("Status Frequency") Then
+			If mSysSettings IsNot Nothing Then
+				Return mSysSettings.GraphDefaultStatusFreq
+			End If
+			Return True
+		ElseIf chartTitle.StartsWith("% Uptime") Then
+			If mSysSettings IsNot Nothing Then
+				Return mSysSettings.GraphDefaultUptime
+			End If
+			Return True
+		Else
+			Return True  ' Counter charts and Status (raw) always on
+		End If
+	End Function
+
+	Private Sub RelayoutCharts(ByVal panel As TableLayoutPanel)
+		If Not mChartRegistry.ContainsKey(panel) Then Exit Sub
+		Dim allCharts As Dictionary(Of String, ScottPlot.FormsPlot) = mChartRegistry(panel)
+
+		' Find sibling FlowLayoutPanel (checkbox panel)
+		Dim checkboxPanel As FlowLayoutPanel = Nothing
+		If panel.Parent IsNot Nothing Then
+			For Each ctrl As Control In panel.Parent.Controls
+				If TypeOf ctrl Is FlowLayoutPanel Then
+					checkboxPanel = DirectCast(ctrl, FlowLayoutPanel)
+					Exit For
+				End If
+			Next
+		End If
+
+		' Build ordered list of visible chart titles from checkbox state
+		Dim visibleTitles As New List(Of String)
+		If checkboxPanel IsNot Nothing Then
+			For Each ctrl As Control In checkboxPanel.Controls
+				If TypeOf ctrl Is CheckBox Then
+					Dim cb As CheckBox = DirectCast(ctrl, CheckBox)
+					If cb.Checked Then visibleTitles.Add(cb.Text)
+				End If
+			Next
+		Else
+			For Each kvp As KeyValuePair(Of String, ScottPlot.FormsPlot) In allCharts
+				visibleTitles.Add(kvp.Key)
+			Next
+		End If
+
+		' Rebuild: single column, fixed-height rows, vertically scrollable
+		panel.SuspendLayout()
+		panel.Controls.Clear()
+		panel.ColumnCount = 1
+		panel.ColumnStyles.Clear()
+		panel.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0F))
+		panel.RowCount = 0
+		panel.RowStyles.Clear()
+		panel.AutoScroll = True
+
+		For Each title As String In visibleTitles
+			If Not allCharts.ContainsKey(title) Then Continue For
+			Dim chart As ScottPlot.FormsPlot = allCharts(title)
+			panel.RowCount += 1
+			panel.RowStyles.Add(New RowStyle(SizeType.Absolute, cChartHeight))
+			chart.Dock = DockStyle.Fill
+			chart.MinimumSize = New System.Drawing.Size(0, 0)
+			chart.MaximumSize = New System.Drawing.Size(0, 0)
+			panel.Controls.Add(chart, 0, panel.RowCount - 1)
+		Next
+
+		panel.ResumeLayout()
 	End Sub
 
 	Private Class MonitorStatusDateRanges
@@ -727,11 +795,44 @@ Public Class frmReports
 #End Region
 
 #Region "Chart/Report Generators"
-	Private Function GenChartsStatusRaw(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		Dim Chart As New ZedGraphControl
-		Dim ChartNum As Integer = 0
 
-		GenChartsStatusRaw = New Dictionary(Of Integer, ZedGraphControl)
+	''' <summary>
+	''' Creates and configures a new ScottPlot.FormsPlot with standard chart styling.
+	''' </summary>
+	Private Function CreateChart(ByVal title As String, ByVal xFormat As String, ByVal isDateTimeX As Boolean) As ScottPlot.FormsPlot
+		Dim chart As New ScottPlot.FormsPlot()
+		Dim plt As ScottPlot.Plot = chart.Plot
+		plt.Style(figureBackground:=Color.White, dataBackground:=Color.WhiteSmoke)
+		plt.Title(title)
+		If isDateTimeX Then
+			plt.XAxis.DateTimeFormat(True)
+			plt.XAxis.TickLabelFormat(xFormat, dateTimeFormat:=True)
+		End If
+		plt.XAxis.TickLabelStyle(fontSize:=9)
+		plt.YAxis.TickLabelStyle(fontSize:=9)
+		chart.Tag = title
+		RemoveHandler chart.RightClicked, AddressOf chart.DefaultRightClickEvent
+		Dim cms As New ContextMenuStrip()
+		Dim openItem As New ToolStripMenuItem("Open in new window")
+		AddHandler openItem.Click, Sub(s As Object, e As EventArgs)
+			Dim viewer As New ScottPlot.FormsPlotViewer(chart.Plot, 900, 500, CStr(chart.Tag))
+			viewer.Show()
+		End Sub
+		cms.Items.Add(openItem)
+		chart.ContextMenuStrip = cms
+		Return chart
+	End Function
+
+	''' <summary>
+	''' Sets an error/watermark annotation on a chart when data limits are exceeded.
+	''' </summary>
+	Private Sub SetErrorWatermark(ByVal ErrMsg As String, ByVal chart As ScottPlot.FormsPlot)
+		chart.Plot.AddAnnotation(ErrMsg)
+	End Sub
+
+	Private Function GenChartsStatusRaw(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		Dim ChartNum As Integer = 0
+		GenChartsStatusRaw = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -808,109 +909,57 @@ Public Class frmReports
 				End With
 				mStatusData_Custom = tblResults
 
-				'Do no plot anything if rows exceed cMaxDataPts
+				'Do not plot anything if rows exceed mMaxDataPts
 				If tblResults.Rows.Count > mMaxDataPts Then
-					Dim dummy As New ZedGraph.ZedGraphControl
-					dummy.IsAntiAlias = True
-					With dummy.GraphPane
-						.Title.Text = "Status"
-						.XAxis.Type = AxisType.Date
-						.XAxis.Scale.Format = cFormatDate
-						.XAxis.Scale.FontSpec.Size = 11
-						.XAxis.Title.IsVisible = False
-
-						.YAxis.Scale.FontSpec.Size = 11
-						.YAxis.Title.IsVisible = False
-						.YAxis.Scale.MinGrace = 0
-						.YAxis.Scale.MaxGrace = 0
-
-						.BaseDimension = 5.5
-						.Legend.IsVisible = False
-					End With
-					Me.SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					Dim dummy As ScottPlot.FormsPlot = CreateChart("Status", "HH:mm", True)
+					SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					dummy.Refresh()
 					GenChartsStatusRaw.Add(ChartNum, dummy)
 					ChartNum += 1
 					Exit Function
-				End If '<= cMaxDataPts
+				End If
 
+				' Build X and Y arrays from DataTable
+				Dim xs As New List(Of Double)
+				Dim ysOK As New List(Of Double)
+				Dim ysWarning As New List(Of Double)
+				Dim ysFailure As New List(Of Double)
 
-				With Chart
-					.GraphPane.Title.Text = "Status"
-					.IsAntiAlias = True
-					.IsShowPointValues = True
-					.IsShowCursorValues = False
-				End With
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("DT_Raw")).ToOADate())
+					ysOK.Add(CDbl(row("IsOK")))
+					ysWarning.Add(CDbl(row("IsWarning")))
+					ysFailure.Add(CDbl(row("IsFailure")))
+				Next
 
+				Dim Chart As ScottPlot.FormsPlot = CreateChart("Status", "HH:mm", True)
+				Dim plt As ScottPlot.Plot = Chart.Plot
 
-				Dim myPane As GraphPane = Chart.GraphPane
-				With myPane
-					.XAxis.Type = AxisType.Date
-					.XAxis.Scale.Format = cFormatDateHM
-					.XAxis.Scale.FontSpec.Size = 11
-					.XAxis.Title.IsVisible = False
-					.XAxis.Scale.MinGrace = 0
-					.XAxis.Scale.MaxGrace = 0
-
-					.YAxis.Scale.FontSpec.Size = 11
-					.YAxis.Title.IsVisible = False
-					.YAxis.Scale.MinGrace = 0
-					.YAxis.Scale.MaxGrace = 0
-
-					.BaseDimension = 5.5
-					.Legend.IsVisible = True
-					.Legend.Border.IsVisible = False
-				End With
-
-				myPane.XAxis.Type = AxisType.Date
-
-				Dim dsplOK As New DataSourcePointList
-				With dsplOK
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "IsOK"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplWarning As New DataSourcePointList
-				With dsplWarning
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "IsWarning"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplFailure As New DataSourcePointList
-				With dsplFailure
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "IsFailure"
-					.ZDataMember = Nothing
-				End With
-
-				Dim curveOK As LineItem = myPane.AddCurve("OK", dsplOK, Color.Blue, SymbolType.None)
-				curveOK.Line.StepType = StepType.ForwardStep
-
-				Dim curveWarning As LineItem = myPane.AddCurve("Warning", dsplWarning, Color.Orange, SymbolType.None)
-				curveWarning.Line.StepType = StepType.ForwardStep
-
-				Dim curveFailure As LineItem = myPane.AddCurve("Failure", dsplFailure, Color.Red, SymbolType.None)
-				curveFailure.Line.StepType = StepType.ForwardStep
-
-
-				'Pad YAxis by 10%
-				Chart.AxisChange()
-				Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Dim Extra As Double = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-
-				Chart.AxisChange()
+				If xs.Count > 0 Then
+					Dim curveOK As ScottPlot.Plottable.ScatterPlot = plt.AddScatterStep(xs.ToArray(), ysOK.ToArray(), Color.Blue)
+					curveOK.Label = "OK"
+					curveOK.LineWidth = 1.5
+					curveOK.MarkerSize = 0
+	
+					Dim curveWarning As ScottPlot.Plottable.ScatterPlot =plt.AddScatterStep(xs.ToArray(), ysWarning.ToArray(), Color.Orange)
+					curveWarning.Label = "Warning"
+					curveWarning.LineWidth = 1.5
+					curveWarning.MarkerSize = 0
+	
+					Dim curveFailure As ScottPlot.Plottable.ScatterPlot =plt.AddScatterStep(xs.ToArray(), ysFailure.ToArray(), Color.Red)
+					curveFailure.Label = "Failure"
+					curveFailure.LineWidth = 1.5
+					curveFailure.MarkerSize = 0
+	
+					plt.Legend()
+					plt.SetAxisLimitsY(-0.1, 1.1)
+				End If
 				Chart.Refresh()
+
+				GenChartsStatusRaw.Add(ChartNum, Chart)
+				ChartNum += 1
 			End If
 
-			GenChartsStatusRaw.Add(ChartNum, Chart)
-			ChartNum += 1
 		Catch ex As Exception
 			MsgBox("Error running report:" & vbCrLf & ex.ToString, MsgBoxStyle.Exclamation Or MsgBoxStyle.OkOnly, "PolyMon Error")
 		Finally
@@ -919,28 +968,10 @@ Public Class frmReports
 			SQLConn.Dispose()
 		End Try
 	End Function
-	Private Function GenChartsStatusDaily(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartStatus As New ZedGraphControl
-		With ChartStatus
-			.GraphPane.Title.Text = "Status Frequency - Daily"
-			.Name = "chartDailyStatus"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
 
-
-		Dim ChartUptime As New ZedGraphControl
-		With ChartUptime
-			.GraphPane.Title.Text = "% Uptime - Daily"
-			.Name = "chartDailyUptime"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
-
-
-		GenChartsStatusDaily = New Dictionary(Of Integer, ZedGraphControl)
+	Private Function GenChartsStatusDaily(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsStatusDaily = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 		Dim ChartNum As Integer = 0
-
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -1021,112 +1052,56 @@ Public Class frmReports
 				End With
 				mStatusData_Daily = tblResults
 
+				' Build arrays from DataTable
+				Dim xs As New List(Of Double)
+				Dim ysWarning As New List(Of Double)
+				Dim ysFailure As New List(Of Double)
+				Dim ysPercUpTime As New List(Of Double)
 
-				'Status Chart
-				Dim myPane As GraphPane = ChartStatus.GraphPane
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("DT_Raw")).ToOADate())
+					ysWarning.Add(CDbl(row("WarningCount")))
+					ysFailure.Add(CDbl(row("FailureCount")))
+					ysPercUpTime.Add(CDbl(row("PercUptime")))
+				Next
 
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
+				' Status Frequency Chart
+				Dim ChartStatus As ScottPlot.FormsPlot = CreateChart("Status Frequency - Daily", "MMM dd", True)
+				Dim pltStatus As ScottPlot.Plot = ChartStatus.Plot
 
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
-
-				'Dim dsplOK As New DataSourcePointList
-				'With dsplOK
-				'	.DataSource = tblResults
-				'	.XDataMember = "DT_Raw"
-				'	.YDataMember = "OKCount"
-				'	.ZDataMember = Nothing
-				'End With
-
-				Dim dsplWarning As New DataSourcePointList
-				With dsplWarning
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "WarningCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplFailure As New DataSourcePointList
-				With dsplFailure
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "FailureCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplPercUpTime As New DataSourcePointList
-				With dsplPercUpTime
-					.DataSource = tblResults
-					.XDataMember = "DT_Raw"
-					.YDataMember = "PercUptime"
-					.ZDataMember = Nothing
-				End With
-
-				'Dim curveOK As LineItem = myPane.AddCurve("OK", dsplOK, Color.Blue, SymbolType.None)
-				'curveOK.Line.StepType = StepType.ForwardStep
-
-				Dim curveWarning As LineItem = myPane.AddCurve("Warning", dsplWarning, Color.Orange, SymbolType.None)
-				curveWarning.Line.StepType = StepType.RearwardStep
-
-				Dim curveFailure As LineItem = myPane.AddCurve("Failure", dsplFailure, Color.Red, SymbolType.None)
-				curveFailure.Line.StepType = StepType.RearwardStep
-
-
-				'Pad YAxis by 10%
-				ChartStatus.AxisChange()
-				Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Dim Extra As Double = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartStatus.AxisChange()
+				If xs.Count > 0 Then
+					Dim curveWarning As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysWarning.ToArray(), Color.Orange)
+					curveWarning.Label = "Warning"
+					curveWarning.LineWidth = 1.5
+					curveWarning.MarkerSize = 0
+	
+					Dim curveFailure As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysFailure.ToArray(), Color.Red)
+					curveFailure.Label = "Failure"
+					curveFailure.LineWidth = 1.5
+					curveFailure.MarkerSize = 0
+	
+					pltStatus.Legend()
+				End If
 				ChartStatus.Refresh()
 				GenChartsStatusDaily.Add(ChartNum, ChartStatus)
 				ChartNum += 1
 
-				'% Uptime Chart
-				myPane = ChartUptime.GraphPane
+				' % Uptime Chart
+				Dim ChartUptime As ScottPlot.FormsPlot = CreateChart("% Uptime - Daily", "MMM dd", True)
+				Dim pltUptime As ScottPlot.Plot = ChartUptime.Plot
 
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
-
-				If tblResults.Rows.Count > mSymbolMaxPts Then
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, SymbolType.None)
-				Else
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, mPointSymbolType)
-					curvePercUpTime.Symbol.Fill.Color = mPointSymbolFillColor
-					curvePercUpTime.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-					curvePercUpTime.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-					curvePercUpTime.Symbol.Size = mPointSymbolSize
+				If xs.Count > 0 Then
+					Dim curvePercUpTime As ScottPlot.Plottable.ScatterPlot =pltUptime.AddScatter(xs.ToArray(), ysPercUpTime.ToArray(), Color.Blue)
+					curvePercUpTime.Label = "% Uptime"
+					curvePercUpTime.LineWidth = 1.5
+					If tblResults.Rows.Count > mSymbolMaxPts Then
+						curvePercUpTime.MarkerSize = 0
+					Else
+						curvePercUpTime.MarkerSize = 7
+				End If
 				End If
 
-				'Pad YAxis by 10%
-				ChartUptime.AxisChange()
-				YAxisRange = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Extra = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartUptime.AxisChange()
+				pltUptime.Legend()
 				ChartUptime.Refresh()
 				GenChartsStatusDaily.Add(ChartNum, ChartUptime)
 				ChartNum += 1
@@ -1139,30 +1114,11 @@ Public Class frmReports
 			daSQL.Dispose()
 			SQLConn.Dispose()
 		End Try
-
 	End Function
-	Private Function GenChartsStatusWeekly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartStatus As New ZedGraphControl
-		With ChartStatus
-			.GraphPane.Title.Text = "Status Frequency - Weekly"
-			.Name = "chartWeeklyStatus"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
 
-
-		Dim ChartUptime As New ZedGraphControl
-		With ChartUptime
-			.GraphPane.Title.Text = "% Uptime - Weekly"
-			.Name = "chartWeeklyUptime"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
-
-
-		GenChartsStatusWeekly = New Dictionary(Of Integer, ZedGraphControl)
+	Private Function GenChartsStatusWeekly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsStatusWeekly = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 		Dim ChartNum As Integer = 0
-
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -1212,7 +1168,6 @@ Public Class frmReports
 			If dsResults.Tables.Count > 0 Then
 				tblResults = dsResults.Tables(0)
 
-
 				tblResults.Columns("StartDT_Raw").ExtendedProperties.Add("Visible", False)
 				tblResults.Columns("EndDT_Raw").ExtendedProperties.Add("Visible", False)
 				With tblResults.Columns("Year")
@@ -1257,112 +1212,56 @@ Public Class frmReports
 				End With
 				mStatusData_Weekly = tblResults
 
+				' Build arrays from DataTable
+				Dim xs As New List(Of Double)
+				Dim ysWarning As New List(Of Double)
+				Dim ysFailure As New List(Of Double)
+				Dim ysPercUpTime As New List(Of Double)
 
-				'Status Chart
-				Dim myPane As GraphPane = ChartStatus.GraphPane
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+					ysWarning.Add(CDbl(row("WarningCount")))
+					ysFailure.Add(CDbl(row("FailureCount")))
+					ysPercUpTime.Add(CDbl(row("PercUptime")))
+				Next
 
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
+				' Status Frequency Chart
+				Dim ChartStatus As ScottPlot.FormsPlot = CreateChart("Status Frequency - Weekly", "MMM dd", True)
+				Dim pltStatus As ScottPlot.Plot = ChartStatus.Plot
 
-
-				'Dim dsplOK As New DataSourcePointList
-				'With dsplOK
-				'	.DataSource = tblResults
-				'	.XDataMember = "StartDT_Raw"
-				'	.YDataMember = "OKCount"
-				'	.ZDataMember = Nothing
-				'End With
-
-				Dim dsplWarning As New DataSourcePointList
-				With dsplWarning
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "WarningCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplFailure As New DataSourcePointList
-				With dsplFailure
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "FailureCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplPercUpTime As New DataSourcePointList
-				With dsplPercUpTime
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "PercUptime"
-					.ZDataMember = Nothing
-				End With
-
-				'Dim curveOK As LineItem = myPane.AddCurve("OK", dsplOK, Color.Blue, SymbolType.None)
-				'curveOK.Line.StepType = StepType.ForwardStep
-
-				Dim curveWarning As LineItem = myPane.AddCurve("Warning", dsplWarning, Color.Orange, SymbolType.None)
-				curveWarning.Line.StepType = StepType.RearwardStep
-
-				Dim curveFailure As LineItem = myPane.AddCurve("Failure", dsplFailure, Color.Red, SymbolType.None)
-				curveFailure.Line.StepType = StepType.RearwardStep
-
-				'Pad YAxis by 10%
-				ChartStatus.AxisChange()
-				Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Dim Extra As Double = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartStatus.AxisChange()
+				If xs.Count > 0 Then
+					Dim curveWarning As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysWarning.ToArray(), Color.Orange)
+					curveWarning.Label = "Warning"
+					curveWarning.LineWidth = 1.5
+					curveWarning.MarkerSize = 0
+	
+					Dim curveFailure As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysFailure.ToArray(), Color.Red)
+					curveFailure.Label = "Failure"
+					curveFailure.LineWidth = 1.5
+					curveFailure.MarkerSize = 0
+	
+					pltStatus.Legend()
+				End If
 				ChartStatus.Refresh()
 				GenChartsStatusWeekly.Add(ChartNum, ChartStatus)
 				ChartNum += 1
 
+				' % Uptime Chart
+				Dim ChartUptime As ScottPlot.FormsPlot = CreateChart("% Uptime - Weekly", "MMM dd", True)
+				Dim pltUptime As ScottPlot.Plot = ChartUptime.Plot
 
-				'% Uptime Chart
-				myPane = ChartUptime.GraphPane
-
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
-
-				If tblResults.Rows.Count > mSymbolMaxPts Then
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, SymbolType.None)
-				Else
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, mPointSymbolType)
-					curvePercUpTime.Symbol.Fill.Color = mPointSymbolFillColor
-					curvePercUpTime.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-					curvePercUpTime.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-					curvePercUpTime.Symbol.Size = mPointSymbolSize
+				If xs.Count > 0 Then
+					Dim curvePercUpTime As ScottPlot.Plottable.ScatterPlot =pltUptime.AddScatter(xs.ToArray(), ysPercUpTime.ToArray(), Color.Blue)
+					curvePercUpTime.Label = "% Uptime"
+					curvePercUpTime.LineWidth = 1.5
+					If tblResults.Rows.Count > mSymbolMaxPts Then
+						curvePercUpTime.MarkerSize = 0
+					Else
+						curvePercUpTime.MarkerSize = 7
+				End If
 				End If
 
-				'Pad YAxis by 10%
-				ChartUptime.AxisChange()
-				YAxisRange = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Extra = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartUptime.AxisChange()
+				pltUptime.Legend()
 				ChartUptime.Refresh()
 				GenChartsStatusWeekly.Add(ChartNum, ChartUptime)
 				ChartNum += 1
@@ -1375,28 +1274,10 @@ Public Class frmReports
 			daSQL.Dispose()
 			SQLConn.Dispose()
 		End Try
-
 	End Function
-	Private Function GenChartsStatusMonthly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartStatus As New ZedGraphControl
-		With ChartStatus
-			.GraphPane.Title.Text = "Status Frequency - Monthly"
-			.Name = "chartMonthlyStatus"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
 
-
-		Dim ChartUptime As New ZedGraphControl
-		With ChartUptime
-			.GraphPane.Title.Text = "% Uptime - Monthly"
-			.Name = "chartMonthlyUptime"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
-
-
-		GenChartsStatusMonthly = New Dictionary(Of Integer, ZedGraphControl)
+	Private Function GenChartsStatusMonthly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsStatusMonthly = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 		Dim ChartNum As Integer = 0
 
 		'Retrieve data
@@ -1491,110 +1372,56 @@ Public Class frmReports
 				End With
 				mStatusData_Monthly = tblResults
 
-				'Status Chart
-				Dim myPane As GraphPane = ChartStatus.GraphPane
+				' Build arrays from DataTable
+				Dim xs As New List(Of Double)
+				Dim ysWarning As New List(Of Double)
+				Dim ysFailure As New List(Of Double)
+				Dim ysPercUpTime As New List(Of Double)
 
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+					ysWarning.Add(CDbl(row("WarningCount")))
+					ysFailure.Add(CDbl(row("FailureCount")))
+					ysPercUpTime.Add(CDbl(row("PercUptime")))
+				Next
 
+				' Status Frequency Chart
+				Dim ChartStatus As ScottPlot.FormsPlot = CreateChart("Status Frequency - Monthly", "MMM yyyy", True)
+				Dim pltStatus As ScottPlot.Plot = ChartStatus.Plot
 
-				'Dim dsplOK As New DataSourcePointList
-				'With dsplOK
-				'	.DataSource = tblResults
-				'	.XDataMember = "StartDT_Raw"
-				'	.YDataMember = "OKCount"
-				'	.ZDataMember = Nothing
-				'End With
-
-				Dim dsplWarning As New DataSourcePointList
-				With dsplWarning
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "WarningCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplFailure As New DataSourcePointList
-				With dsplFailure
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "FailureCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplPercUpTime As New DataSourcePointList
-				With dsplPercUpTime
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "PercUptime"
-					.ZDataMember = Nothing
-				End With
-
-				'Dim curveOK As LineItem = myPane.AddCurve("OK", dsplOK, Color.Blue, SymbolType.None)
-				'curveOK.Line.StepType = StepType.ForwardStep
-
-				Dim curveWarning As LineItem = myPane.AddCurve("Warning", dsplWarning, Color.Orange, SymbolType.None)
-				curveWarning.Line.StepType = StepType.RearwardStep
-
-				Dim curveFailure As LineItem = myPane.AddCurve("Failure", dsplFailure, Color.Red, SymbolType.None)
-				curveFailure.Line.StepType = StepType.RearwardStep
-
-				'Pad YAxis by 10%
-				ChartStatus.AxisChange()
-				Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Dim Extra As Double = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartStatus.AxisChange()
+				If xs.Count > 0 Then
+					Dim curveWarning As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysWarning.ToArray(), Color.Orange)
+					curveWarning.Label = "Warning"
+					curveWarning.LineWidth = 1.5
+					curveWarning.MarkerSize = 0
+	
+					Dim curveFailure As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysFailure.ToArray(), Color.Red)
+					curveFailure.Label = "Failure"
+					curveFailure.LineWidth = 1.5
+					curveFailure.MarkerSize = 0
+	
+					pltStatus.Legend()
+				End If
 				ChartStatus.Refresh()
 				GenChartsStatusMonthly.Add(ChartNum, ChartStatus)
 				ChartNum += 1
 
+				' % Uptime Chart
+				Dim ChartUptime As ScottPlot.FormsPlot = CreateChart("% Uptime - Monthly", "MMM yyyy", True)
+				Dim pltUptime As ScottPlot.Plot = ChartUptime.Plot
 
-				'% Uptime Chart
-				myPane = ChartUptime.GraphPane
-
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
-
-				If tblResults.Rows.Count > mSymbolMaxPts Then
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, SymbolType.None)
-				Else
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, mPointSymbolType)
-					curvePercUpTime.Symbol.Fill.Color = mPointSymbolFillColor
-					curvePercUpTime.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-					curvePercUpTime.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-					curvePercUpTime.Symbol.Size = mPointSymbolSize
+				If xs.Count > 0 Then
+					Dim curvePercUpTime As ScottPlot.Plottable.ScatterPlot =pltUptime.AddScatter(xs.ToArray(), ysPercUpTime.ToArray(), Color.Blue)
+					curvePercUpTime.Label = "% Uptime"
+					curvePercUpTime.LineWidth = 1.5
+					If tblResults.Rows.Count > mSymbolMaxPts Then
+						curvePercUpTime.MarkerSize = 0
+					Else
+						curvePercUpTime.MarkerSize = 7
 				End If
-				'Pad YAxis by 10%
-				ChartUptime.AxisChange()
-				YAxisRange = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Extra = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
+				End If
 
-				ChartUptime.AxisChange()
+				pltUptime.Legend()
 				ChartUptime.Refresh()
 				GenChartsStatusMonthly.Add(ChartNum, ChartUptime)
 				ChartNum += 1
@@ -1607,30 +1434,11 @@ Public Class frmReports
 			daSQL.Dispose()
 			SQLConn.Dispose()
 		End Try
-
 	End Function
-	Private Function GenChartsStatusCustom(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date, ByVal TPMinutes As Integer) As Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartStatus As New ZedGraphControl
-		With ChartStatus
-			.GraphPane.Title.Text = "Status Frequency"
-			.Name = "chartCustomStatus"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
 
-
-		Dim ChartUptime As New ZedGraphControl
-		With ChartUptime
-			.GraphPane.Title.Text = "% Uptime"
-			.Name = "chartCustomUptime"
-			.IsAntiAlias = True
-			.IsShowPointValues = True
-		End With
-
-
-		GenChartsStatusCustom = New Dictionary(Of Integer, ZedGraphControl)
+	Private Function GenChartsStatusCustom(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date, ByVal TPMinutes As Integer) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsStatusCustom = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 		Dim ChartNum As Integer = 0
-
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -1718,135 +1526,66 @@ Public Class frmReports
 				End With
 				mStatusData_Custom = tblResults
 
-				'Status Chart
-
-				Dim myPane As GraphPane = ChartStatus.GraphPane
-
-				'Do no plot anything if rows exceed cMaxDataPts
-				'Do no plot anything if rows exceed cMaxDataPts
+				'Do not plot anything if rows exceed mMaxDataPts
 				If tblResults.Rows.Count > mMaxDataPts Then
-					With ChartStatus.GraphPane
-						.XAxis.Type = AxisType.Date
-						.XAxis.Scale.Format = cFormatDate
-						.XAxis.Scale.FontSpec.Size = 11
-						.XAxis.Title.IsVisible = False
-
-						.YAxis.Scale.FontSpec.Size = 11
-						.YAxis.Title.IsVisible = False
-						.YAxis.Scale.MinGrace = 0
-						.YAxis.Scale.MaxGrace = 0
-
-						.BaseDimension = 5.5
-						.Legend.IsVisible = False
-					End With
-					Me.SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), ChartStatus)
-					GenChartsStatusCustom.Add(ChartNum, ChartStatus)
+					Dim dummy As ScottPlot.FormsPlot = CreateChart("Status Frequency", "MMM dd", True)
+					SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					dummy.Refresh()
+					GenChartsStatusCustom.Add(ChartNum, dummy)
 					ChartNum += 1
 					Exit Function
-				End If '<= cMaxDataPts
+				End If
 
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
+				' Build arrays from DataTable
+				Dim xs As New List(Of Double)
+				Dim ysWarning As New List(Of Double)
+				Dim ysFailure As New List(Of Double)
+				Dim ysPercUpTime As New List(Of Double)
 
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+					ysWarning.Add(CDbl(row("WarningCount")))
+					ysFailure.Add(CDbl(row("FailureCount")))
+					ysPercUpTime.Add(CDbl(row("PercUptime")))
+				Next
 
-				'Dim dsplOK As New DataSourcePointList
-				'With dsplOK
-				'	.DataSource = tblResults
-				'	.XDataMember = "StartDT_Raw"
-				'	.YDataMember = "OKCount"
-				'	.ZDataMember = Nothing
-				'End With
+				' Status Frequency Chart
+				Dim ChartStatus As ScottPlot.FormsPlot = CreateChart("Status Frequency", "MMM dd", True)
+				Dim pltStatus As ScottPlot.Plot = ChartStatus.Plot
 
-				Dim dsplWarning As New DataSourcePointList
-				With dsplWarning
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "WarningCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplFailure As New DataSourcePointList
-				With dsplFailure
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "FailureCount"
-					.ZDataMember = Nothing
-				End With
-
-				Dim dsplPercUpTime As New DataSourcePointList
-				With dsplPercUpTime
-					.DataSource = tblResults
-					.XDataMember = "StartDT_Raw"
-					.YDataMember = "PercUptime"
-					.ZDataMember = Nothing
-				End With
-
-				'Dim curveOK As LineItem = myPane.AddCurve("OK", dsplOK, Color.Blue, SymbolType.None)
-				'curveOK.Line.StepType = StepType.ForwardStep
-
-				Dim curveWarning As LineItem = myPane.AddCurve("Warning", dsplWarning, Color.Orange, SymbolType.None)
-				curveWarning.Line.StepType = StepType.RearwardStep
-
-				Dim curveFailure As LineItem = myPane.AddCurve("Failure", dsplFailure, Color.Red, SymbolType.None)
-				curveFailure.Line.StepType = StepType.RearwardStep
-
-				'Pad YAxis by 10%
-				ChartStatus.AxisChange()
-				Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Dim Extra As Double = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartStatus.AxisChange()
+				If xs.Count > 0 Then
+					Dim curveWarning As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysWarning.ToArray(), Color.Orange)
+					curveWarning.Label = "Warning"
+					curveWarning.LineWidth = 1.5
+					curveWarning.MarkerSize = 0
+	
+					Dim curveFailure As ScottPlot.Plottable.ScatterPlot =pltStatus.AddScatterStep(xs.ToArray(), ysFailure.ToArray(), Color.Red)
+					curveFailure.Label = "Failure"
+					curveFailure.LineWidth = 1.5
+					curveFailure.MarkerSize = 0
+	
+					pltStatus.Legend()
+				End If
 				ChartStatus.Refresh()
 				GenChartsStatusCustom.Add(ChartNum, ChartStatus)
 				ChartNum += 1
 
+				' % Uptime Chart
+				Dim ChartUptime As ScottPlot.FormsPlot = CreateChart("% Uptime", "MMM dd", True)
+				Dim pltUptime As ScottPlot.Plot = ChartUptime.Plot
 
-				'% Uptime Chart
-				myPane = ChartUptime.GraphPane
-
-				myPane.XAxis.Type = AxisType.Date
-				myPane.XAxis.Scale.Format = cFormatDate
-				myPane.XAxis.Scale.FontSpec.Size = 11
-				myPane.XAxis.Title.IsVisible = False
-				myPane.XAxis.Scale.MinGrace = 0
-				myPane.XAxis.Scale.MaxGrace = 0
-				myPane.YAxis.Scale.FontSpec.Size = 11
-				myPane.YAxis.Title.IsVisible = False
-				myPane.YAxis.Scale.MinGrace = 0
-				myPane.YAxis.Scale.MaxGrace = 0
-				myPane.BaseDimension = 5.5
-				myPane.Legend.Border.IsVisible = False
-
-				If tblResults.Rows.Count > mSymbolMaxPts Then
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, SymbolType.None)
-				Else
-					Dim curvePercUpTime As LineItem = myPane.AddCurve("% Uptime", dsplPercUpTime, Color.Blue, mPointSymbolType)
-					curvePercUpTime.Symbol.Fill.Color = mPointSymbolFillColor
-					curvePercUpTime.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-					curvePercUpTime.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-					curvePercUpTime.Symbol.Size = mPointSymbolSize
+				If xs.Count > 0 Then
+					Dim curvePercUpTime As ScottPlot.Plottable.ScatterPlot =pltUptime.AddScatter(xs.ToArray(), ysPercUpTime.ToArray(), Color.Blue)
+					curvePercUpTime.Label = "% Uptime"
+					curvePercUpTime.LineWidth = 1.5
+					If tblResults.Rows.Count > mSymbolMaxPts Then
+						curvePercUpTime.MarkerSize = 0
+					Else
+						curvePercUpTime.MarkerSize = 7
+				End If
 				End If
 
-				'Pad YAxis by 10%
-				ChartUptime.AxisChange()
-				YAxisRange = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-				Extra = YAxisRange * 0.1
-				myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-				myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-				ChartUptime.AxisChange()
+				pltUptime.Legend()
 				ChartUptime.Refresh()
 				GenChartsStatusCustom.Add(ChartNum, ChartUptime)
 				ChartNum += 1
@@ -1859,12 +1598,10 @@ Public Class frmReports
 			daSQL.Dispose()
 			SQLConn.Dispose()
 		End Try
-
 	End Function
 
-	Private Function GenChartsCountersRaw(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		GenChartsCountersRaw = New Dictionary(Of Integer, ZedGraphControl)
-
+	Private Function GenChartsCountersRaw(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsCountersRaw = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 		Dim ChartNum As Integer = 0
 
 		'Retrieve data
@@ -1929,84 +1666,45 @@ Public Class frmReports
 				Next
 				mCounterData_Custom = tblResults
 
-				'Do no plot anything if rows exceed cMaxDataPts
+				'Do not plot anything if rows exceed mMaxDataPts
 				If tblResults.Rows.Count > mMaxDataPts Then
-					Dim dummy As New ZedGraph.ZedGraphControl
-					dummy.IsAntiAlias = True
-					With dummy.GraphPane
-						.Title.Text = "Counter"
-						.XAxis.Type = AxisType.Date
-						.XAxis.Scale.Format = cFormatDate
-						.XAxis.Scale.FontSpec.Size = 11
-						.XAxis.Title.IsVisible = False
-
-						.YAxis.Scale.FontSpec.Size = 11
-						.YAxis.Title.IsVisible = False
-						.YAxis.Scale.MinGrace = 0
-						.YAxis.Scale.MaxGrace = 0
-
-						.BaseDimension = 5.5
-						.Legend.IsVisible = False
-					End With
-					Me.SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					Dim dummy As ScottPlot.FormsPlot = CreateChart("Counter", "HH:mm", True)
+					SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					dummy.Refresh()
 					GenChartsCountersRaw.Add(ChartNum, dummy)
 					ChartNum += 1
 					Exit Function
-				End If '<= cMaxDataPts
+				End If
+
+				' Build X array (common to all counter columns)
+				Dim xs As New List(Of Double)
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("DT_Raw")).ToOADate())
+				Next
+				Dim xsArr As Double() = xs.ToArray()
 
 				Dim ColName As String
 				Dim Column As DataColumn
 				For Each Column In tblResults.Columns
 					ColName = Column.ColumnName
 					If Not (ColName = "DT_Raw" OrElse ColName = "DT_Display") Then
-						'This is a counter column - Create a chart for it
-						Dim Chart As New ZedGraphControl
-						With Chart
-							.GraphPane.Title.Text = String.Format("{0} - Detail", ColName)
-							.IsAntiAlias = True
-							.IsShowPointValues = True
-							.IsShowCursorValues = False
-						End With
+						' Build Y array for this counter
+						Dim ys As New List(Of Double)
+						For Each row As DataRow In tblResults.Rows
+							ys.Add(CDbl(row(ColName)))
+						Next
 
-						Dim myPane As GraphPane = Chart.GraphPane
-						With myPane
-							.XAxis.Type = AxisType.Date
-							.XAxis.Scale.Format = cFormatDateHMS
-							.XAxis.Scale.FontSpec.Size = 11
-							.XAxis.Title.IsVisible = False
-							.XAxis.Scale.MinGrace = 0
-							.XAxis.Scale.MaxGrace = 0
+						Dim Chart As ScottPlot.FormsPlot = CreateChart(String.Format("{0} - Detail", ColName), "HH:mm", True)
+						Dim plt As ScottPlot.Plot = Chart.Plot
 
-							.YAxis.Scale.FontSpec.Size = 11
-							.YAxis.Title.IsVisible = False
-							.YAxis.Scale.MinGrace = 0
-							.YAxis.Scale.MaxGrace = 0
+						If xs.Count > 0 Then
+							Dim curveData As ScottPlot.Plottable.ScatterPlot =plt.AddScatter(xsArr, ys.ToArray(), Color.Blue)
+							curveData.Label = ColName
+							curveData.LineWidth = 1.5
+							curveData.MarkerSize = 0
+						End If
 
-							.BaseDimension = 5.5
-							.Legend.IsVisible = False
-						End With
-
-						Dim dsplData As New DataSourcePointList
-						With dsplData
-							.DataSource = tblResults
-							.XDataMember = "DT_Raw"
-							.YDataMember = ColName
-							.ZDataMember = Nothing
-						End With
-
-						Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, SymbolType.None)
-
-						'Pad YAxis by 10%
-						Chart.AxisChange()
-						Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-						Dim Extra As Double = YAxisRange * 0.1
-						myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-						myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-
-						Chart.AxisChange()
 						Chart.Refresh()
-
 						GenChartsCountersRaw.Add(ChartNum, Chart)
 						ChartNum += 1
 					End If
@@ -2021,9 +1719,9 @@ Public Class frmReports
 			SQLConn.Dispose()
 		End Try
 	End Function
-	Private Function GenChartsCountersDaily(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		GenChartsCountersDaily = New Dictionary(Of Integer, ZedGraphControl)
 
+	Private Function GenChartsCountersDaily(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsCountersDaily = New Dictionary(Of Integer, ScottPlot.FormsPlot)
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -2087,6 +1785,12 @@ Public Class frmReports
 				Next
 				mCounterData_Daily = tblResults
 
+				' Build X array (common to all counter columns)
+				Dim xs As New List(Of Double)
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("DT_Raw")).ToOADate())
+				Next
+				Dim xsArr As Double() = xs.ToArray()
 
 				Dim ChartNum As Integer = 0
 				Dim ColName As String
@@ -2094,58 +1798,26 @@ Public Class frmReports
 				For Each Column In tblResults.Columns
 					ColName = Column.ColumnName
 					If Not (ColName = "DT_Raw" OrElse ColName = "DT_Display" OrElse ColName.EndsWith("Avg") OrElse ColName.EndsWith("(# Samples)")) Then
-						'This is a counter (average) column - Create a chart for it
-						Dim Chart As New ZedGraphControl
-						With Chart
-							.GraphPane.Title.Text = String.Format("{0} - Daily", ColName)
-							.IsAntiAlias = True
-							.IsShowPointValues = True
-							.IsShowCursorValues = False
-						End With
-						Dim myPane As GraphPane = Chart.GraphPane
-						With myPane
-							.XAxis.Type = AxisType.Date
-							.XAxis.Scale.Format = cFormatDate
-							.XAxis.Scale.FontSpec.Size = 11
-							.XAxis.Title.IsVisible = False
-							.XAxis.Scale.MinGrace = 0
-							.XAxis.Scale.MaxGrace = 0
+						' Build Y array for this counter
+						Dim ys As New List(Of Double)
+						For Each row As DataRow In tblResults.Rows
+							ys.Add(CDbl(row(ColName)))
+						Next
 
-							.YAxis.Scale.FontSpec.Size = 11
-							.YAxis.Title.IsVisible = False
-							.YAxis.Scale.MinGrace = 0
-							.YAxis.Scale.MaxGrace = 0
+						Dim Chart As ScottPlot.FormsPlot = CreateChart(String.Format("{0} - Daily", ColName), "MMM dd", True)
+						Dim plt As ScottPlot.Plot = Chart.Plot
 
-							.BaseDimension = 5.5
-							.Legend.IsVisible = False
-						End With
-
-						Dim dsplData As New DataSourcePointList
-						With dsplData
-							.DataSource = tblResults
-							.XDataMember = "DT_Raw"
-							.YDataMember = ColName
-							.ZDataMember = Nothing
-						End With
-
-						If tblResults.Rows.Count > mSymbolMaxPts Then
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, SymbolType.None)
-						Else
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, mPointSymbolType)
-							curveData.Symbol.Fill.Color = mPointSymbolFillColor
-							curveData.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-							curveData.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-							curveData.Symbol.Size = mPointSymbolSize
+						If xs.Count > 0 Then
+							Dim curveData As ScottPlot.Plottable.ScatterPlot =plt.AddScatter(xsArr, ys.ToArray(), Color.Blue)
+							curveData.Label = ColName
+							curveData.LineWidth = 1.5
+							If tblResults.Rows.Count > mSymbolMaxPts Then
+								curveData.MarkerSize = 0
+							Else
+								curveData.MarkerSize = 7
+						End If
 						End If
 
-						'Pad YAxis by 10%
-						Chart.AxisChange()
-						Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-						Dim Extra As Double = YAxisRange * 0.1
-						myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-						myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-						Chart.AxisChange()
 						Chart.Refresh()
 						GenChartsCountersDaily.Add(ChartNum, Chart)
 						ChartNum += 1
@@ -2161,10 +1833,10 @@ Public Class frmReports
 			SQLConn.Dispose()
 		End Try
 	End Function
-	Private Function GenChartsCountersWeekly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		GenChartsCountersWeekly = New Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartNum As Integer = 0
 
+	Private Function GenChartsCountersWeekly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsCountersWeekly = New Dictionary(Of Integer, ScottPlot.FormsPlot)
+		Dim ChartNum As Integer = 0
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -2232,63 +1904,38 @@ Public Class frmReports
 				Next
 				mCounterData_Weekly = tblResults
 
+				' Build X array (common to all counter columns)
+				Dim xs As New List(Of Double)
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+				Next
+				Dim xsArr As Double() = xs.ToArray()
+
 				Dim ColName As String
 				Dim Column As DataColumn
 				For Each Column In tblResults.Columns
 					ColName = Column.ColumnName
 					If Not (ColName = "StartDT_Raw" OrElse ColName = "StartDT_Display" OrElse ColName = "EndDT_Raw" OrElse ColName = "EndDT_Display" OrElse ColName = "Year" OrElse ColName = "WeekOfYear" OrElse ColName.EndsWith("Avg") OrElse ColName.EndsWith("(# Samples)")) Then
-						'This is a counter (average) column - Create a chart for it
-						Dim Chart As New ZedGraphControl
-						With Chart
-							.GraphPane.Title.Text = String.Format("{0} - Weekly", ColName)
-							.IsAntiAlias = True
-							.IsShowPointValues = True
-							.IsShowCursorValues = False
-						End With
-						Dim myPane As GraphPane = Chart.GraphPane
-						With myPane
-							.XAxis.Type = AxisType.Date
-							.XAxis.Scale.Format = cFormatDate
-							.XAxis.Scale.FontSpec.Size = 11
-							.XAxis.Title.IsVisible = False
-							.XAxis.Scale.MinGrace = 0
-							.XAxis.Scale.MaxGrace = 0
+						' Build Y array for this counter
+						Dim ys As New List(Of Double)
+						For Each row As DataRow In tblResults.Rows
+							ys.Add(CDbl(row(ColName)))
+						Next
 
-							.YAxis.Scale.FontSpec.Size = 11
-							.YAxis.Title.IsVisible = False
-							.YAxis.Scale.MinGrace = 0
-							.YAxis.Scale.MaxGrace = 0
+						Dim Chart As ScottPlot.FormsPlot = CreateChart(String.Format("{0} - Weekly", ColName), "MMM dd", True)
+						Dim plt As ScottPlot.Plot = Chart.Plot
 
-							.BaseDimension = 5.5
-							.Legend.IsVisible = False
-						End With
-
-						Dim dsplData As New DataSourcePointList
-						With dsplData
-							.DataSource = tblResults
-							.XDataMember = "StartDT_Raw"
-							.YDataMember = ColName
-							.ZDataMember = Nothing
-						End With
-
-						If tblResults.Rows.Count > mSymbolMaxPts Then
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, SymbolType.None)
-						Else
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, mPointSymbolType)
-							curveData.Symbol.Fill.Color = mPointSymbolFillColor
-							curveData.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-							curveData.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-							curveData.Symbol.Size = mPointSymbolSize
+						If xs.Count > 0 Then
+							Dim curveData As ScottPlot.Plottable.ScatterPlot =plt.AddScatter(xsArr, ys.ToArray(), Color.Blue)
+							curveData.Label = ColName
+							curveData.LineWidth = 1.5
+							If tblResults.Rows.Count > mSymbolMaxPts Then
+								curveData.MarkerSize = 0
+							Else
+								curveData.MarkerSize = 7
+						End If
 						End If
 
-						'Pad YAxis by 10%
-						Chart.AxisChange()
-						Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-						Dim Extra As Double = YAxisRange * 0.1
-						myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-						myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-						Chart.AxisChange()
 						Chart.Refresh()
 						GenChartsCountersWeekly.Add(ChartNum, Chart)
 						ChartNum += 1
@@ -2304,10 +1951,10 @@ Public Class frmReports
 			SQLConn.Dispose()
 		End Try
 	End Function
-	Private Function GenChartsCountersMonthly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ZedGraphControl)
-		GenChartsCountersMonthly = New Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartNum As Integer = 0
 
+	Private Function GenChartsCountersMonthly(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsCountersMonthly = New Dictionary(Of Integer, ScottPlot.FormsPlot)
+		Dim ChartNum As Integer = 0
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -2373,63 +2020,38 @@ Public Class frmReports
 				Next
 				mCounterData_Monthly = tblResults
 
+				' Build X array (common to all counter columns)
+				Dim xs As New List(Of Double)
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+				Next
+				Dim xsArr As Double() = xs.ToArray()
+
 				Dim ColName As String
 				Dim Column As DataColumn
 				For Each Column In tblResults.Columns
 					ColName = Column.ColumnName
 					If Not (ColName = "StartDT_Raw" OrElse ColName = "StartDT_Display" OrElse ColName = "EndDT_Raw" OrElse ColName = "EndDT_Display" OrElse ColName = "Year" OrElse ColName = "Month" OrElse ColName.EndsWith("Avg") OrElse ColName.EndsWith("(# Samples)")) Then
-						'This is a counter (average) column - Create a chart for it
-						Dim Chart As New ZedGraphControl
-						With Chart
-							.GraphPane.Title.Text = String.Format("{0} - Monthly", ColName)
-							.IsAntiAlias = True
-							.IsShowPointValues = True
-							.IsShowCursorValues = False
-						End With
-						Dim myPane As GraphPane = Chart.GraphPane
-						With myPane
-							.XAxis.Type = AxisType.Date
-							.XAxis.Scale.Format = cFormatDate
-							.XAxis.Scale.FontSpec.Size = 11
-							.XAxis.Title.IsVisible = False
-							.XAxis.Scale.MinGrace = 0
-							.XAxis.Scale.MaxGrace = 0
+						' Build Y array for this counter
+						Dim ys As New List(Of Double)
+						For Each row As DataRow In tblResults.Rows
+							ys.Add(CDbl(row(ColName)))
+						Next
 
-							.YAxis.Scale.FontSpec.Size = 11
-							.YAxis.Title.IsVisible = False
-							.YAxis.Scale.MinGrace = 0
-							.YAxis.Scale.MaxGrace = 0
+						Dim Chart As ScottPlot.FormsPlot = CreateChart(String.Format("{0} - Monthly", ColName), "MMM yyyy", True)
+						Dim plt As ScottPlot.Plot = Chart.Plot
 
-							.BaseDimension = 5.5
-							.Legend.IsVisible = False
-						End With
-
-						Dim dsplData As New DataSourcePointList
-						With dsplData
-							.DataSource = tblResults
-							.XDataMember = "StartDT_Raw"
-							.YDataMember = ColName
-							.ZDataMember = Nothing
-						End With
-
-						If tblResults.Rows.Count > mSymbolMaxPts Then
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, SymbolType.None)
-						Else
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, mPointSymbolType)
-							curveData.Symbol.Fill.Color = mPointSymbolFillColor
-							curveData.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-							curveData.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-							curveData.Symbol.Size = mPointSymbolSize
+						If xs.Count > 0 Then
+							Dim curveData As ScottPlot.Plottable.ScatterPlot =plt.AddScatter(xsArr, ys.ToArray(), Color.Blue)
+							curveData.Label = ColName
+							curveData.LineWidth = 1.5
+							If tblResults.Rows.Count > mSymbolMaxPts Then
+								curveData.MarkerSize = 0
+							Else
+								curveData.MarkerSize = 7
+						End If
 						End If
 
-						'Pad YAxis by 10%
-						Chart.AxisChange()
-						Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-						Dim Extra As Double = YAxisRange * 0.1
-						myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-						myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-						Chart.AxisChange()
 						Chart.Refresh()
 						GenChartsCountersMonthly.Add(ChartNum, Chart)
 						ChartNum += 1
@@ -2445,10 +2067,10 @@ Public Class frmReports
 			SQLConn.Dispose()
 		End Try
 	End Function
-	Private Function GenChartsCountersCustom(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date, ByVal TPMinutes As Integer) As Dictionary(Of Integer, ZedGraphControl)
-		GenChartsCountersCustom = New Dictionary(Of Integer, ZedGraphControl)
-		Dim ChartNum As Integer = 0
 
+	Private Function GenChartsCountersCustom(ByVal MonitorID As Integer, ByVal StartDT As Date, ByVal EndDT As Date, ByVal TPMinutes As Integer) As Dictionary(Of Integer, ScottPlot.FormsPlot)
+		GenChartsCountersCustom = New Dictionary(Of Integer, ScottPlot.FormsPlot)
+		Dim ChartNum As Integer = 0
 
 		'Retrieve data
 		Dim SQLConn As New SqlConnection(mSQLConn)
@@ -2525,89 +2147,48 @@ Public Class frmReports
 				Next
 				mCounterData_Custom = tblResults
 
-				'Do no plot anything if rows exceed cMaxDataPts
+				'Do not plot anything if rows exceed mMaxDataPts
 				If tblResults.Rows.Count > mMaxDataPts Then
-					Dim dummy As New ZedGraph.ZedGraphControl
-					dummy.IsAntiAlias = True
-					With dummy.GraphPane
-						.Title.Text = "Counter"
-						.XAxis.Type = AxisType.Date
-						.XAxis.Scale.Format = cFormatDate
-						.XAxis.Scale.FontSpec.Size = 11
-						.XAxis.Title.IsVisible = False
-
-						.YAxis.Scale.FontSpec.Size = 11
-						.YAxis.Title.IsVisible = False
-						.YAxis.Scale.MinGrace = 0
-						.YAxis.Scale.MaxGrace = 0
-
-						.BaseDimension = 5.5
-						.Legend.IsVisible = False
-					End With
-					Me.SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					Dim dummy As ScottPlot.FormsPlot = CreateChart("Counter", "MMM dd", True)
+					SetErrorWatermark(String.Format(cMaxReachedMsg, mMaxDataPts), dummy)
+					dummy.Refresh()
 					GenChartsCountersCustom.Add(ChartNum, dummy)
 					ChartNum += 1
 					Exit Function
-				End If '<= cMaxDataPts
+				End If
 
+				' Build X array (common to all counter columns)
+				Dim xs As New List(Of Double)
+				For Each row As DataRow In tblResults.Rows
+					xs.Add(CDate(row("StartDT_Raw")).ToOADate())
+				Next
+				Dim xsArr As Double() = xs.ToArray()
 
 				Dim ColName As String
 				Dim Column As DataColumn
 				For Each Column In tblResults.Columns
 					ColName = Column.ColumnName
 					If Not (ColName = "StartDT_Raw" OrElse ColName = "StartDT_Display" OrElse ColName = "EndDT_Raw" OrElse ColName = "EndDT_Display" OrElse ColName.EndsWith("Avg") OrElse ColName.EndsWith("(# Samples)")) Then
-						'This is a counter (average) column - Create a chart for it
-						Dim Chart As New ZedGraphControl
-						With Chart
-							.GraphPane.Title.Text = ColName
-							.IsAntiAlias = True
-							.IsShowPointValues = True
-							.IsShowCursorValues = False
-						End With
-						Dim myPane As GraphPane = Chart.GraphPane
-						With myPane
-							.XAxis.Type = AxisType.Date
-							.XAxis.Scale.Format = cFormatDate
-							.XAxis.Scale.FontSpec.Size = 11
-							.XAxis.Title.IsVisible = False
-							.XAxis.Scale.MinGrace = 0
-							.XAxis.Scale.MaxGrace = 0
+						' Build Y array for this counter
+						Dim ys As New List(Of Double)
+						For Each row As DataRow In tblResults.Rows
+							ys.Add(CDbl(row(ColName)))
+						Next
 
-							.YAxis.Scale.FontSpec.Size = 11
-							.YAxis.Title.IsVisible = False
-							.YAxis.Scale.MinGrace = 0
-							.YAxis.Scale.MaxGrace = 0
+						Dim Chart As ScottPlot.FormsPlot = CreateChart(ColName, "MMM dd", True)
+						Dim plt As ScottPlot.Plot = Chart.Plot
 
-							.BaseDimension = 5.5
-							.Legend.IsVisible = False
-						End With
-
-						Dim dsplData As New DataSourcePointList
-						With dsplData
-							.DataSource = tblResults
-							.XDataMember = "StartDT_Raw"
-							.YDataMember = ColName
-							.ZDataMember = Nothing
-						End With
-
-						If tblResults.Rows.Count > mSymbolMaxPts Then
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, SymbolType.None)
-						Else
-							Dim curveData As LineItem = myPane.AddCurve(ColName, dsplData, Color.Blue, mPointSymbolType)
-							curveData.Symbol.Fill.Color = mPointSymbolFillColor
-							curveData.Symbol.Fill.IsVisible = mPointSymbolFillIsVisible
-							curveData.Symbol.Border.IsVisible = mPointSymbolBorderIsVisible
-							curveData.Symbol.Size = mPointSymbolSize
+						If xs.Count > 0 Then
+							Dim curveData As ScottPlot.Plottable.ScatterPlot =plt.AddScatter(xsArr, ys.ToArray(), Color.Blue)
+							curveData.Label = ColName
+							curveData.LineWidth = 1.5
+							If tblResults.Rows.Count > mSymbolMaxPts Then
+								curveData.MarkerSize = 0
+							Else
+								curveData.MarkerSize = 7
+						End If
 						End If
 
-						'Pad YAxis by 10%
-						Chart.AxisChange()
-						Dim YAxisRange As Double = Math.Abs(myPane.YAxis.Scale.Max) - Math.Abs(myPane.YAxis.Scale.Min)
-						Dim Extra As Double = YAxisRange * 0.1
-						myPane.YAxis.Scale.Min = myPane.YAxis.Scale.Min - Extra
-						myPane.YAxis.Scale.Max = myPane.YAxis.Scale.Max + Extra
-
-						Chart.AxisChange()
 						Chart.Refresh()
 						GenChartsCountersCustom.Add(ChartNum, Chart)
 						ChartNum += 1
@@ -2624,20 +2205,5 @@ Public Class frmReports
 		End Try
 	End Function
 
-	Private Sub SetErrorWatermark(ByVal ErrMsg As String, ByRef Chart As ZedGraph.ZedGraphControl)
-		Dim Message As New TextObj(ErrMsg, 0.5, 0.5)
-		Message.Location.CoordinateFrame = CoordType.PaneFraction
-		Message.FontSpec.Angle = 0.0
-		Message.FontSpec.FontColor = Color.FromArgb(100, 0, 0, 255)
-		Message.FontSpec.Size = 20
-		Message.FontSpec.IsBold = True
-		Message.FontSpec.Border.IsVisible = False
-		Message.FontSpec.Fill.IsVisible = False
-		Message.Location.AlignH = AlignH.Center
-		Message.Location.AlignV = AlignV.Center
-		Message.ZOrder = ZOrder.A_InFront
-
-		Chart.GraphPane.GraphObjList.Add(Message)
-	End Sub
 #End Region
 End Class
