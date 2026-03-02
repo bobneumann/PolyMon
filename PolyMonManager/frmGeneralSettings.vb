@@ -238,6 +238,10 @@ Public Class frmGeneralSettings
 			' Graph defaults
 			Me.chkGraphDefaultStatusFreq.Checked = mSysSettings.GraphDefaultStatusFreq
 			Me.chkGraphDefaultUptime.Checked = mSysSettings.GraphDefaultUptime
+
+			' Execution settings
+			Me.udMonitorConcurrency.Value = mSysSettings.MonitorConcurrency
+			Me.udMonitorTimeoutPct.Value = mSysSettings.MonitorTimeoutPct
         Catch ex As Exception
             MsgBox("Error retrieving data from database:" & vbCrLf & ex.Message & vbCrLf & vbCrLf & ex.InnerException.Message, MsgBoxStyle.Exclamation, "PolyMon Error")
         End Try
@@ -258,6 +262,8 @@ Public Class frmGeneralSettings
 				.SetPushNotification(CStr(Me.cboPushService.SelectedItem), Me.txtPushServerURL.Text, Me.txtPushToken.Text)
 				.Notes = Me.txtPushNotes.Text
 				.SetGraphDefaults(Me.chkGraphDefaultStatusFreq.Checked, Me.chkGraphDefaultUptime.Checked)
+			.MonitorConcurrency = CInt(Me.udMonitorConcurrency.Value)
+			.MonitorTimeoutPct = CInt(Me.udMonitorTimeoutPct.Value)
 
                 .Save()
             End With

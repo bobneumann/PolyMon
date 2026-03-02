@@ -2,6 +2,7 @@ Imports System.ServiceProcess
 Imports System.Data.SqlClient
 Imports System.Collections.Generic
 Imports System.Text
+Imports System.Threading
 
 Namespace Executive
     Public Class PolyMonExecutive
@@ -79,7 +80,7 @@ Namespace Executive
 
 
 #Region "Private Attributes"
-		Private Const mDBVersion As Single = 1.54
+		Private Const mDBVersion As Single = 1.55
 
 		Private mEventLog As String = "PolyMon"
 
@@ -89,6 +90,8 @@ Namespace Executive
 
 		Private mSQLConn As String
 		Private mMainTimerInterval As Integer = 60 'seconds
+		Private mMonitorConcurrency As Integer = 10
+		Private mMonitorTimeoutPct As Integer = 80
 		Private mExecutiveID As Integer = 1
 
 		Private Enum SeverityLevel As Integer
@@ -294,6 +297,24 @@ Namespace Executive
 					Else
 						mMainTimerInterval = CInt(StrMainTimerInterval) * 1000 'Convert seconds to milliseconds
 					End If
+
+					'Read optional execution settings (non-fatal if missing)
+					Try
+						Dim StrConcurrency As String = CStr(dr.Item("MonitorConcurrency"))
+						If IsNumeric(StrConcurrency) AndAlso CInt(StrConcurrency) >= 1 AndAlso CInt(StrConcurrency) <= 100 Then
+							mMonitorConcurrency = CInt(StrConcurrency)
+						End If
+					Catch
+						'Use default if column not yet present
+					End Try
+					Try
+						Dim StrTimeoutPct As String = CStr(dr.Item("MonitorTimeoutPct"))
+						If IsNumeric(StrTimeoutPct) AndAlso CInt(StrTimeoutPct) >= 10 AndAlso CInt(StrTimeoutPct) <= 100 Then
+							mMonitorTimeoutPct = CInt(StrTimeoutPct)
+						End If
+					Catch
+						'Use default if column not yet present
+					End Try
 				End While
 			Catch ex As Exception
 				Try
@@ -440,17 +461,46 @@ Namespace Executive
 	Private Sub RunMonitors()
 			ExpireMaintenanceMode()
 			RefreshMonitorList()
-			Dim myMonitor As PolyMon.Monitors.MonitorExecutor
-			For Each myMonitor In mMonitorList.Values
-				Try
-					myMonitor.RunMonitor()
-				Catch ex As Exception
+
+			'Build a snapshot of the monitor list so we can iterate safely
+			Dim monitorSnapshot As New List(Of PolyMon.Monitors.MonitorExecutor)(mMonitorList.Values)
+			If monitorSnapshot.Count = 0 Then Exit Sub
+
+			'Each monitor runs on its own thread; all start in parallel
+			Dim threads As New List(Of Thread)
+			For Each m As PolyMon.Monitors.MonitorExecutor In monitorSnapshot
+				Dim capture As PolyMon.Monitors.MonitorExecutor = m
+				Dim t As New Thread(Sub()
 					Try
-						EventLog.WriteEntry(mEventLog, "Error occurred processing Monitor: " & myMonitor.MonitorName & " (ID=" & myMonitor.MonitorID & ")" & vbCrLf & ex.Message, EventLogEntryType.Warning)
-					Catch
-						'Do nothing 
+						capture.RunMonitor()
+					Catch tae As ThreadAbortException
+						Thread.ResetAbort()
+						Try
+							EventLog.WriteEntry(mEventLog, "Monitor timed out: " & capture.MonitorName, EventLogEntryType.Warning)
+						Catch
+						End Try
+					Catch ex As Exception
+						Try
+							EventLog.WriteEntry(mEventLog, "Monitor error [" & capture.MonitorName & "]: " & ex.Message, EventLogEntryType.Warning)
+						Catch
+						End Try
 					End Try
-				End Try
+				End Sub)
+				t.IsBackground = True
+				threads.Add(t)
+				t.Start()
+			Next
+
+			'Give all monitors up to MonitorTimeoutPct% of the cycle interval,
+			'then abort any that are still running
+			Dim timeoutMs As Integer = CInt(mMainTimerInterval * (mMonitorTimeoutPct / 100.0))
+			Dim deadline As DateTime = DateTime.UtcNow.AddMilliseconds(timeoutMs)
+			For Each t As Thread In threads
+				Dim remaining As Integer = CInt(Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds))
+				t.Join(remaining)
+			Next
+			For Each t As Thread In threads
+				If t.IsAlive Then t.Abort()
 			Next
 		End Sub
 

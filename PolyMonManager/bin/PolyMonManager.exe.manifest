@@ -4,7 +4,7 @@
   <description asmv2:iconFile="PolyMon (32x32).ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="PolyMonManager" version="1.5.2.25189" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="PolyMonManager" version="1.5.5.33245" language="neutral" processorArchitecture="msil" />
     <commandLine file="PolyMonManager.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -364,13 +364,13 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="GenericMonitor.dll" size="14336">
-      <assemblyIdentity name="GenericMonitor" version="1.2.0.34563" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="GenericMonitor" version="1.2.0.33243" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>CfyeZZiQKVPh/px3+eMzv9FbKtAfYpx9FG+V1zTtd/8=</dsig:DigestValue>
+        <dsig:DigestValue>+8ezj2MnrbrXxBliaZZzLn+CjAOk0jSXWMJ7WbT1Y/0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -411,38 +411,38 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMon.dll" size="72192">
-      <assemblyIdentity name="PolyMon" version="1.5.1.34563" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMon.dll" size="73216">
+      <assemblyIdentity name="PolyMon" version="1.5.1.33243" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>ON8QeDg3eGnm4y4NGpbwnKKBZk0qu1Kvs+CTWT+Fh6s=</dsig:DigestValue>
+        <dsig:DigestValue>4vGX3JFy9jBIvDrHyI8gHk3g90uAyzDNo8vjhZyyF+I=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="796672">
-      <assemblyIdentity name="PolyMonManager" version="1.5.2.25189" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="805376">
+      <assemblyIdentity name="PolyMonManager" version="1.5.5.33245" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>njJOW9Hy9lRlmauehu8yXdhLdoiiKMWbROUXiAYVoFI=</dsig:DigestValue>
+        <dsig:DigestValue>NjZNLI0DYT0FE3le8VGmlt0KB9kKx1e+b7U8pLqrJaY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonNotifier.dll" size="22016">
-      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.34564" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.33244" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>/Jb2IG7phBC84fcoWKTCLyjd6MCffin+jE+NFxJXnYQ=</dsig:DigestValue>
+        <dsig:DigestValue>SGnHvBvNwyDyR4BjI7XOpVdb7DZdOLrrP94UaG1trE0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

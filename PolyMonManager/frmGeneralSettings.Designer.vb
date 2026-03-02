@@ -27,6 +27,11 @@ Partial Class frmGeneralSettings
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
         Me.Label11 = New System.Windows.Forms.Label()
         Me.udSysMainTimerInterval = New System.Windows.Forms.NumericUpDown()
+        Me.udMonitorConcurrency = New System.Windows.Forms.NumericUpDown()
+        Me.udMonitorTimeoutPct = New System.Windows.Forms.NumericUpDown()
+        Me.lblMonitorConcurrency = New System.Windows.Forms.Label()
+        Me.lblMonitorTimeoutPct = New System.Windows.Forms.Label()
+        Me.lblPctOfCycle = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.txtSysServiceServer = New System.Windows.Forms.TextBox()
         Me.Label3 = New System.Windows.Forms.Label()
@@ -104,6 +109,8 @@ Partial Class frmGeneralSettings
         Me.tsGeneralSettingsEditor.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         CType(Me.udSysMainTimerInterval, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.udMonitorConcurrency, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.udMonitorTimeoutPct, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         CType(Me.upSysSMTPPort, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox3.SuspendLayout()
@@ -154,6 +161,11 @@ Partial Class frmGeneralSettings
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.lblPctOfCycle)
+        Me.GroupBox2.Controls.Add(Me.udMonitorTimeoutPct)
+        Me.GroupBox2.Controls.Add(Me.lblMonitorTimeoutPct)
+        Me.GroupBox2.Controls.Add(Me.udMonitorConcurrency)
+        Me.GroupBox2.Controls.Add(Me.lblMonitorConcurrency)
         Me.GroupBox2.Controls.Add(Me.Label11)
         Me.GroupBox2.Controls.Add(Me.udSysMainTimerInterval)
         Me.GroupBox2.Controls.Add(Me.Label4)
@@ -162,7 +174,7 @@ Partial Class frmGeneralSettings
         Me.GroupBox2.ForeColor = System.Drawing.Color.MediumBlue
         Me.GroupBox2.Location = New System.Drawing.Point(6, 97)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(376, 88)
+        Me.GroupBox2.Size = New System.Drawing.Size(376, 148)
         Me.GroupBox2.TabIndex = 9
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Polymon Executive"
@@ -196,6 +208,56 @@ Partial Class frmGeneralSettings
         Me.Label4.TabIndex = 5
         Me.Label4.Text = "Main Timer Interval"
         Me.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'lblMonitorConcurrency
+        '
+        Me.lblMonitorConcurrency.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblMonitorConcurrency.Location = New System.Drawing.Point(12, 88)
+        Me.lblMonitorConcurrency.Name = "lblMonitorConcurrency"
+        Me.lblMonitorConcurrency.Size = New System.Drawing.Size(128, 20)
+        Me.lblMonitorConcurrency.TabIndex = 10
+        Me.lblMonitorConcurrency.Text = "Max parallel monitors"
+        Me.lblMonitorConcurrency.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'udMonitorConcurrency
+        '
+        Me.udMonitorConcurrency.Location = New System.Drawing.Point(148, 88)
+        Me.udMonitorConcurrency.Maximum = New Decimal(New Integer() {100, 0, 0, 0})
+        Me.udMonitorConcurrency.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.udMonitorConcurrency.Name = "udMonitorConcurrency"
+        Me.udMonitorConcurrency.Size = New System.Drawing.Size(72, 20)
+        Me.udMonitorConcurrency.TabIndex = 11
+        Me.udMonitorConcurrency.Value = New Decimal(New Integer() {10, 0, 0, 0})
+        '
+        'lblMonitorTimeoutPct
+        '
+        Me.lblMonitorTimeoutPct.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblMonitorTimeoutPct.Location = New System.Drawing.Point(12, 116)
+        Me.lblMonitorTimeoutPct.Name = "lblMonitorTimeoutPct"
+        Me.lblMonitorTimeoutPct.Size = New System.Drawing.Size(128, 20)
+        Me.lblMonitorTimeoutPct.TabIndex = 12
+        Me.lblMonitorTimeoutPct.Text = "Monitor timeout"
+        Me.lblMonitorTimeoutPct.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'udMonitorTimeoutPct
+        '
+        Me.udMonitorTimeoutPct.Location = New System.Drawing.Point(148, 116)
+        Me.udMonitorTimeoutPct.Maximum = New Decimal(New Integer() {100, 0, 0, 0})
+        Me.udMonitorTimeoutPct.Minimum = New Decimal(New Integer() {10, 0, 0, 0})
+        Me.udMonitorTimeoutPct.Name = "udMonitorTimeoutPct"
+        Me.udMonitorTimeoutPct.Size = New System.Drawing.Size(72, 20)
+        Me.udMonitorTimeoutPct.TabIndex = 13
+        Me.udMonitorTimeoutPct.Value = New Decimal(New Integer() {80, 0, 0, 0})
+        '
+        'lblPctOfCycle
+        '
+        Me.lblPctOfCycle.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblPctOfCycle.Location = New System.Drawing.Point(224, 116)
+        Me.lblPctOfCycle.Name = "lblPctOfCycle"
+        Me.lblPctOfCycle.Size = New System.Drawing.Size(100, 20)
+        Me.lblPctOfCycle.TabIndex = 14
+        Me.lblPctOfCycle.Text = "% of cycle"
+        Me.lblPctOfCycle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'txtSysServiceServer
         '
@@ -992,6 +1054,8 @@ Partial Class frmGeneralSettings
         Me.GroupBox2.ResumeLayout(False)
         Me.GroupBox2.PerformLayout()
         CType(Me.udSysMainTimerInterval, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.udMonitorConcurrency, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.udMonitorTimeoutPct, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         CType(Me.upSysSMTPPort, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1025,6 +1089,11 @@ Partial Class frmGeneralSettings
 	Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
 	Friend WithEvents Label11 As System.Windows.Forms.Label
 	Friend WithEvents udSysMainTimerInterval As System.Windows.Forms.NumericUpDown
+	Friend WithEvents udMonitorConcurrency As System.Windows.Forms.NumericUpDown
+	Friend WithEvents udMonitorTimeoutPct As System.Windows.Forms.NumericUpDown
+	Friend WithEvents lblMonitorConcurrency As System.Windows.Forms.Label
+	Friend WithEvents lblMonitorTimeoutPct As System.Windows.Forms.Label
+	Friend WithEvents lblPctOfCycle As System.Windows.Forms.Label
 	Friend WithEvents Label4 As System.Windows.Forms.Label
 	Friend WithEvents txtSysServiceServer As System.Windows.Forms.TextBox
 	Friend WithEvents Label3 As System.Windows.Forms.Label

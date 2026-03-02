@@ -26,6 +26,8 @@ Namespace General
 		Private mEmailRelayKey As String
 		Private mGraphDefaultStatusFreq As Boolean
 		Private mGraphDefaultUptime As Boolean
+		Private mMonitorConcurrency As Integer
+		Private mMonitorTimeoutPct As Integer
 #End Region
 
 #Region "Public Interface"
@@ -160,6 +162,28 @@ Namespace General
 			Get
 				Return mGraphDefaultUptime
 			End Get
+		End Property
+		Public Property MonitorConcurrency() As Integer
+			Get
+				Return mMonitorConcurrency
+			End Get
+			Set(ByVal Value As Integer)
+				If Value < 1 OrElse Value > 100 Then
+					Throw New System.Exception("Monitor Concurrency must be between 1 and 100.")
+				End If
+				mMonitorConcurrency = Value
+			End Set
+		End Property
+		Public Property MonitorTimeoutPct() As Integer
+			Get
+				Return mMonitorTimeoutPct
+			End Get
+			Set(ByVal Value As Integer)
+				If Value < 10 OrElse Value > 100 Then
+					Throw New System.Exception("Monitor Timeout Percent must be between 10 and 100.")
+				End If
+				mMonitorTimeoutPct = Value
+			End Set
 		End Property
 		Public Property Notes() As String
 			Get
@@ -477,6 +501,22 @@ Namespace General
 				.Value = mGraphDefaultUptime
 			End With
 
+			Dim prmMonitorConcurrency As New SqlParameter
+			With prmMonitorConcurrency
+				.ParameterName = "@MonitorConcurrency"
+				.SqlDbType = SqlDbType.Int
+				.Direction = ParameterDirection.Input
+				.Value = mMonitorConcurrency
+			End With
+
+			Dim prmMonitorTimeoutPct As New SqlParameter
+			With prmMonitorTimeoutPct
+				.ParameterName = "@MonitorTimeoutPct"
+				.SqlDbType = SqlDbType.Int
+				.Direction = ParameterDirection.Input
+				.Value = mMonitorTimeoutPct
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -502,6 +542,8 @@ Namespace General
 				.Parameters.Add(prmEmailRelayKey)
 				.Parameters.Add(prmGraphDefaultStatusFreq)
 				.Parameters.Add(prmGraphDefaultUptime)
+				.Parameters.Add(prmMonitorConcurrency)
+				.Parameters.Add(prmMonitorTimeoutPct)
             End With
 
             Try
@@ -656,6 +698,26 @@ Namespace General
 							mGraphDefaultUptime = True
 						End Try
 
+						Try
+							If Not (IsDBNull(.Item("MonitorConcurrency"))) Then
+								mMonitorConcurrency = CInt(.Item("MonitorConcurrency"))
+							Else
+								mMonitorConcurrency = 10
+							End If
+						Catch
+							mMonitorConcurrency = 10
+						End Try
+
+						Try
+							If Not (IsDBNull(.Item("MonitorTimeoutPct"))) Then
+								mMonitorTimeoutPct = CInt(.Item("MonitorTimeoutPct"))
+							Else
+								mMonitorTimeoutPct = 80
+							End If
+						Catch
+							mMonitorTimeoutPct = 80
+						End Try
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -682,6 +744,8 @@ Namespace General
 					mEmailRelayKey = Nothing
 					mGraphDefaultStatusFreq = True
 					mGraphDefaultUptime = True
+					mMonitorConcurrency = 10
+					mMonitorTimeoutPct = 80
 					mDBVersion = Nothing
                 End If
 
