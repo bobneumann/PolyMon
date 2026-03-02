@@ -218,7 +218,7 @@ Public Class frmReports
 			While drResults.Read()
 				SetCurrentStatus(CInt(drResults.Item("LastStatusID")))
 				Me.lblStatusDate.Text = "(" & Format(CDate(drResults.Item("LastEventDT_Display")), cFormatDateHMSm) & ")"
-				lblLifetimePercUptime.Text = CStr(drResults.Item("LifetimePercUptime")) & "%"
+				DrawUptimeGauge(CDbl(drResults.Item("LifetimePercUptime")))
 			End While
 		Catch ex As Exception
 			MsgBox("Error running Current Status report." & vbCrLf & ex.ToString, MsgBoxStyle.Exclamation Or MsgBoxStyle.OkOnly, "PolyMon Error")
@@ -283,10 +283,26 @@ Public Class frmReports
 				End With
 		End Select
 	End Sub
+	Private Sub DrawUptimeGauge(ByVal uptimePercent As Double)
+		Dim tileColor As Color
+		If uptimePercent >= 99.0 Then
+			tileColor = Color.SeaGreen
+		ElseIf uptimePercent >= 95.0 Then
+			tileColor = Color.DodgerBlue
+		ElseIf uptimePercent >= 90.0 Then
+			tileColor = Color.DarkOrange
+		Else
+			tileColor = Color.Crimson
+		End If
+		lblLifetimePercUptime.BackColor = tileColor
+		lblLifetimePercUptime.ForeColor = Color.White
+		lblLifetimePercUptime.Text = uptimePercent.ToString("F2") & "%" & Environment.NewLine & "Lifetime Uptime"
+	End Sub
 	Private Sub InitForm(ByVal MonitorID As Integer)
 		SetCurrentStatus(-1)
 		Me.lblStatusDate.Text = Nothing
 		Me.lblLifetimePercUptime.Text = Nothing
+		Me.lblLifetimePercUptime.BackColor = Color.LightGray
 
 		Dim MonitorMetadata As New PolyMon.Monitors.MonitorMetadata(MonitorID)
 		lblMonitor.Text = MonitorMetadata.MonitorName
@@ -823,26 +839,32 @@ Public Class frmReports
 		tt.UseAnimation = False
 		tt.ShowAlways = True
 		Dim lastTip As String = ""
+		Dim lastBestIdx As Integer = -1
+		Dim pendingTip As String = ""
+		Dim pendingMousePos As Point = Point.Empty
 
-		' Zoom/pan: on mouse enter, focus the chart AND disable the parent panel's
-		' AutoScroll so the scroll wheel zooms the chart instead of scrolling the list.
-		' Re-enable AutoScroll and hide tooltip on mouse leave.
+		' Timer fires after mouse pauses — only then show/update tooltip
+		Dim tipTimer As New System.Windows.Forms.Timer()
+		tipTimer.Interval = 600
+		AddHandler tipTimer.Tick, Sub(s As Object, ev As EventArgs)
+			tipTimer.Stop()
+			If pendingTip <> "" AndAlso pendingTip <> lastTip Then
+				tt.Show(pendingTip, chart, pendingMousePos.X + 12, pendingMousePos.Y - 8, 30000)
+				lastTip = pendingTip
+			End If
+		End Sub
+
 		chart.Configuration.ScrollWheelZoom = True
 		chart.Configuration.DoubleClickBenchmark = False
 		AddHandler chart.MouseEnter, Sub(s As Object, ev As EventArgs)
-			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
-			fp.Focus()
-			If TypeOf fp.Parent Is ScrollableControl Then
-				DirectCast(fp.Parent, ScrollableControl).AutoScroll = False
-			End If
+			DirectCast(s, ScottPlot.FormsPlot).Focus()
 		End Sub
 		AddHandler chart.MouseLeave, Sub(s As Object, ev As EventArgs)
-			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
-			If TypeOf fp.Parent Is ScrollableControl Then
-				DirectCast(fp.Parent, ScrollableControl).AutoScroll = True
-			End If
-			tt.Hide(fp)
+			tipTimer.Stop()
+			tt.Hide(DirectCast(s, ScottPlot.FormsPlot))
 			lastTip = ""
+			lastBestIdx = -1
+			pendingTip = ""
 		End Sub
 
 		RemoveHandler chart.RightClicked, AddressOf chart.DefaultRightClickEvent
@@ -864,7 +886,6 @@ Public Class frmReports
 			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
 			Try
 				Dim mouseX As Double = fp.GetMouseCoordinates().Item1
-				' Snap to nearest X index across all scatter series
 				Dim bestIdx As Integer = -1
 				Dim bestX As Double = Double.NaN
 				Dim bestDist As Double = Double.MaxValue
@@ -875,19 +896,20 @@ Public Class frmReports
 							For i As Integer = 0 To sc.Xs.Length - 1
 								Dim d As Double = Math.Abs(sc.Xs(i) - mouseX)
 								If d < bestDist Then
-									bestDist = d
-									bestIdx = i
-									bestX = sc.Xs(i)
+									bestDist = d : bestIdx = i : bestX = sc.Xs(i)
 								End If
 							Next
 						End If
 					End If
 				Next
 				If bestIdx < 0 Then
-					If lastTip <> "" Then tt.Hide(fp) : lastTip = ""
+					tipTimer.Stop()
+					If lastTip <> "" Then tt.Hide(fp) : lastTip = "" : lastBestIdx = -1
 					Exit Sub
 				End If
-				' Build tooltip: date on first line, then one line per series
+				' Only restart the timer when the snapped index actually changes
+				If bestIdx = lastBestIdx Then Exit Sub
+				tipTimer.Stop()
 				Dim sb As New System.Text.StringBuilder()
 				If isDateTimeX Then
 					sb.AppendLine(DateTime.FromOADate(bestX).ToString(tooltipDateFmt))
@@ -912,11 +934,10 @@ Public Class frmReports
 						End If
 					End If
 				Next
-				Dim tipText As String = sb.ToString().TrimEnd()
-				If tipText <> lastTip Then
-					tt.Show(tipText, fp, ev.X + 15, ev.Y - 10, 30000)
-					lastTip = tipText
-				End If
+				lastBestIdx = bestIdx
+				pendingTip = sb.ToString().TrimEnd()
+				pendingMousePos = New Point(ev.X, ev.Y)
+				tipTimer.Start()
 			Catch
 			End Try
 		End Sub

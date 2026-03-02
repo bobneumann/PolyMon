@@ -157,21 +157,20 @@ Partial Class frmReports
         Me.ChartsOverview.ColumnCount = 2
         Me.ChartsOverview.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
         Me.ChartsOverview.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.ChartsOverview.Location = New System.Drawing.Point(10, 74)
+        Me.ChartsOverview.Location = New System.Drawing.Point(10, 155)
         Me.ChartsOverview.Name = "ChartsOverview"
         Me.ChartsOverview.RowCount = 1
         Me.ChartsOverview.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 0.0!))
-        Me.ChartsOverview.Size = New System.Drawing.Size(606, 363)
+        Me.ChartsOverview.Size = New System.Drawing.Size(606, 282)
         Me.ChartsOverview.TabIndex = 8
         '
         'flpChartsOverview
         '
-        Me.flpChartsOverview.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.flpChartsOverview.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.flpChartsOverview.AutoSize = True
         Me.flpChartsOverview.Location = New System.Drawing.Point(10, 48)
         Me.flpChartsOverview.Name = "flpChartsOverview"
-        Me.flpChartsOverview.Size = New System.Drawing.Size(606, 26)
+        Me.flpChartsOverview.Size = New System.Drawing.Size(400, 26)
         Me.flpChartsOverview.TabIndex = 12
         Me.flpChartsOverview.WrapContents = True
         '
@@ -233,14 +232,15 @@ Partial Class frmReports
         'lblLifetimePercUptime
         '
         Me.lblLifetimePercUptime.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.lblLifetimePercUptime.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblLifetimePercUptime.ForeColor = System.Drawing.Color.DodgerBlue
-        Me.lblLifetimePercUptime.Location = New System.Drawing.Point(520, 13)
+        Me.lblLifetimePercUptime.Font = New System.Drawing.Font("Microsoft Sans Serif", 22!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblLifetimePercUptime.ForeColor = System.Drawing.Color.White
+        Me.lblLifetimePercUptime.BackColor = System.Drawing.Color.LightGray
+        Me.lblLifetimePercUptime.Location = New System.Drawing.Point(414, 3)
         Me.lblLifetimePercUptime.Name = "lblLifetimePercUptime"
-        Me.lblLifetimePercUptime.Size = New System.Drawing.Size(96, 13)
+        Me.lblLifetimePercUptime.Size = New System.Drawing.Size(202, 145)
         Me.lblLifetimePercUptime.TabIndex = 0
-        Me.lblLifetimePercUptime.Text = "% Uptime (Lifetime)"
-        Me.lblLifetimePercUptime.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblLifetimePercUptime.Text = "% Uptime"
+        Me.lblLifetimePercUptime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         Me.ToolTip1.SetToolTip(Me.lblLifetimePercUptime, "Lifetime % Uptime")
         '
         'tabDaily

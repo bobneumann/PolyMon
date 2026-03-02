@@ -26,6 +26,10 @@ Partial Class frmReportData
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.lblMonitorType = New System.Windows.Forms.Label()
         Me.lblMonitor = New System.Windows.Forms.Label()
+        Me.tsExport = New System.Windows.Forms.ToolStrip()
+        Me.tsbExportStatus = New System.Windows.Forms.ToolStripButton()
+        Me.tsbExportCounters = New System.Windows.Forms.ToolStripButton()
+        Me.tsExport.SuspendLayout()
         CType(Me.dgvStatus, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.dgvCounters, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel1.SuspendLayout()
@@ -119,10 +123,31 @@ Partial Class frmReportData
         '
         'frmReportData
         '
+        '
+        'tsExport
+        '
+        Me.tsExport.Dock = System.Windows.Forms.DockStyle.Bottom
+        Me.tsExport.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsbExportStatus, Me.tsbExportCounters})
+        Me.tsExport.Name = "tsExport"
+        Me.tsExport.Size = New System.Drawing.Size(629, 25)
+        '
+        'tsbExportStatus
+        '
+        Me.tsbExportStatus.Name = "tsbExportStatus"
+        Me.tsbExportStatus.Text = "Export Status to CSV"
+        '
+        'tsbExportCounters
+        '
+        Me.tsbExportCounters.Name = "tsbExportCounters"
+        Me.tsbExportCounters.Text = "Export Counters to CSV"
+        '
+        'frmReportData
+        '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(629, 464)
         Me.Controls.Add(Me.Panel3)
+        Me.Controls.Add(Me.tsExport)
         Me.Controls.Add(Me.Panel1)
         Me.Name = "frmReportData"
         Me.Text = "Report Data"
@@ -133,7 +158,10 @@ Partial Class frmReportData
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         Me.SplitContainer1.ResumeLayout(False)
+        Me.tsExport.ResumeLayout(False)
+        Me.tsExport.PerformLayout()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
 	Friend WithEvents dgvStatus As System.Windows.Forms.DataGridView
@@ -143,4 +171,7 @@ Partial Class frmReportData
     Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
     Friend WithEvents lblMonitorType As System.Windows.Forms.Label
     Friend WithEvents lblMonitor As System.Windows.Forms.Label
+    Friend WithEvents tsExport As System.Windows.Forms.ToolStrip
+    Friend WithEvents tsbExportStatus As System.Windows.Forms.ToolStripButton
+    Friend WithEvents tsbExportCounters As System.Windows.Forms.ToolStripButton
 End Class
