@@ -4,7 +4,7 @@
   <description asmv2:iconFile="PolyMon (32x32).ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="PolyMonManager" version="1.5.2.40308" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="PolyMonManager" version="1.5.2.25189" language="neutral" processorArchitecture="msil" />
     <commandLine file="PolyMonManager.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -423,14 +423,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="793088">
-      <assemblyIdentity name="PolyMonManager" version="1.5.2.40308" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="796672">
+      <assemblyIdentity name="PolyMonManager" version="1.5.2.25189" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>7XAA6hu+RT9SRnI16vgqH+yBEjrp0ZPZVnHUa7vHmjc=</dsig:DigestValue>
+        <dsig:DigestValue>njJOW9Hy9lRlmauehu8yXdhLdoiiKMWbROUXiAYVoFI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -524,13 +524,13 @@
       <dsig:DigestValue>RVwS5csjtyAiSK2w/BA0RMvTmjOvuSoTsA/x/NsT9gc=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="PolyMonManager.exe.config" size="2884">
+  <file name="PolyMonManager.exe.config" size="2977">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>lVXbQN7sgD4nfcWQPGEadmSkjQp9vCpZMGsNmh70qjY=</dsig:DigestValue>
+      <dsig:DigestValue>R8HdgLsO+rJ6l7cO1MdluxRfl3Eii4a1S1RLdUj7dYo=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

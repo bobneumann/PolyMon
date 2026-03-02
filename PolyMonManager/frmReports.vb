@@ -811,6 +811,40 @@ Public Class frmReports
 		plt.XAxis.TickLabelStyle(fontSize:=9)
 		plt.YAxis.TickLabelStyle(fontSize:=9)
 		chart.Tag = title
+
+		' Hover tooltip setup — declared here so MouseLeave can reference it
+		Dim tooltipDateFmt As String
+		Select Case xFormat
+			Case "HH:mm" : tooltipDateFmt = "MMM d, yyyy HH:mm"
+			Case "MMM yyyy" : tooltipDateFmt = "MMM yyyy"
+			Case Else : tooltipDateFmt = "MMM d, yyyy"
+		End Select
+		Dim tt As New ToolTip()
+		tt.UseAnimation = False
+		tt.ShowAlways = True
+		Dim lastTip As String = ""
+
+		' Zoom/pan: on mouse enter, focus the chart AND disable the parent panel's
+		' AutoScroll so the scroll wheel zooms the chart instead of scrolling the list.
+		' Re-enable AutoScroll and hide tooltip on mouse leave.
+		chart.Configuration.ScrollWheelZoom = True
+		chart.Configuration.DoubleClickBenchmark = False
+		AddHandler chart.MouseEnter, Sub(s As Object, ev As EventArgs)
+			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
+			fp.Focus()
+			If TypeOf fp.Parent Is ScrollableControl Then
+				DirectCast(fp.Parent, ScrollableControl).AutoScroll = False
+			End If
+		End Sub
+		AddHandler chart.MouseLeave, Sub(s As Object, ev As EventArgs)
+			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
+			If TypeOf fp.Parent Is ScrollableControl Then
+				DirectCast(fp.Parent, ScrollableControl).AutoScroll = True
+			End If
+			tt.Hide(fp)
+			lastTip = ""
+		End Sub
+
 		RemoveHandler chart.RightClicked, AddressOf chart.DefaultRightClickEvent
 		Dim cms As New ContextMenuStrip()
 		Dim openItem As New ToolStripMenuItem("Open in new window")
@@ -818,8 +852,75 @@ Public Class frmReports
 			Dim viewer As New ScottPlot.FormsPlotViewer(chart.Plot, 900, 500, CStr(chart.Tag))
 			viewer.Show()
 		End Sub
+		Dim resetItem As New ToolStripMenuItem("Reset zoom")
+		AddHandler resetItem.Click, Sub(s As Object, e As EventArgs)
+			chart.Plot.AxisAuto()
+			chart.Refresh()
+		End Sub
 		cms.Items.Add(openItem)
+		cms.Items.Add(resetItem)
 		chart.ContextMenuStrip = cms
+		AddHandler chart.MouseMove, Sub(s As Object, ev As MouseEventArgs)
+			Dim fp As ScottPlot.FormsPlot = DirectCast(s, ScottPlot.FormsPlot)
+			Try
+				Dim mouseX As Double = fp.GetMouseCoordinates().Item1
+				' Snap to nearest X index across all scatter series
+				Dim bestIdx As Integer = -1
+				Dim bestX As Double = Double.NaN
+				Dim bestDist As Double = Double.MaxValue
+				For Each p As ScottPlot.Plottable.IPlottable In fp.Plot.GetPlottables()
+					If TypeOf p Is ScottPlot.Plottable.ScatterPlot Then
+						Dim sc As ScottPlot.Plottable.ScatterPlot = DirectCast(p, ScottPlot.Plottable.ScatterPlot)
+						If sc.Xs IsNot Nothing Then
+							For i As Integer = 0 To sc.Xs.Length - 1
+								Dim d As Double = Math.Abs(sc.Xs(i) - mouseX)
+								If d < bestDist Then
+									bestDist = d
+									bestIdx = i
+									bestX = sc.Xs(i)
+								End If
+							Next
+						End If
+					End If
+				Next
+				If bestIdx < 0 Then
+					If lastTip <> "" Then tt.Hide(fp) : lastTip = ""
+					Exit Sub
+				End If
+				' Build tooltip: date on first line, then one line per series
+				Dim sb As New System.Text.StringBuilder()
+				If isDateTimeX Then
+					sb.AppendLine(DateTime.FromOADate(bestX).ToString(tooltipDateFmt))
+				Else
+					sb.AppendLine(bestX.ToString("G"))
+				End If
+				For Each p As ScottPlot.Plottable.IPlottable In fp.Plot.GetPlottables()
+					If TypeOf p Is ScottPlot.Plottable.ScatterPlot Then
+						Dim sc As ScottPlot.Plottable.ScatterPlot = DirectCast(p, ScottPlot.Plottable.ScatterPlot)
+						If sc.Xs IsNot Nothing AndAlso bestIdx < sc.Ys.Length Then
+							Dim yVal As Double = sc.Ys(bestIdx)
+							Dim seriesLabel As String = If(sc.Label <> "", sc.Label, "Value")
+							Dim yStr As String
+							If title.StartsWith("% Uptime") Then
+								yStr = yVal.ToString("F1") & "%"
+							ElseIf title.StartsWith("Status Frequency") Then
+								yStr = yVal.ToString("F0")
+							Else
+								yStr = yVal.ToString("G")
+							End If
+							sb.AppendLine(seriesLabel & ": " & yStr)
+						End If
+					End If
+				Next
+				Dim tipText As String = sb.ToString().TrimEnd()
+				If tipText <> lastTip Then
+					tt.Show(tipText, fp, ev.X + 15, ev.Y - 10, 30000)
+					lastTip = tipText
+				End If
+			Catch
+			End Try
+		End Sub
+
 		Return chart
 	End Function
 

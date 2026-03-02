@@ -59,6 +59,10 @@ Public Class frmGeneralSettings
     Private Sub chkBalloonAlerts_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkBalloonAlerts.CheckedChanged
         Me.mUserSettings.BalloonAlertsEnabled = Me.chkBalloonAlerts.Checked
     End Sub
+    Private Sub cboTileSize_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cboTileSize.SelectedIndexChanged
+        mUserSettings.TileSizeIndex = Me.cboTileSize.SelectedIndex
+    End Sub
+
     Private Sub cboMDIBackColor_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cboMDIBackColor.SelectedIndexChanged
         Dim NewColor As Color
         NewColor = Color.FromName(CStr(cboMDIBackColor.SelectedItem))
@@ -302,6 +306,13 @@ Public Class frmGeneralSettings
 
         'MDI Back Color
         Me.cboMDIBackColor.Text = mUserSettings.MDIBackColor.Name
+
+        'Monitor Tile Size
+        Me.cboTileSize.Items.Clear()
+        Me.cboTileSize.Items.Add("Small (default)")
+        Me.cboTileSize.Items.Add("Medium")
+        Me.cboTileSize.Items.Add("Large")
+        Me.cboTileSize.SelectedIndex = mUserSettings.TileSizeIndex
 
         'Graph Defaults
         If mSysSettings IsNot Nothing Then

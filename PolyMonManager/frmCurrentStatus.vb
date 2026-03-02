@@ -376,7 +376,13 @@ Public Class frmCurrentStatus
 				Case View.Tile
 					.Visible = False
 					.View = View.Tile
-					.TileSize = New Drawing.Size(140, 70)
+					Dim tileW As Integer, tileH As Integer
+					Select Case New UserSettings().TileSizeIndex
+						Case 1 : tileW = 200 : tileH = 95
+						Case 2 : tileW = 260 : tileH = 120
+						Case Else : tileW = 140 : tileH = 70
+					End Select
+					.TileSize = New Drawing.Size(tileW, tileH)
 					If .Columns.IndexOfKey("Name") < 0 Then .Columns.Add("Name", "Name")
 					If .Columns.IndexOfKey("Monitor Type") < 0 Then .Columns.Add("Monitor Type", "Monitor Type")
 					If .Columns.IndexOfKey("Event DT") >= 0 Then .Columns.Remove(.Columns("Event DT"))

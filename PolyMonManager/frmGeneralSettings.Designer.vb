@@ -55,6 +55,8 @@ Partial Class frmGeneralSettings
         Me.chkGraphDefaultUptime = New System.Windows.Forms.CheckBox()
         Me.cboMDIBackColor = New System.Windows.Forms.ComboBox()
         Me.Label12 = New System.Windows.Forms.Label()
+        Me.lblTileSize = New System.Windows.Forms.Label()
+        Me.cboTileSize = New System.Windows.Forms.ComboBox()
         Me.chkBalloonAlerts = New System.Windows.Forms.CheckBox()
         Me.cboTimerIntervals = New System.Windows.Forms.ComboBox()
         Me.chkAudioAlert = New System.Windows.Forms.CheckBox()
@@ -409,10 +411,12 @@ Partial Class frmGeneralSettings
         Me.GroupBox3.Controls.Add(Me.cboTimerIntervals)
         Me.GroupBox3.Controls.Add(Me.chkAudioAlert)
         Me.GroupBox3.Controls.Add(Me.Label14)
+        Me.GroupBox3.Controls.Add(Me.lblTileSize)
+        Me.GroupBox3.Controls.Add(Me.cboTileSize)
         Me.GroupBox3.ForeColor = System.Drawing.Color.MediumBlue
         Me.GroupBox3.Location = New System.Drawing.Point(6, 6)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Size = New System.Drawing.Size(376, 142)
+        Me.GroupBox3.Size = New System.Drawing.Size(376, 170)
         Me.GroupBox3.TabIndex = 11
         Me.GroupBox3.TabStop = False
         Me.GroupBox3.Text = "Polymon Manager"
@@ -425,6 +429,25 @@ Partial Class frmGeneralSettings
         Me.cboMDIBackColor.Name = "cboMDIBackColor"
         Me.cboMDIBackColor.Size = New System.Drawing.Size(167, 21)
         Me.cboMDIBackColor.TabIndex = 14
+        '
+        'lblTileSize
+        '
+        Me.lblTileSize.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.lblTileSize.Location = New System.Drawing.Point(16, 141)
+        Me.lblTileSize.Name = "lblTileSize"
+        Me.lblTileSize.Size = New System.Drawing.Size(151, 20)
+        Me.lblTileSize.TabIndex = 15
+        Me.lblTileSize.Text = "Monitor Tile Size"
+        Me.lblTileSize.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'cboTileSize
+        '
+        Me.cboTileSize.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboTileSize.FormattingEnabled = True
+        Me.cboTileSize.Location = New System.Drawing.Point(153, 141)
+        Me.cboTileSize.Name = "cboTileSize"
+        Me.cboTileSize.Size = New System.Drawing.Size(120, 21)
+        Me.cboTileSize.TabIndex = 16
         '
         'Label12
         '
@@ -1032,6 +1055,8 @@ Partial Class frmGeneralSettings
 	Friend WithEvents Label2 As System.Windows.Forms.Label
 	Friend WithEvents Label12 As System.Windows.Forms.Label
 	Friend WithEvents cboMDIBackColor As System.Windows.Forms.ComboBox
+	Friend WithEvents lblTileSize As System.Windows.Forms.Label
+	Friend WithEvents cboTileSize As System.Windows.Forms.ComboBox
 	Friend WithEvents TabControl1 As System.Windows.Forms.TabControl
 	Friend WithEvents tpSysSettings As System.Windows.Forms.TabPage
 	Friend WithEvents tpUserSettings As System.Windows.Forms.TabPage

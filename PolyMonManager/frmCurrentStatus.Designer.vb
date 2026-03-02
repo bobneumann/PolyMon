@@ -176,7 +176,7 @@ Partial Class frmCurrentStatus
         Me.SplitContainer1.Panel2.Controls.Add(Me.tabMonitor)
         Me.SplitContainer1.Panel2.Controls.Add(Me.ToolStrip2)
         Me.SplitContainer1.Size = New System.Drawing.Size(592, 516)
-        Me.SplitContainer1.SplitterDistance = 328
+        Me.SplitContainer1.SplitterDistance = 303
         Me.SplitContainer1.TabIndex = 7
         '
         'tabMonitor
@@ -189,7 +189,7 @@ Partial Class frmCurrentStatus
         Me.tabMonitor.Location = New System.Drawing.Point(3, 25)
         Me.tabMonitor.Name = "tabMonitor"
         Me.tabMonitor.SelectedIndex = 0
-        Me.tabMonitor.Size = New System.Drawing.Size(586, 135)
+        Me.tabMonitor.Size = New System.Drawing.Size(586, 134)
         Me.tabMonitor.TabIndex = 3
         '
         'tpStatus
@@ -416,57 +416,65 @@ Partial Class frmCurrentStatus
         'ToolStrip2
         '
         Me.ToolStrip2.Dock = System.Windows.Forms.DockStyle.Bottom
+        Me.ToolStrip2.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ToolStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tbtnRefresh, Me.tbtnRun, Me.ToolStripSeparator1, Me.tbtnHistory, Me.ToolStripSeparator3, Me.tbtnMonitorDef})
-        Me.ToolStrip2.Location = New System.Drawing.Point(0, 159)
+        Me.ToolStrip2.Location = New System.Drawing.Point(0, 134)
         Me.ToolStrip2.Name = "ToolStrip2"
-        Me.ToolStrip2.Size = New System.Drawing.Size(592, 25)
+        Me.ToolStrip2.Size = New System.Drawing.Size(592, 50)
         Me.ToolStrip2.TabIndex = 0
         Me.ToolStrip2.Text = "ToolStrip2"
         '
         'tbtnRefresh
         '
-        Me.tbtnRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tbtnRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText
         Me.tbtnRefresh.Image = Global.PolyMonManager.My.Resources.Resources.Refresh
         Me.tbtnRefresh.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.tbtnRefresh.Name = "tbtnRefresh"
-        Me.tbtnRefresh.Size = New System.Drawing.Size(23, 22)
+        Me.tbtnRefresh.Size = New System.Drawing.Size(64, 47)
+        Me.tbtnRefresh.Text = "Refresh"
+        Me.tbtnRefresh.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         Me.tbtnRefresh.ToolTipText = "Reload Current Status from database"
         '
         'tbtnRun
         '
-        Me.tbtnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tbtnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText
         Me.tbtnRun.Image = CType(resources.GetObject("tbtnRun.Image"),System.Drawing.Image)
         Me.tbtnRun.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.tbtnRun.Name = "tbtnRun"
-        Me.tbtnRun.Size = New System.Drawing.Size(23, 22)
-        Me.tbtnRun.Text = "Run Monitor"
+        Me.tbtnRun.Size = New System.Drawing.Size(64, 47)
+        Me.tbtnRun.Text = "Execute"
+        Me.tbtnRun.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         '
         'ToolStripSeparator1
         '
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(6, 25)
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(6, 50)
         '
         'tbtnHistory
         '
-        Me.tbtnHistory.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tbtnHistory.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText
         Me.tbtnHistory.Image = CType(resources.GetObject("tbtnHistory.Image"),System.Drawing.Image)
         Me.tbtnHistory.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.tbtnHistory.Name = "tbtnHistory"
-        Me.tbtnHistory.Size = New System.Drawing.Size(23, 22)
+        Me.tbtnHistory.Size = New System.Drawing.Size(64, 47)
+        Me.tbtnHistory.Text = "Graph"
+        Me.tbtnHistory.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         Me.tbtnHistory.ToolTipText = "View History & Trends"
         '
         'ToolStripSeparator3
         '
         Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
-        Me.ToolStripSeparator3.Size = New System.Drawing.Size(6, 25)
+        Me.ToolStripSeparator3.Size = New System.Drawing.Size(6, 50)
         '
         'tbtnMonitorDef
         '
-        Me.tbtnMonitorDef.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.tbtnMonitorDef.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.ImageAndText
         Me.tbtnMonitorDef.Image = Global.PolyMonManager.My.Resources.Resources.MonitorDefinitions
         Me.tbtnMonitorDef.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.tbtnMonitorDef.Name = "tbtnMonitorDef"
-        Me.tbtnMonitorDef.Size = New System.Drawing.Size(23, 22)
+        Me.tbtnMonitorDef.Size = New System.Drawing.Size(64, 47)
+        Me.tbtnMonitorDef.Text = "Settings"
+        Me.tbtnMonitorDef.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         Me.tbtnMonitorDef.ToolTipText = "Edit Monitor definition"
         '
         'HelpProvider1

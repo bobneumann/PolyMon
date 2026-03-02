@@ -27,3 +27,4 @@ obj/**/*.txt
 
 # Ansible playbooks (infrastructure, not part of PolyMon app)
 ansible/
+.aider*

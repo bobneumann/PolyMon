@@ -12,6 +12,7 @@ Public Class UserSettings
     Private mMDIBackColor As System.Drawing.Color = Color.DeepSkyBlue
     Private mDashboardViewType As MonitorViewTypes = MonitorViewTypes.List
     Private mFailuresWarningsViewType As MonitorViewTypes = MonitorViewTypes.List
+    Private mTileSizeIndex As Integer = 0
 
 
     Private mRefreshIntervals As New List(Of TimerInterval)
@@ -103,6 +104,18 @@ Public Class UserSettings
         Set(ByVal value As MonitorViewTypes)
             mFailuresWarningsViewType = value
             My.Settings.FailuresWarningsViewType = value
+            My.Settings.Save()
+        End Set
+    End Property
+
+    ' 0=Small (140×70), 1=Medium (200×95), 2=Large (260×120)
+    Public Property TileSizeIndex() As Integer
+        Get
+            Return mTileSizeIndex
+        End Get
+        Set(ByVal value As Integer)
+            mTileSizeIndex = value
+            My.Settings.TileSizeIndex = value
             My.Settings.Save()
         End Set
     End Property
@@ -210,6 +223,7 @@ Public Class UserSettings
         mMDIBackColor = My.Settings.MDIBackColor
         mDashboardViewType = CType(My.Settings.DashboardViewType, MonitorViewTypes)
         mFailuresWarningsViewType = CType(My.Settings.FailuresWarningsViewType, MonitorViewTypes)
+        mTileSizeIndex = My.Settings.TileSizeIndex
 
         If My.Settings.PanelGroupState Is Nothing Then
             My.Settings.PanelGroupState = New System.Xml.XmlDocument
