@@ -79,7 +79,7 @@ Namespace Executive
 
 
 #Region "Private Attributes"
-		Private Const mDBVersion As Single = 1.53
+		Private Const mDBVersion As Single = 1.54
 
 		Private mEventLog As String = "PolyMon"
 
@@ -423,7 +423,22 @@ Namespace Executive
 				SQLConn.Dispose()
 			End If
 		End Function
-		Private Sub RunMonitors()
+		Private Sub ExpireMaintenanceMode()
+		Dim SQLConn As New SqlConnection(mSQLConn)
+		Dim SQLCmd As New SqlCommand("polymon_upd_ExpireMaintenanceMode", SQLConn)
+		SQLCmd.CommandType = CommandType.StoredProcedure
+		Try
+			SQLConn.Open()
+			SQLCmd.ExecuteNonQuery()
+		Catch
+			'Non-fatal - monitor will re-enable on next tick
+		Finally
+			If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
+			SQLConn.Dispose()
+		End Try
+	End Sub
+	Private Sub RunMonitors()
+			ExpireMaintenanceMode()
 			RefreshMonitorList()
 			Dim myMonitor As PolyMon.Monitors.MonitorExecutor
 			For Each myMonitor In mMonitorList.Values

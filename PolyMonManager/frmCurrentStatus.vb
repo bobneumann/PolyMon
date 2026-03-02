@@ -4,6 +4,7 @@ Imports System.Xml
 Public Class frmCurrentStatus
 #Region "Private Attributes"
     Private mCurrMonitorID As Integer = -1
+    Private mMaintenanceStatus As New Dictionary(Of Integer, Boolean)
 #End Region
 
 #Region "Public Interface"
@@ -58,7 +59,14 @@ Public Class frmCurrentStatus
 				CurrEndDT = CDate(rdResults.Item("StatusEndDT"))
 				CurrTimeSecs = CInt(rdResults.Item("TimeElapsedSecs"))
 				CurrTime = CStr(rdResults.Item("TimeElapsedTxt"))
-				
+				Dim InMaintenance As Boolean = False
+				If Not IsDBNull(rdResults.Item("MaintenanceUntil")) Then
+					Dim maintUntilUtc As DateTime = CDate(rdResults.Item("MaintenanceUntil"))
+					If Not IsEnabled AndAlso maintUntilUtc > DateTime.UtcNow Then
+						InMaintenance = True
+					End If
+				End If
+				mMaintenanceStatus(MonitorID) = InMaintenance
 
 				Dim lvItem As ListViewItem
 				lvItem = lvMonitors.Items.Add(CStr(MonitorID), MonitorName, 0)
@@ -96,10 +104,11 @@ Public Class frmCurrentStatus
 					'Monitor is disabled
 					ErrorsWarnings = False
 					lvItem.ImageIndex = 4
+					If InMaintenance Then lvItem.ForeColor = Color.DarkOrange
 
 					lvItem.SubItems.Add(MonitorType)		'Monitor Type
 					lvItem.SubItems.Add("")					'Event DT
-					lvItem.SubItems.Add("Disabled")			'Status
+					lvItem.SubItems.Add(If(InMaintenance, "Maintenance", "Disabled"))	'Status
 
 					lvItem.SubItems.Add("")					'Curr Status Start
 					lvItem.SubItems.Add("")					'Curr Status End
@@ -279,6 +288,7 @@ Public Class frmCurrentStatus
 		Me.tbtnRefresh.Enabled = True
 		Me.tbtnHistory.Enabled = True
 		Me.tbtnMonitorDef.Enabled = True
+		Me.tbtnMaintenance.Enabled = True
 
         lblMonitorName.Text = Metadata.MonitorName
 		lblMonitorType.Text = Metadata.MonitorType
@@ -333,6 +343,47 @@ Public Class frmCurrentStatus
 			Me.dgvCounters.DataSource = Nothing
 		End If
 	End Sub
+	Private Sub tbtnMaintenance_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tbtnMaintenance.Click
+		If mCurrMonitorID <= -1 Then Exit Sub
+		Dim IsInMaintenance As Boolean = mMaintenanceStatus.ContainsKey(mCurrMonitorID) AndAlso mMaintenanceStatus(mCurrMonitorID)
+		If IsInMaintenance Then
+			If MsgBox("This monitor is in maintenance mode. Cancel maintenance now?", MsgBoxStyle.YesNo Or MsgBoxStyle.Question, "PolyMon") = MsgBoxResult.Yes Then
+				SetMaintenanceMode(mCurrMonitorID, 0)
+				CType(Me.MdiParent, frmMain).RefreshMonitorStatuses(False, frmMain.StatusForms.CurrentStatus)
+			End If
+		Else
+			Dim MinutesStr As String = InputBox("Enter maintenance duration in minutes:" & vbCrLf & "(Alerts will be suppressed for this period.)", "Maintenance Mode", "30")
+			If MinutesStr = "" Then Exit Sub
+			Dim Minutes As Integer = 0
+			If Not Integer.TryParse(MinutesStr, Minutes) OrElse Minutes <= 0 Then
+				MsgBox("Please enter a valid positive number of minutes.", MsgBoxStyle.Exclamation, "PolyMon")
+				Exit Sub
+			End If
+			SetMaintenanceMode(mCurrMonitorID, Minutes)
+			CType(Me.MdiParent, frmMain).RefreshMonitorStatuses(False, frmMain.StatusForms.CurrentStatus)
+		End If
+	End Sub
+	Private Sub SetMaintenanceMode(ByVal MonitorID As Integer, ByVal Minutes As Integer)
+		Dim strSQLConn As String = CStr(System.Configuration.ConfigurationManager.AppSettings("SQLConn"))
+		Dim SQLConn As New SqlConnection(strSQLConn)
+		Dim SQLCmd As New SqlCommand("polymon_upd_SetMaintenanceMode", SQLConn)
+		SQLCmd.CommandType = CommandType.StoredProcedure
+		SQLCmd.Parameters.AddWithValue("@MonitorID", MonitorID)
+		SQLCmd.Parameters.AddWithValue("@Minutes", Minutes)
+		Try
+			SQLConn.Open()
+			SQLCmd.ExecuteNonQuery()
+			If Minutes > 0 Then
+				Dim UntilLocal As DateTime = DateTime.UtcNow.AddMinutes(Minutes).ToLocalTime()
+				MsgBox("Maintenance mode set. Alerts suppressed until " & Format(UntilLocal, "MMM dd h:mm tt") & ".", MsgBoxStyle.Information, "PolyMon")
+			End If
+		Catch ex As Exception
+			MsgBox("Error setting maintenance mode: " & ex.Message, MsgBoxStyle.Critical, "PolyMon")
+		Finally
+			If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
+			SQLConn.Dispose()
+		End Try
+	End Sub
 	Private Sub ClearMonitorDetails()
 		lblAsOfLabel.Visible = False
 		lblOfflineTimesLabel.Visible = False
@@ -340,6 +391,7 @@ Public Class frmCurrentStatus
 		Me.tbtnRefresh.Enabled = False
 		Me.tbtnHistory.Enabled = False
 		Me.tbtnMonitorDef.Enabled = False
+		Me.tbtnMaintenance.Enabled = False
         lblMonitorName.Text = Nothing
 		lblMonitorType.Text = Nothing
 		lblOT1.Text = Nothing

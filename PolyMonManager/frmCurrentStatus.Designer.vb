@@ -59,6 +59,8 @@ Partial Class frmCurrentStatus
         Me.tbtnHistory = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.tbtnMonitorDef = New System.Windows.Forms.ToolStripButton()
+        Me.ToolStripSeparator4 = New System.Windows.Forms.ToolStripSeparator()
+        Me.tbtnMaintenance = New System.Windows.Forms.ToolStripButton()
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.HelpProvider1 = New System.Windows.Forms.HelpProvider()
         Me.lblMonitorName = New System.Windows.Forms.Label()
@@ -417,7 +419,7 @@ Partial Class frmCurrentStatus
         '
         Me.ToolStrip2.Dock = System.Windows.Forms.DockStyle.Bottom
         Me.ToolStrip2.ImageScalingSize = New System.Drawing.Size(24, 24)
-        Me.ToolStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tbtnRefresh, Me.tbtnRun, Me.ToolStripSeparator1, Me.tbtnHistory, Me.ToolStripSeparator3, Me.tbtnMonitorDef})
+        Me.ToolStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tbtnRefresh, Me.tbtnRun, Me.ToolStripSeparator1, Me.tbtnHistory, Me.ToolStripSeparator3, Me.tbtnMonitorDef, Me.ToolStripSeparator4, Me.tbtnMaintenance})
         Me.ToolStrip2.Location = New System.Drawing.Point(0, 134)
         Me.ToolStrip2.Name = "ToolStrip2"
         Me.ToolStrip2.Size = New System.Drawing.Size(592, 50)
@@ -476,6 +478,19 @@ Partial Class frmCurrentStatus
         Me.tbtnMonitorDef.Text = "Settings"
         Me.tbtnMonitorDef.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         Me.tbtnMonitorDef.ToolTipText = "Edit Monitor definition"
+        '
+        'ToolStripSeparator4
+        '
+        Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
+        Me.ToolStripSeparator4.Size = New System.Drawing.Size(6, 50)
+        '
+        'tbtnMaintenance
+        '
+        Me.tbtnMaintenance.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+        Me.tbtnMaintenance.Name = "tbtnMaintenance"
+        Me.tbtnMaintenance.Size = New System.Drawing.Size(80, 47)
+        Me.tbtnMaintenance.Text = "Maintenance"
+        Me.tbtnMaintenance.ToolTipText = "Temporarily suppress alerts for this monitor"
         '
         'HelpProvider1
         '
@@ -547,6 +562,8 @@ End Sub
     Friend WithEvents tbtnHistory As System.Windows.Forms.ToolStripButton
     Friend WithEvents ToolStripSeparator3 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents tbtnMonitorDef As System.Windows.Forms.ToolStripButton
+    Friend WithEvents ToolStripSeparator4 As System.Windows.Forms.ToolStripSeparator
+    Friend WithEvents tbtnMaintenance As System.Windows.Forms.ToolStripButton
     Friend WithEvents tbtnRefresh As System.Windows.Forms.ToolStripButton
     Friend WithEvents lblLifetimePercUptime As System.Windows.Forms.Label
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
