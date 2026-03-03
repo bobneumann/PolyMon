@@ -132,7 +132,7 @@ Namespace Executive
 			Dim Result As SeverityLevel = RetrieveConfigSettings()
 			If Result <> SeverityLevel.OK Then
 				'Cannot start service
-				Me.ServiceController1.Stop()
+				Me.Stop()
 			Else
 				'Now attempt SQL Connection
 				Result = TestSQLConnection()
@@ -153,7 +153,7 @@ Namespace Executive
 					Result = RetrieveSQLSettings()
 					If Result <> SeverityLevel.OK Then
 						'Stop service...
-						Me.ServiceController1.Stop()
+						Me.Stop()
 						Exit Sub
 					End If
 
@@ -466,12 +466,18 @@ Namespace Executive
 			Dim monitorSnapshot As New List(Of PolyMon.Monitors.MonitorExecutor)(mMonitorList.Values)
 			If monitorSnapshot.Count = 0 Then Exit Sub
 
-			'Each monitor runs on its own thread; all start in parallel
+			'Throttle concurrency: at most mMonitorConcurrency monitors run at once
+			Dim sem As New SemaphoreSlim(mMonitorConcurrency, mMonitorConcurrency)
+
+			'Each monitor gets its own thread; the semaphore limits how many run simultaneously
 			Dim threads As New List(Of Thread)
 			For Each m As PolyMon.Monitors.MonitorExecutor In monitorSnapshot
 				Dim capture As PolyMon.Monitors.MonitorExecutor = m
 				Dim t As New Thread(Sub()
+					Dim acquired As Boolean = False
 					Try
+						sem.Wait()
+						acquired = True
 						capture.RunMonitor()
 					Catch tae As ThreadAbortException
 						Thread.ResetAbort()
@@ -484,6 +490,8 @@ Namespace Executive
 							EventLog.WriteEntry(mEventLog, "Monitor error [" & capture.MonitorName & "]: " & ex.Message, EventLogEntryType.Warning)
 						Catch
 						End Try
+					Finally
+						If acquired Then sem.Release()
 					End Try
 				End Sub)
 				t.IsBackground = True
@@ -536,7 +544,7 @@ Namespace Executive
 				Result = RetrieveSQLSettings()
 				If Result = SeverityLevel.Critical Then
 					'Stop service...
-					Me.ServiceController1.Stop()
+					Me.Stop()
 					Exit Sub
 				End If
 

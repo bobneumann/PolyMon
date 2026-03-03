@@ -232,7 +232,7 @@ Partial Class frmReports
         'lblLifetimePercUptime
         '
         Me.lblLifetimePercUptime.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.lblLifetimePercUptime.Font = New System.Drawing.Font("Microsoft Sans Serif", 22!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblLifetimePercUptime.Font = New System.Drawing.Font("Microsoft Sans Serif", 11!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lblLifetimePercUptime.ForeColor = System.Drawing.Color.White
         Me.lblLifetimePercUptime.BackColor = System.Drawing.Color.LightGray
         Me.lblLifetimePercUptime.Location = New System.Drawing.Point(414, 3)
