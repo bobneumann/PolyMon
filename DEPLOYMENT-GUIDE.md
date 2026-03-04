@@ -98,16 +98,27 @@ WITH COMPRESSION;
 SELECT DBVersion FROM PolyMon..SysSettings
 ```
 
-### If DB Version is 1.00:
-Run: `Update Scripts\Update to DB Version 1.00.sql` (if needed)
-Then: `Update Scripts\Update DB 1.00 to 1.10.sql`
-Then: `Update Scripts\Update DB 1.10 to 1.30.sql`
+Run all update scripts in sequence, starting from your current DB version.
+All scripts are in the repo under `PolymonSQL\Update Scripts\`.
 
-### If DB Version is 1.10:
-Run: `Update Scripts\Update DB 1.10 to 1.30.sql`
+| From | To | Script |
+|------|----|--------|
+| 1.00 | 1.10 | `Update DB 1.00 to 1.10.sql` |
+| 1.10 | 1.30 | `Update DB 1.10 to 1.30.sql` |
+| 1.30 | 1.40 | `Update DB 1.30 to 1.40.sql` |
+| 1.40 | 1.50 | `Update DB 1.40 to 1.50.sql` |
+| 1.50 | 1.51 | `Update DB 1.50 to 1.51.sql` |
+| 1.51 | 1.52 | `Update DB 1.51 to 1.52.sql` |
+| 1.52 | 1.53 | `Update DB 1.52 to 1.53.sql` |
+| 1.53 | 1.54 | `Update DB 1.53 to 1.54.sql` |
+| 1.54 | 1.55 | `Update DB 1.54 to 1.55.sql` |
 
-### If DB Version is already 1.30:
-No schema changes needed.
+### Register the SQL Server Overview monitor type
+After running the update scripts, run this **once** to register the monitor type in the DB:
+```
+PolymonSQL\Update Scripts\insert_monitortypes.sql
+```
+This script is idempotent — it checks before inserting, so safe to run multiple times.
 
 ### Time-Series Table Update
 The TS lookup tables (TSDaily, TSWeekly, TSMonthly) may only go to 2020.
@@ -175,7 +186,8 @@ The config files are set for home laptop (.\SQLEXPRESS). Update for work:
      SQLMonitor.dll, WMIMonitor.dll, CPUMonitor.dll,
      DiskMonitor.dll, FileMonitor.dll, PerfMonitor.dll,
      SNMPMonitor.dll, TCPPortMonitor.dll, PowerShellMonitor.dll,
-     URLXMLMonitor.dll, SNMP.dll, GenericMonitor.dll
+     URLXMLMonitor.dll, SNMP.dll, GenericMonitor.dll,
+     SQLOverviewMonitor.dll, SQLOverviewMonitorEditor.dll
 4. Install new service:
    ```
    C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe <NEW_PATH>\PolyMonExecutive.exe
