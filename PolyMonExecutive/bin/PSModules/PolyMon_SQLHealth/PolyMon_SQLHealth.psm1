@@ -308,8 +308,19 @@ function SQL_Overview {
     #  SQL AGENT SERVICE
     # ═══════════════════════════════════════════════════════════════════════════
     if ($CheckAgentService) {
-        try   { $agentRunning = ($s.JobServer.Status -eq "Running") }
-        catch { $agentRunning = $false }
+        # SMO's JobServer has no Status property — use WMI Win32_Service instead
+        $agentSvcName = if ($InstanceName -eq "default" -or $InstanceName -eq "") {
+            "SQLSERVERAGENT"
+        } else {
+            "SQLAgent`$$InstanceName"
+        }
+        try {
+            $agentSvc    = Get-WmiObject Win32_Service -ComputerName $HostName `
+                               -Filter "Name='$agentSvcName'" -ErrorAction Stop
+            $agentRunning = ($agentSvc -ne $null -and $agentSvc.State -eq "Running")
+        } catch {
+            $agentRunning = $false
+        }
 
         if (-not $agentRunning) {
             $alerts.Add("SQL Agent is NOT running (all job checks unreliable)")
@@ -468,13 +479,11 @@ function SQL_Overview {
         # ── Datafile free space ────────────────────────────────────────────────
         if ($CheckDBFreespace -and -not $isSystemDB -and $db.Size -gt 0) {
             $freePct = [Math]::Round($db.SpaceAvailable / 1KB / $db.Size * 100, 1)
+            Add-Counter "DB free% $($db.Name)" $freePct
             if ($freePct -lt $DBFreespaceWarnPct) {
                 $alerts.Add("DB '$($db.Name)' free space: ${freePct}%")
-                Add-Counter "DB free% $($db.Name)" $freePct
                 if ($freePct -lt $DBFreespaceFailPct) { Set-Severity "Fail" }
                 else                                   { Set-Severity "Warn" }
-            } elseif ($DetailLevel -ge 1) {
-                Add-Counter "DB free% $($db.Name)" $freePct
             }
         }
 
