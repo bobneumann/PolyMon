@@ -16,6 +16,7 @@ Public Class frmEmailRelayConfig
 
     Private Sub frmEmailRelayConfig_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         txtApiKey.Text = If(mSysSettings.EmailRelayKey, "")
+        txtRelayEmail.Text = If(My.Settings.EmailRelayAddress, "")
         LoadData()
     End Sub
 
@@ -199,9 +200,11 @@ Public Class frmEmailRelayConfig
         Application.DoEvents()
 
         Try
-            ' 1. Save API key to SysSettings
+            ' 1. Save API key to SysSettings and relay address to local settings
             mSysSettings.SetEmailRelayKey(txtApiKey.Text.Trim())
             mSysSettings.Save()
+            My.Settings.EmailRelayAddress = txtRelayEmail.Text.Trim()
+            My.Settings.Save()
 
             ' 2. Build room list from right panel
             Dim rooms As New List(Of String)

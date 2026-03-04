@@ -29,5 +29,8 @@
     <Setting Name="TileSizeIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="EmailRelayAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
   </Settings>
 </SettingsFile>

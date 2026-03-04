@@ -21,6 +21,8 @@ Partial Class frmEmailRelayConfig
         Me.btnRefresh = New System.Windows.Forms.ToolStripButton()
         Me.lblApiKeyLabel = New System.Windows.Forms.Label()
         Me.txtApiKey = New System.Windows.Forms.TextBox()
+        Me.lblDescription = New System.Windows.Forms.Label()
+        Me.txtRelayEmail = New System.Windows.Forms.TextBox()
         Me.gbAvailable = New System.Windows.Forms.GroupBox()
         Me.lvAvailable = New System.Windows.Forms.ListView()
         Me.colAvailContact = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
@@ -86,13 +88,30 @@ Partial Class frmEmailRelayConfig
         Me.txtApiKey.Size = New System.Drawing.Size(300, 20)
         Me.txtApiKey.TabIndex = 2
         '
+        'lblDescription
+        '
+        Me.lblDescription.Location = New System.Drawing.Point(12, 60)
+        Me.lblDescription.Name = "lblDescription"
+        Me.lblDescription.Size = New System.Drawing.Size(360, 20)
+        Me.lblDescription.TabIndex = 7
+        Me.lblDescription.Text = "Choose which Signal accounts will receive forwarded emails from:"
+        Me.lblDescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'txtRelayEmail
+        '
+        Me.txtRelayEmail.Location = New System.Drawing.Point(378, 60)
+        Me.txtRelayEmail.MaxLength = 255
+        Me.txtRelayEmail.Name = "txtRelayEmail"
+        Me.txtRelayEmail.Size = New System.Drawing.Size(274, 20)
+        Me.txtRelayEmail.TabIndex = 8
+        '
         'gbAvailable
         '
         Me.gbAvailable.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.gbAvailable.Controls.Add(Me.lvAvailable)
         Me.gbAvailable.ForeColor = System.Drawing.Color.MediumBlue
-        Me.gbAvailable.Location = New System.Drawing.Point(12, 64)
+        Me.gbAvailable.Location = New System.Drawing.Point(12, 88)
         Me.gbAvailable.Name = "gbAvailable"
         Me.gbAvailable.Size = New System.Drawing.Size(270, 280)
         Me.gbAvailable.TabIndex = 3
@@ -131,7 +150,7 @@ Partial Class frmEmailRelayConfig
         Me.pnlButtons.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom), System.Windows.Forms.AnchorStyles)
         Me.pnlButtons.Controls.Add(Me.btnAdd)
         Me.pnlButtons.Controls.Add(Me.btnRemove)
-        Me.pnlButtons.Location = New System.Drawing.Point(290, 64)
+        Me.pnlButtons.Location = New System.Drawing.Point(290, 88)
         Me.pnlButtons.Name = "pnlButtons"
         Me.pnlButtons.Size = New System.Drawing.Size(74, 280)
         Me.pnlButtons.TabIndex = 4
@@ -161,7 +180,7 @@ Partial Class frmEmailRelayConfig
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.gbForwardTo.Controls.Add(Me.lvForwardTo)
         Me.gbForwardTo.ForeColor = System.Drawing.Color.MediumBlue
-        Me.gbForwardTo.Location = New System.Drawing.Point(372, 64)
+        Me.gbForwardTo.Location = New System.Drawing.Point(372, 88)
         Me.gbForwardTo.Name = "gbForwardTo"
         Me.gbForwardTo.Size = New System.Drawing.Size(278, 280)
         Me.gbForwardTo.TabIndex = 5
@@ -199,7 +218,7 @@ Partial Class frmEmailRelayConfig
         '
         Me.lblStatus.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.lblStatus.Location = New System.Drawing.Point(12, 354)
+        Me.lblStatus.Location = New System.Drawing.Point(12, 378)
         Me.lblStatus.Name = "lblStatus"
         Me.lblStatus.Size = New System.Drawing.Size(638, 20)
         Me.lblStatus.TabIndex = 6
@@ -210,17 +229,19 @@ Partial Class frmEmailRelayConfig
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(664, 386)
+        Me.ClientSize = New System.Drawing.Size(664, 410)
         Me.Controls.Add(Me.lblStatus)
         Me.Controls.Add(Me.gbForwardTo)
         Me.Controls.Add(Me.pnlButtons)
         Me.Controls.Add(Me.gbAvailable)
+        Me.Controls.Add(Me.txtRelayEmail)
+        Me.Controls.Add(Me.lblDescription)
         Me.Controls.Add(Me.txtApiKey)
         Me.Controls.Add(Me.lblApiKeyLabel)
         Me.Controls.Add(Me.tsToolbar)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
-        Me.MinimumSize = New System.Drawing.Size(600, 380)
+        Me.MinimumSize = New System.Drawing.Size(600, 404)
         Me.Name = "frmEmailRelayConfig"
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -251,4 +272,6 @@ Partial Class frmEmailRelayConfig
     Friend WithEvents colFwdContact As System.Windows.Forms.ColumnHeader
     Friend WithEvents colFwdRoom As System.Windows.Forms.ColumnHeader
     Friend WithEvents lblStatus As System.Windows.Forms.Label
+    Friend WithEvents lblDescription As System.Windows.Forms.Label
+    Friend WithEvents txtRelayEmail As System.Windows.Forms.TextBox
 End Class
