@@ -85,8 +85,12 @@ Public Class frmReports
     ''' Constrains a FlowLayoutPanel to wrap checkboxes within its width,
     ''' and repositions the TableLayoutPanel below it when it grows.
     ''' </summary>
+    Private Const cCheckboxPanelMaxHeight As Integer = 130
+
     Private Sub WireFlpPanel(ByVal flp As FlowLayoutPanel, ByVal tlp As TableLayoutPanel)
-        flp.MaximumSize = New System.Drawing.Size(flp.Width, 0)
+        ' Cap checkbox panel height so it never pushes the chart area off-screen
+        flp.MaximumSize = New System.Drawing.Size(flp.Width, cCheckboxPanelMaxHeight)
+        flp.AutoScroll = True
         AddHandler flp.SizeChanged, Sub(s As Object, ev As EventArgs)
             tlp.Top = flp.Bottom + 4
             If tlp.Parent IsNot Nothing Then
