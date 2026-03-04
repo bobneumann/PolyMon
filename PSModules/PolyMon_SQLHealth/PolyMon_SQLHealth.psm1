@@ -260,8 +260,8 @@ function SQL_Overview {
     )
 
     # ── PolyMon detection ─────────────────────────────────────────────────────
-    $polymon = [bool]$Counters
-    if ($polymon) { $Status.StatusText = "" }
+    $script:polymon = [bool]$Counters
+    if ($script:polymon) { $Status.StatusText = "" }
 
     # ── State ─────────────────────────────────────────────────────────────────
     $script:errlvl = "OK"
@@ -682,7 +682,7 @@ WHERE  counter_name = 'Memory Grants Pending'
     # ═══════════════════════════════════════════════════════════════════════════
     $statusText = if ($alerts.Count -gt 0) { $alerts -join "; " } else { "OK" }
 
-    if ($polymon) {
+    if ($script:polymon) {
         $Status.StatusID = switch ($script:errlvl) {
             "fail"  { 3 }
             "warn"  { 2 }
