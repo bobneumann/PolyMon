@@ -4,7 +4,7 @@
   <description asmv2:iconFile="PolyMon (32x32).ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="PolyMonManager" version="1.5.5.39355" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="PolyMonManager" version="1.5.5.19944" language="neutral" processorArchitecture="msil" />
     <commandLine file="PolyMonManager.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -364,13 +364,13 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="GenericMonitor.dll" size="14336">
-      <assemblyIdentity name="GenericMonitor" version="1.2.0.33243" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="GenericMonitor" version="1.2.0.15518" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>+8ezj2MnrbrXxBliaZZzLn+CjAOk0jSXWMJ7WbT1Y/0=</dsig:DigestValue>
+        <dsig:DigestValue>u6QrV8CL9XJWoDr7rOKKQz9G4y6D28d29BtiaqFKtts=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -412,37 +412,37 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMon.dll" size="73216">
-      <assemblyIdentity name="PolyMon" version="1.5.1.33243" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="PolyMon" version="1.5.1.15517" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>4vGX3JFy9jBIvDrHyI8gHk3g90uAyzDNo8vjhZyyF+I=</dsig:DigestValue>
+        <dsig:DigestValue>dpHhSvCeQjSORM8hNZvt2blNmD0aulzpXvmid84zIRI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="805376">
-      <assemblyIdentity name="PolyMonManager" version="1.5.5.39355" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonManager.exe" size="806400">
+      <assemblyIdentity name="PolyMonManager" version="1.5.5.19944" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>zqcrZ2K4PvhfjQR7CNa9B9Ru6tlYLg9GYYvI03VmOfU=</dsig:DigestValue>
+        <dsig:DigestValue>brZwBHkAowXg3S5x3GfWTZ2nLwB3LxGg8O0BBZaOuaY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PolyMonNotifier.dll" size="22016">
-      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.33244" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="PolyMonNotifier" version="1.5.2.15522" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>SGnHvBvNwyDyR4BjI7XOpVdb7DZdOLrrP94UaG1trE0=</dsig:DigestValue>
+        <dsig:DigestValue>P5ODURtuwgGHrwqmdBXaUGMDeJB2irbTSvz7FBZxHvs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

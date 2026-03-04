@@ -87,6 +87,10 @@ Source: "{#StagingDir}\PolyMon Manager\Monitors\URLMonitorEditor.dll";        De
 Source: "{#StagingDir}\PolyMon Manager\Monitors\URLXMLMonitorEditor.dll";     DestDir: "{app}\Monitors"; Flags: ignoreversion
 Source: "{#StagingDir}\PolyMon Manager\Monitors\WMIMonitorEditor.dll";        DestDir: "{app}\Monitors"; Flags: ignoreversion
 
+; PowerShell Modules (loaded by SQLOverviewMonitor via relative path from {app})
+Source: "{#StagingDir}\PSModules\PolyMon_SQLHealth\PolyMon_SQLHealth.psm1";   DestDir: "{app}\PSModules\PolyMon_SQLHealth"; Flags: ignoreversion
+Source: "{#StagingDir}\PSModules\PolyMon_SQLHealth\SQL_Server_Overview.psd1"; DestDir: "{app}\PSModules\PolyMon_SQLHealth"; Flags: ignoreversion
+
 ; =====================================================================
 ; Icons (Start Menu + Desktop)
 ; =====================================================================
