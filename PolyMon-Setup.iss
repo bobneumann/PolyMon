@@ -16,7 +16,7 @@ AppId={{B7E3F2A1-8C4D-4F5E-9A1B-2D3C4E5F6A7B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={commonpf}\PolyMon\PolyMon Manager
+DefaultDirName={commonpf}\PolyMon
 DefaultGroupName=PolyMon
 AllowNoIcons=yes
 OutputDir=Output
@@ -91,8 +91,8 @@ Source: "{#StagingDir}\PolyMon Manager\Monitors\WMIMonitorEditor.dll";        De
 ; Icons (Start Menu + Desktop)
 ; =====================================================================
 [Icons]
-Name: "{group}\PolyMon Manager";   Filename: "{app}\PolyMonManager.exe"
-Name: "{commondesktop}\PolyMon";   Filename: "{app}\PolyMonManager.exe"; Tasks: desktopicon
+Name: "{group}\PolyMon Manager";   Filename: "{app}\PolyMonManager.exe"; WorkingDir: "{app}"
+Name: "{commondesktop}\PolyMon";   Filename: "{app}\PolyMonManager.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 Name: "{group}\Uninstall PolyMon"; Filename: "{uninstallexe}"
 
 [Tasks]

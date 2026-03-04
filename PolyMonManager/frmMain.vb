@@ -155,9 +155,15 @@ Public Class frmMain
 #End Region
 
 #Region "Status Bar Tools"
-    Private Sub OpenPolyMonManagerToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenPolyMonManagerToolStripMenuItem.Click
+    Public Sub RestoreFromTray()
         Me.Show()
         Me.WindowState = FormWindowState.Normal
+        Me.Activate()
+        Me.BringToFront()
+    End Sub
+
+    Private Sub OpenPolyMonManagerToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OpenPolyMonManagerToolStripMenuItem.Click
+        RestoreFromTray()
     End Sub
     Private Sub ClosePolyMonManagerToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ClosePolyMonManagerToolStripMenuItem.Click
         Me.mAllowClose = True
@@ -170,12 +176,10 @@ Public Class frmMain
         mOpeningFromTray = True
         LoadChildForm("frmFailuresWarnings")
         mOpeningFromTray = False
-        Me.Show()
-        Me.WindowState = FormWindowState.Normal
+        RestoreFromTray()
     End Sub
     Private Sub NotifyIcon1_DoubleClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles NotifyIcon1.DoubleClick
-        Me.Show()
-        Me.WindowState = FormWindowState.Normal
+        RestoreFromTray()
     End Sub
 #End Region
 #End Region
