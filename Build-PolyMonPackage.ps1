@@ -55,6 +55,8 @@ $ManagerFiles = @(
     'GenericMonitor.dll'
     'GenericMonitorEditor.dll'
     'GenericXMLEditor.dll'
+    'ScottPlot.dll'
+    'ScottPlot.WinForms.dll'
     'ZedGraph.dll'
     'Interop.MSScriptControl.dll'
     'AlertRecap_Email.xsl'
@@ -77,11 +79,11 @@ $MonitorDlls = @(
     'SNMPMonitor.dll'
     'SNMP.dll'
     'SQLMonitor.dll'
+    'SQLOverviewMonitor.dll'
     'TCPPortMonitor.dll'
     'URLMonitor.dll'
     'URLXMLMonitor.dll'
     'WMIMonitor.dll'
-    'NRSPortalMonitor.dll'
 )
 
 $MonitorEditorDlls = @(
@@ -97,6 +99,7 @@ $MonitorEditorDlls = @(
     'URLMonitorEditor.dll'
     'URLXMLMonitorEditor.dll'
     'WMIMonitorEditor.dll'
+    'SQLOverviewMonitorEditor.dll'
 )
 
 $ExecutiveFiles = @(
@@ -372,11 +375,17 @@ Copy-FileList -FileList $ExecutiveMonitors -SourceDir $ExecutiveBin -DestDir $St
 Write-Host 'Copying SQL scripts...' -ForegroundColor Yellow
 
 $sqlFiles = @(
-    @{ Src = (Join-Path $SqlCreate 'DB Version 1.30.sql'); Name = 'DB Version 1.30.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.00 to 1.10.sql'); Name = 'Update DB 1.00 to 1.10.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.10 to 1.30.sql'); Name = 'Update DB 1.10 to 1.30.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.30 to 1.40.sql'); Name = 'Update DB 1.30 to 1.40.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.40 to 1.50.sql'); Name = 'Update DB 1.40 to 1.50.sql' }
+    @{ Src = (Join-Path $SqlCreate 'DB Version 1.30.sql');              Name = 'DB Version 1.30.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.00 to 1.10.sql');      Name = 'Update DB 1.00 to 1.10.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.10 to 1.30.sql');      Name = 'Update DB 1.10 to 1.30.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.30 to 1.40.sql');      Name = 'Update DB 1.30 to 1.40.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.40 to 1.50.sql');      Name = 'Update DB 1.40 to 1.50.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.50 to 1.51.sql');      Name = 'Update DB 1.50 to 1.51.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.51 to 1.52.sql');      Name = 'Update DB 1.51 to 1.52.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.52 to 1.53.sql');      Name = 'Update DB 1.52 to 1.53.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.53 to 1.54.sql');      Name = 'Update DB 1.53 to 1.54.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.54 to 1.55.sql');      Name = 'Update DB 1.54 to 1.55.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'insert_monitortypes.sql');         Name = 'insert_monitortypes.sql' }
 )
 
 foreach ($sf in $sqlFiles) {
