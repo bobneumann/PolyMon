@@ -263,7 +263,9 @@ Namespace Monitors
 							If mTriggerCount >= mMetadata.TriggerMod Then mTriggerCount = 0
 							Try
 								'Run Monitor Test
+								LogMonitorStart(Me.MonitorName)
 								mMonitorStatus = MonitorTest(mStatusMessage, mCounters)
+								LogMonitorEnd(Me.MonitorName)
 							Catch ex As Exception
 								mMonitorStatus = MonitorStatus.Fail
 								mStatusMessage = "Monitor Run Exception" & vbCrLf & ex.Message
@@ -488,6 +490,25 @@ Namespace Monitors
 			Finally
 				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
 				SQLConn.Dispose()
+			End Try
+		End Sub
+
+		Private Shared mRunLogPath As String = System.IO.Path.Combine(
+			System.IO.Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location), "monitor_run.log")
+
+		Private Sub LogMonitorStart(ByVal name As String)
+			Try
+				System.IO.File.AppendAllText(mRunLogPath,
+					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " START " & name & Environment.NewLine)
+			Catch
+			End Try
+		End Sub
+
+		Private Sub LogMonitorEnd(ByVal name As String)
+			Try
+				System.IO.File.AppendAllText(mRunLogPath,
+					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " END   " & name & Environment.NewLine)
+			Catch
 			End Try
 		End Sub
 
