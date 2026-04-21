@@ -242,6 +242,7 @@ Public Class frmGeneralSettings
 			' Execution settings
 			Me.udMonitorConcurrency.Value = mSysSettings.MonitorConcurrency
 			Me.udMonitorTimeoutPct.Value = mSysSettings.MonitorTimeoutPct
+			Me.chkMonitorRunLog.Checked = mSysSettings.MonitorRunLog
         Catch ex As Exception
             MsgBox("Error retrieving data from database:" & vbCrLf & ex.Message & vbCrLf & vbCrLf & ex.InnerException.Message, MsgBoxStyle.Exclamation, "PolyMon Error")
         End Try
@@ -264,6 +265,7 @@ Public Class frmGeneralSettings
 				.SetGraphDefaults(Me.chkGraphDefaultStatusFreq.Checked, Me.chkGraphDefaultUptime.Checked)
 			.MonitorConcurrency = CInt(Me.udMonitorConcurrency.Value)
 			.MonitorTimeoutPct = CInt(Me.udMonitorTimeoutPct.Value)
+			.MonitorRunLog = Me.chkMonitorRunLog.Checked
 
                 .Save()
             End With

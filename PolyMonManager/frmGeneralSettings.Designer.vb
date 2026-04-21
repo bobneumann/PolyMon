@@ -29,6 +29,7 @@ Partial Class frmGeneralSettings
         Me.udSysMainTimerInterval = New System.Windows.Forms.NumericUpDown()
         Me.udMonitorConcurrency = New System.Windows.Forms.NumericUpDown()
         Me.udMonitorTimeoutPct = New System.Windows.Forms.NumericUpDown()
+        Me.chkMonitorRunLog = New System.Windows.Forms.CheckBox()
         Me.lblMonitorConcurrency = New System.Windows.Forms.Label()
         Me.lblMonitorTimeoutPct = New System.Windows.Forms.Label()
         Me.lblPctOfCycle = New System.Windows.Forms.Label()
@@ -161,6 +162,7 @@ Partial Class frmGeneralSettings
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.chkMonitorRunLog)
         Me.GroupBox2.Controls.Add(Me.lblPctOfCycle)
         Me.GroupBox2.Controls.Add(Me.udMonitorTimeoutPct)
         Me.GroupBox2.Controls.Add(Me.lblMonitorTimeoutPct)
@@ -174,7 +176,7 @@ Partial Class frmGeneralSettings
         Me.GroupBox2.ForeColor = System.Drawing.Color.MediumBlue
         Me.GroupBox2.Location = New System.Drawing.Point(6, 97)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(376, 148)
+        Me.GroupBox2.Size = New System.Drawing.Size(376, 175)
         Me.GroupBox2.TabIndex = 9
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Polymon Executive"
@@ -248,6 +250,16 @@ Partial Class frmGeneralSettings
         Me.udMonitorTimeoutPct.Size = New System.Drawing.Size(72, 20)
         Me.udMonitorTimeoutPct.TabIndex = 13
         Me.udMonitorTimeoutPct.Value = New Decimal(New Integer() {80, 0, 0, 0})
+        '
+        'chkMonitorRunLog
+        '
+        Me.chkMonitorRunLog.AutoSize = True
+        Me.chkMonitorRunLog.Location = New System.Drawing.Point(12, 144)
+        Me.chkMonitorRunLog.Name = "chkMonitorRunLog"
+        Me.chkMonitorRunLog.Size = New System.Drawing.Size(220, 17)
+        Me.chkMonitorRunLog.TabIndex = 14
+        Me.chkMonitorRunLog.Text = "Log monitor execution to monitor_run.log"
+        Me.chkMonitorRunLog.UseVisualStyleBackColor = True
         '
         'lblPctOfCycle
         '
@@ -1091,6 +1103,7 @@ Partial Class frmGeneralSettings
 	Friend WithEvents udSysMainTimerInterval As System.Windows.Forms.NumericUpDown
 	Friend WithEvents udMonitorConcurrency As System.Windows.Forms.NumericUpDown
 	Friend WithEvents udMonitorTimeoutPct As System.Windows.Forms.NumericUpDown
+	Friend WithEvents chkMonitorRunLog As System.Windows.Forms.CheckBox
 	Friend WithEvents lblMonitorConcurrency As System.Windows.Forms.Label
 	Friend WithEvents lblMonitorTimeoutPct As System.Windows.Forms.Label
 	Friend WithEvents lblPctOfCycle As System.Windows.Forms.Label

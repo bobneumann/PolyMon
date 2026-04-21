@@ -28,6 +28,7 @@ Namespace General
 		Private mGraphDefaultUptime As Boolean
 		Private mMonitorConcurrency As Integer
 		Private mMonitorTimeoutPct As Integer
+		Private mMonitorRunLog As Boolean
 #End Region
 
 #Region "Public Interface"
@@ -183,6 +184,14 @@ Namespace General
 					Throw New System.Exception("Monitor Timeout Percent must be between 10 and 100.")
 				End If
 				mMonitorTimeoutPct = Value
+			End Set
+		End Property
+		Public Property MonitorRunLog() As Boolean
+			Get
+				Return mMonitorRunLog
+			End Get
+			Set(ByVal Value As Boolean)
+				mMonitorRunLog = Value
 			End Set
 		End Property
 		Public Property Notes() As String
@@ -517,6 +526,14 @@ Namespace General
 				.Value = mMonitorTimeoutPct
 			End With
 
+			Dim prmMonitorRunLog As New SqlParameter
+			With prmMonitorRunLog
+				.ParameterName = "@MonitorRunLog"
+				.SqlDbType = SqlDbType.Bit
+				.Direction = ParameterDirection.Input
+				.Value = mMonitorRunLog
+			End With
+
             Dim sqlCmd As New SqlCommand
             With sqlCmd
                 .Connection = SQLConn
@@ -544,6 +561,7 @@ Namespace General
 				.Parameters.Add(prmGraphDefaultUptime)
 				.Parameters.Add(prmMonitorConcurrency)
 				.Parameters.Add(prmMonitorTimeoutPct)
+				.Parameters.Add(prmMonitorRunLog)
             End With
 
             Try
@@ -718,6 +736,16 @@ Namespace General
 							mMonitorTimeoutPct = 80
 						End Try
 
+						Try
+							If Not (IsDBNull(.Item("MonitorRunLog"))) Then
+								mMonitorRunLog = CBool(.Item("MonitorRunLog"))
+							Else
+								mMonitorRunLog = True
+							End If
+						Catch
+							mMonitorRunLog = True
+						End Try
+
 						If Not (IsDBNull(.Item("DBVersion"))) Then
 							mDBVersion = CSng(.Item("DBVersion"))
 						Else
@@ -746,6 +774,7 @@ Namespace General
 					mGraphDefaultUptime = True
 					mMonitorConcurrency = 10
 					mMonitorTimeoutPct = 80
+					mMonitorRunLog = True
 					mDBVersion = Nothing
                 End If
 

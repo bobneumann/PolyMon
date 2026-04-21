@@ -493,10 +493,13 @@ Namespace Monitors
 			End Try
 		End Sub
 
+		Public Shared MonitorRunLogEnabled As Boolean = True
+
 		Private Shared mRunLogPath As String = System.IO.Path.Combine(
 			System.IO.Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location), "monitor_run.log")
 
 		Private Sub LogMonitorStart(ByVal name As String)
+			If Not MonitorRunLogEnabled Then Exit Sub
 			Try
 				System.IO.File.AppendAllText(mRunLogPath,
 					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " START " & name & Environment.NewLine)
@@ -505,6 +508,7 @@ Namespace Monitors
 		End Sub
 
 		Private Sub LogMonitorEnd(ByVal name As String)
+			If Not MonitorRunLogEnabled Then Exit Sub
 			Try
 				System.IO.File.AppendAllText(mRunLogPath,
 					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " END   " & name & Environment.NewLine)

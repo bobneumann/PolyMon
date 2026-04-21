@@ -80,7 +80,7 @@ Namespace Executive
 
 
 #Region "Private Attributes"
-		Private Const mDBVersion As Single = 1.55
+		Private Const mDBVersion As Single = 1.56
 
 		Private mEventLog As String = "PolyMon"
 
@@ -92,6 +92,7 @@ Namespace Executive
 		Private mMainTimerInterval As Integer = 60 'seconds
 		Private mMonitorConcurrency As Integer = 10
 		Private mMonitorTimeoutPct As Integer = 80
+		Private mMonitorRunLog As Boolean = True
 		Private mExecutiveID As Integer = 1
 
 		Private Enum SeverityLevel As Integer
@@ -315,6 +316,12 @@ Namespace Executive
 					Catch
 						'Use default if column not yet present
 					End Try
+					Try
+						mMonitorRunLog = CBool(dr.Item("MonitorRunLog"))
+					Catch
+						'Use default if column not yet present
+					End Try
+					PolyMon.Monitors.MonitorExecutor.MonitorRunLogEnabled = mMonitorRunLog
 				End While
 			Catch ex As Exception
 				Try
