@@ -80,7 +80,7 @@ Namespace Executive
 
 
 #Region "Private Attributes"
-		Private Const mDBVersion As Single = 1.56
+		Private Const mDBVersion As Single = 1.57
 
 		Private mEventLog As String = "PolyMon"
 
@@ -524,10 +524,34 @@ Namespace Executive
 				'Monitor already running it's tests... Simply ignore this event
 			Else
 				mIsMonitorRunning = True
-				RunMonitors()
-				SendNotifications()
+				Dim cycleThread As New Thread(Sub()
+					RunMonitors()
+					SendNotifications()
+				End Sub)
+				cycleThread.IsBackground = True
+				cycleThread.Start()
+				If Not cycleThread.Join(mMainTimerInterval * 2) Then
+					LogCycleTimeout()
+					Try
+						EventLog.WriteEntry(mEventLog, "Monitor cycle exceeded deadline. Watchdog fired.", EventLogEntryType.Warning)
+					Catch
+					End Try
+				End If
 				mIsMonitorRunning = False
 			End If
+		End Sub
+
+		Private Sub LogCycleTimeout()
+			Try
+				Dim SQLConn As New SqlConnection(mSQLConn)
+				Dim sqlCmd As New SqlCommand("polymon_ins_MonitorCycleTimeout", SQLConn)
+				sqlCmd.CommandType = CommandType.StoredProcedure
+				SQLConn.Open()
+				sqlCmd.ExecuteNonQuery()
+				SQLConn.Close()
+				SQLConn.Dispose()
+			Catch
+			End Try
 		End Sub
 #End Region
 

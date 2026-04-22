@@ -494,26 +494,43 @@ Namespace Monitors
 		End Sub
 
 		Public Shared MonitorRunLogEnabled As Boolean = True
-
-		Private Shared mRunLogPath As String = System.IO.Path.Combine(
-			System.IO.Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location), "monitor_run.log")
+		Private mCurrentRunID As Integer = 0
 
 		Private Sub LogMonitorStart(ByVal name As String)
 			If Not MonitorRunLogEnabled Then Exit Sub
 			Try
-				System.IO.File.AppendAllText(mRunLogPath,
-					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " START " & name & Environment.NewLine)
+				Dim SQLConn As New SqlConnection(mSQLConn)
+				Dim sqlCmd As New SqlCommand("polymon_ins_MonitorRunStart", SQLConn)
+				sqlCmd.CommandType = CommandType.StoredProcedure
+				sqlCmd.Parameters.Add(New SqlParameter("@MonitorID", SqlDbType.Int) With {.Value = mMonitorID})
+				sqlCmd.Parameters.Add(New SqlParameter("@MonitorName", SqlDbType.VarChar, 255) With {.Value = name})
+				Dim prmRunID As New SqlParameter("@RunID", SqlDbType.Int) With {.Direction = ParameterDirection.Output}
+				sqlCmd.Parameters.Add(prmRunID)
+				SQLConn.Open()
+				sqlCmd.ExecuteNonQuery()
+				mCurrentRunID = CInt(prmRunID.Value)
+				SQLConn.Close()
+				SQLConn.Dispose()
 			Catch
+				mCurrentRunID = 0
 			End Try
 		End Sub
 
 		Private Sub LogMonitorEnd(ByVal name As String)
 			If Not MonitorRunLogEnabled Then Exit Sub
+			If mCurrentRunID = 0 Then Exit Sub
 			Try
-				System.IO.File.AppendAllText(mRunLogPath,
-					DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") & " END   " & name & Environment.NewLine)
+				Dim SQLConn As New SqlConnection(mSQLConn)
+				Dim sqlCmd As New SqlCommand("polymon_upd_MonitorRunEnd", SQLConn)
+				sqlCmd.CommandType = CommandType.StoredProcedure
+				sqlCmd.Parameters.Add(New SqlParameter("@RunID", SqlDbType.Int) With {.Value = mCurrentRunID})
+				SQLConn.Open()
+				sqlCmd.ExecuteNonQuery()
+				SQLConn.Close()
+				SQLConn.Dispose()
 			Catch
 			End Try
+			mCurrentRunID = 0
 		End Sub
 
 		Private Sub RefreshMetadata()
