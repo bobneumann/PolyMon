@@ -18,9 +18,11 @@ Originally created by [Fred Baptiste](https://github.com/fbaptiste/polymon) on C
 
 ## Built-in Monitor Plug-ins
 
-CPU, Disk, File (age/count), Windows Performance Counters, Ping, PowerShell, SQL Query, SNMP, TCP Port, URL (HTML), URL (XML), Windows Service, WMI, and NRS Portal.
+CPU, Disk, File (age/count), Windows Performance Counters, Ping, PowerShell, SQL Query, TCP Port, URL (HTML), URL (XML), Windows Service, WMI, and NRS Portal.
 
 Monitors use a plug-in architecture — new monitors can be added by inheriting from a base class and dropping the DLL into the Monitors folder. PowerShell monitors allow fully custom scripts with status and counter feedback.
+
+**SNMP** is supported via the included `PSModules\SNMPMonitor\SNMPMonitor.ps1` PowerShell monitor sample, which uses the [`Indented.Net.Snmp`](https://www.powershellgallery.com/packages/Indented.Net.Snmp) module (`Install-Module -Name Indented.Net.Snmp -Scope AllUsers`).
 
 ## What's New in This Fork
 
@@ -97,7 +99,6 @@ Download `PolyMon-Setup.exe` from the [Releases](../../releases) page and run it
 3. Run SQL scripts from `PolymonSQL\Create Scripts\` to set up the database
 4. Use `Install-PolyMon.ps1` or compile the InnoSetup installer with `iscc PolyMon-Setup.iss`
 
-> **Note:** The SNMP monitor projects (`SNMPMonitor`, `SNMPMonitorEditor`, `SNMP`) are not currently included in the solution. Their pre-built DLLs are committed to the repository and are picked up automatically by the build and installer scripts.
 
 ## Database Upgrade Path
 
