@@ -51,7 +51,8 @@ Public Class frmMatrixRoomBrowser
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
-        ' Bypass SSL cert validation (corporate proxies may intercept HTTPS)
+        ' Scope SSL bypass to this operation only; restore after
+        Dim prevCertCallback = ServicePointManager.ServerCertificateValidationCallback
         ServicePointManager.ServerCertificateValidationCallback =
             Function(s As Object, cert As X509Certificate, chain As X509Chain, errs As SslPolicyErrors) True
 
@@ -118,6 +119,7 @@ Public Class frmMatrixRoomBrowser
         Catch ex As Exception
             lblStatus.Text = "Error: " & ex.Message
         Finally
+            ServicePointManager.ServerCertificateValidationCallback = prevCertCallback
             btnRefresh.Enabled = True
             Me.Cursor = Cursors.Default
         End Try
