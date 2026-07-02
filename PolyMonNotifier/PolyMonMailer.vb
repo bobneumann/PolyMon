@@ -115,7 +115,7 @@ Namespace Notifier
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception
-				Throw ex
+				Throw
 			Finally
 				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
 				dsEmails.Dispose()
@@ -220,7 +220,7 @@ Namespace Notifier
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception
-				Throw ex
+				Throw
 			Finally
 				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
 				dsEmails.Dispose()
@@ -314,7 +314,7 @@ Namespace Notifier
 					cmdMarkSent.ExecuteNonQuery()
 				Next
 			Catch ex As Exception
-				Throw ex
+				Throw
 			Finally
 				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
 				SQLConn.Dispose()
@@ -450,7 +450,7 @@ Namespace Notifier
 					cmdMarkSent.ExecuteNonQuery()
 				Next
 			Catch ex As Exception
-				Throw ex
+				Throw
 			Finally
 				If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
 				SQLConn.Dispose()
