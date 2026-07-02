@@ -7,7 +7,7 @@
 ;   2. Compile with: iscc.exe PolyMon-Setup.iss -> Output\PolyMon-Setup.exe
 
 #define MyAppName "PolyMon Manager"
-#define MyAppVersion "1.55"
+#define MyAppVersion "1.57"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 

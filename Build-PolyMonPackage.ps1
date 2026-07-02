@@ -385,6 +385,8 @@ $sqlFiles = @(
     @{ Src = (Join-Path $SqlUpdate 'Update DB 1.52 to 1.53.sql');      Name = 'Update DB 1.52 to 1.53.sql' }
     @{ Src = (Join-Path $SqlUpdate 'Update DB 1.53 to 1.54.sql');      Name = 'Update DB 1.53 to 1.54.sql' }
     @{ Src = (Join-Path $SqlUpdate 'Update DB 1.54 to 1.55.sql');      Name = 'Update DB 1.54 to 1.55.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.55 to 1.56.sql');      Name = 'Update DB 1.55 to 1.56.sql' }
+    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.56 to 1.57.sql');      Name = 'Update DB 1.56 to 1.57.sql' }
     @{ Src = (Join-Path $SqlUpdate 'insert_monitortypes.sql');         Name = 'insert_monitortypes.sql' }
 )
 
