@@ -28,3 +28,10 @@ obj/**/*.txt
 # Ansible playbooks (infrastructure, not part of PolyMon app)
 ansible/
 .aider*
+
+# --- TFS / Visual Studio source-control relics ---
+*.vspscc
+*.vssscc
+*.dbmdl
+UpgradeLog*.htm
+BuildProcessTemplates/
