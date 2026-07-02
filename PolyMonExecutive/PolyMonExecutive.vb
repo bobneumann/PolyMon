@@ -84,7 +84,7 @@ Namespace Executive
 
 		Private mEventLog As String = "PolyMon"
 
-		Private mIsMonitorRunning As Boolean = False
+		Private mCycleThread As Thread = Nothing
 
 		Private mMonitorList As New Dictionary(Of Integer, PolyMon.Monitors.MonitorExecutor)
 
@@ -520,24 +520,23 @@ Namespace Executive
 		End Sub
 
 		Private Sub timerMonitor_Elapsed(ByVal sender As System.Object, ByVal e As System.Timers.ElapsedEventArgs) Handles timerMonitor.Elapsed
-			If mIsMonitorRunning Then
-				'Monitor already running it's tests... Simply ignore this event
-			Else
-				mIsMonitorRunning = True
-				Dim cycleThread As New Thread(Sub()
-					RunMonitors()
-					SendNotifications()
-				End Sub)
-				cycleThread.IsBackground = True
-				cycleThread.Start()
-				If Not cycleThread.Join(mMainTimerInterval * 2) Then
-					LogCycleTimeout()
-					Try
-						EventLog.WriteEntry(mEventLog, "Monitor cycle exceeded deadline. Watchdog fired.", EventLogEntryType.Warning)
-					Catch
-					End Try
-				End If
-				mIsMonitorRunning = False
+			' If previous cycle thread is still alive, skip this tick entirely
+			If mCycleThread IsNot Nothing AndAlso mCycleThread.IsAlive Then Return
+
+			mCycleThread = New Thread(Sub()
+				RunMonitors()
+				SendNotifications()
+			End Sub)
+			mCycleThread.IsBackground = True
+			mCycleThread.Start()
+
+			If Not mCycleThread.Join(mMainTimerInterval * 2) Then
+				LogCycleTimeout()
+				Try
+					EventLog.WriteEntry(mEventLog, "Monitor cycle exceeded deadline. Watchdog fired.", EventLogEntryType.Warning)
+				Catch
+				End Try
+				' Thread still alive after timeout — leave mCycleThread set so next tick sees IsAlive=True
 			End If
 		End Sub
 
