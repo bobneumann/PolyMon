@@ -68,7 +68,7 @@ Public Class frmEmailRelayConfig
         Application.DoEvents()
 
         ' Scope SSL bypass to this operation only; restore after
-        Dim prevCertCallback = ServicePointManager.ServerCertificateValidationCallback
+        Dim prevCertCallback As RemoteCertificateValidationCallback = ServicePointManager.ServerCertificateValidationCallback
         ServicePointManager.ServerCertificateValidationCallback =
             Function(s As Object, cert As X509Certificate, chain As X509Chain, errs As SslPolicyErrors) True
 
