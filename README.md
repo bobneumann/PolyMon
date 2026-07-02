@@ -20,28 +20,56 @@ Originally created by [Fred Baptiste](https://github.com/fbaptiste/polymon) on C
 
 CPU, Disk, File (age/count), Windows Performance Counters, Ping, PowerShell, SQL Query, SNMP, TCP Port, URL (HTML), URL (XML), Windows Service, WMI, and NRS Portal.
 
-Monitors use a plug-in architecture -- new monitors can be added by inheriting from a base class and dropping the DLL into the Monitors folder. PowerShell monitors allow fully custom scripts with status and counter feedback.
+Monitors use a plug-in architecture — new monitors can be added by inheriting from a base class and dropping the DLL into the Monitors folder. PowerShell monitors allow fully custom scripts with status and counter feedback.
 
 ## What's New in This Fork
 
 ### DB 1.40
-- **Monitor History** -- tracks all changes to monitor definitions with undo/revert support via trigger-based history table and UI button in Monitor Definitions
+- **Monitor History** — tracks all changes to monitor definitions with undo/revert support via trigger-based history table and UI button in Monitor Definitions
 
 ### DB 1.50
-- **Push Notifications** -- ntfy, Pushover, and Telegram support alongside existing SMTP email. Configured per-system (service + server) and per-operator (push address/key)
-- **Failure Notification Bug Fix** -- "Notify on failure" now fires on the first failure instead of requiring two consecutive failures when "Notify on FailToOK" is disabled. Root cause: transition detection was comparing against last *alert* status instead of last *event* status
+- **Push Notifications** — ntfy, Pushover, and Telegram support alongside existing SMTP email. Configured per-system (service + server) and per-operator (push address/key)
+- **Failure Notification Bug Fix** — "Notify on failure" now fires on the first failure instead of requiring two consecutive failures when "Notify on FailToOK" is disabled
+
+### DB 1.51
+- **Push config notes** — free-text Notes field on System Settings for documenting push notification configuration
+
+### DB 1.52
+- **Email Relay GUI** — configuration UI for an external email relay API (EmailRelayKey stored in SysSettings)
+- **Matrix push support** — Matrix/Synapse room browser for selecting a push destination room via the Manager UI
+
+### DB 1.53
+- **Graph visibility defaults** — System Settings controls which chart types (Status Frequency, Uptime) are shown by default in the Reports view
+
+### DB 1.54
+- **Maintenance Mode** — silence a monitor for a specified number of minutes directly from the Monitor Definitions grid. Executive re-enables it automatically when the window expires
+
+### DB 1.55
+- **Parallel monitor execution** — monitors run concurrently up to a configurable limit (`MonitorConcurrency`, default 10). Timeout is configurable as a percentage of the cycle interval (`MonitorTimeoutPct`, default 80%)
+
+### DB 1.56
+- **Monitor run logging toggle** — enable/disable the Executive's per-monitor run log via System Settings (`MonitorRunLog`)
+
+### DB 1.57
+- **SQL-based run logging** — `MonitorRunLog` table records each monitor's start/end time every cycle. `EndDT IS NULL` identifies monitors that hung and were abandoned. Cycle-level timeouts are recorded as a sentinel row (`[CYCLE TIMEOUT]`)
+- **Cycle watchdog** — overlapping monitor cycles are now detected and blocked using a live thread reference check rather than a boolean flag, eliminating the race condition that could start a second concurrent cycle
 
 ### UI Improvements
 - PowerShell Monitor Editor toolbar: font size selector, undo/redo buttons, Consolas default font
 - Ctrl+A shortcut conflict resolved (Alerts moved to Ctrl+Shift+A)
 - Cleaned up Monitor Definitions toolbar
 
+### Reliability & Security
+- Email send failures are now logged to the Windows Event Log and do not mark the alert as sent — it will retry next cycle
+- HTTP push requests have a 10-second timeout (previously unlimited, could stall the notification loop)
+- TLS certificate bypass scoped to per-operation instead of process-wide (fixes a session-wide cert validation hole in the Matrix and Email Relay forms)
+
 ### Installer
 - **InnoSetup-based installer** (`PolyMon-Setup.exe`) handles fresh install, upgrade, and repair in a single executable
-- Deploys Manager, Executive, SQL scripts, and PowerShell modules (SSH-Sessions, SQL_Server_Overview, SQL_Server_Overview2)
-- Service management via InstallUtil (auto stop/uninstall on upgrade, reinstall after)
-- Optional database setup wizard (create new DB or upgrade existing through all versions)
-- Config files preserved on upgrade (`onlyifdoesntexist`)
+- Full-stack: deploys Manager, Executive, SQL scripts, and PowerShell modules; manages the Windows service (stop/uninstall before copy, reinstall after); writes shortcuts and Add/Remove Programs entry
+- Config files preserved on upgrade (`onlyifdoesntexist`) — connection strings survive re-runs
+- Database upgrade delegated to `Install-PolyMon.ps1 -DbOnly` (single source of truth for the SQL chain)
+- `Get-DbVersion` reads `SysSettings.DBVersion` — fixes a silent failure that caused the upgrade chain to be skipped on every existing-database path
 
 ## Requirements
 
@@ -56,17 +84,20 @@ Monitors use a plug-in architecture -- new monitors can be added by inheriting f
 
 Download `PolyMon-Setup.exe` from the [Releases](../../releases) page and run it. The installer will:
 
-1. Install PolyMon Manager and Executive to `C:\Program Files\PolyMon\`
-2. Deploy PowerShell modules to `C:\Program Files\WindowsPowerShell\Modules\`
-3. Register and start the PolyMon Executive service
-4. Optionally create/upgrade the database via sqlcmd
+1. Stop and remove the existing PolyMon Executive service (if present)
+2. Install PolyMon Manager and Executive to `C:\Program Files\PolyMon\`
+3. Deploy PowerShell modules to `C:\Program Files\WindowsPowerShell\Modules\`
+4. Register and start the PolyMon Executive service
+5. Run the database create/upgrade chain via `Install-PolyMon.ps1 -DbOnly`
 
 ### From Source
 
 1. Open `PolyMon(CodePlex).sln` in Visual Studio 2019+ and build (Release)
-2. Run `.\Build-PolyMonPackage.ps1 -Build` to stage files
+2. Run `.\Build-PolyMonPackage.ps1 -Build` to stage files into `PolyMonInstall\`
 3. Run SQL scripts from `PolymonSQL\Create Scripts\` to set up the database
-4. Use `Install-PolyMon.ps1` or compile the InnoSetup installer with `iscc.exe PolyMon-Setup.iss`
+4. Use `Install-PolyMon.ps1` or compile the InnoSetup installer with `iscc PolyMon-Setup.iss`
+
+> **Note:** The SNMP monitor projects (`SNMPMonitor`, `SNMPMonitorEditor`, `SNMP`) are not currently included in the solution. Their pre-built DLLs are committed to the repository and are picked up automatically by the build and installer scripts.
 
 ## Database Upgrade Path
 
@@ -77,8 +108,21 @@ Download `PolyMon-Setup.exe` from the [Releases](../../releases) page and run it
 | 1.10 | 1.30 | `Update DB 1.10 to 1.30.sql` |
 | 1.30 | 1.40 | `Update DB 1.30 to 1.40.sql` |
 | 1.40 | 1.50 | `Update DB 1.40 to 1.50.sql` |
+| 1.50 | 1.51 | `Update DB 1.50 to 1.51.sql` |
+| 1.51 | 1.52 | `Update DB 1.51 to 1.52.sql` |
+| 1.52 | 1.53 | `Update DB 1.52 to 1.53.sql` |
+| 1.53 | 1.54 | `Update DB 1.53 to 1.54.sql` |
+| 1.54 | 1.55 | `Update DB 1.54 to 1.55.sql` |
+| 1.55 | 1.56 | `Update DB 1.55 to 1.56.sql` |
+| 1.56 | 1.57 | `Update DB 1.56 to 1.57.sql` |
 
 Run `TSData-Extend.sql` after any upgrade to extend time-series lookup tables through 2035.
+
+The installer handles the full upgrade chain automatically. To run it manually:
+
+```powershell
+.\Install-PolyMon.ps1 -SqlInstance ".\SQLEXPRESS" -DbName "polymon"
+```
 
 ## License
 
