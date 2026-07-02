@@ -486,12 +486,6 @@ Namespace Executive
 						sem.Wait()
 						acquired = True
 						capture.RunMonitor()
-					Catch tae As ThreadAbortException
-						Thread.ResetAbort()
-						Try
-							EventLog.WriteEntry(mEventLog, "Monitor timed out: " & capture.MonitorName, EventLogEntryType.Warning)
-						Catch
-						End Try
 					Catch ex As Exception
 						Try
 							EventLog.WriteEntry(mEventLog, "Monitor error [" & capture.MonitorName & "]: " & ex.Message, EventLogEntryType.Warning)
@@ -501,21 +495,31 @@ Namespace Executive
 						If acquired Then sem.Release()
 					End Try
 				End Sub)
+				t.Name = capture.MonitorName
 				t.IsBackground = True
 				threads.Add(t)
 				t.Start()
 			Next
 
-			'Give all monitors up to MonitorTimeoutPct% of the cycle interval,
-			'then abort any that are still running
+			' Wait up to MonitorTimeoutPct% of the cycle interval for all monitors to finish.
+			' Threads that exceed the deadline are background threads and will be abandoned;
+			' they hold their semaphore slot until they naturally complete. MonitorRunLog.EndDT
+			' will be NULL for any monitor still running when the cycle deadline passes.
+			' Thread.Abort() is intentionally not used: it throws PlatformNotSupportedException on .NET 5+.
 			Dim timeoutMs As Integer = CInt(mMainTimerInterval * (mMonitorTimeoutPct / 100.0))
 			Dim deadline As DateTime = DateTime.UtcNow.AddMilliseconds(timeoutMs)
 			For Each t As Thread In threads
 				Dim remaining As Integer = CInt(Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds))
 				t.Join(remaining)
 			Next
+			' Log any threads that are still alive; they are abandoned (not aborted)
 			For Each t As Thread In threads
-				If t.IsAlive Then t.Abort()
+				If t.IsAlive Then
+					Try
+						EventLog.WriteEntry(mEventLog, "Monitor deadline exceeded, thread abandoned: " & t.Name, EventLogEntryType.Warning)
+					Catch
+					End Try
+				End If
 			Next
 		End Sub
 
