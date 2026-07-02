@@ -125,6 +125,10 @@ The installer handles the full upgrade chain automatically. To run it manually:
 .\Install-PolyMon.ps1 -SqlInstance ".\SQLEXPRESS" -DbName "polymon"
 ```
 
+## Security Notes
+
+SMTP passwords, push notification tokens, the Matrix bearer token, and the Email Relay API key are stored as plaintext in the `SysSettings` table. This is a known limitation. For a LAN-hosted tool, SQL Server's own access controls (Windows authentication, network isolation) are the primary defense. Restrict database access accordingly and do not expose the SQL Server instance to untrusted networks.
+
 ## License
 
 MIT License (inherited from original project).
