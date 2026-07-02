@@ -313,7 +313,7 @@ if ($Build) {
     }
 
     Write-Host "Using MSBuild: $msbuild"
-    & $msbuild $SolutionFile /p:Configuration=Release /verbosity:minimal /nologo
+    & $msbuild $SolutionFile /p:Configuration=Release /p:SignManifests=false /verbosity:minimal /nologo
     if ($LASTEXITCODE -ne 0) {
         Write-Error 'Build failed.'
         return
