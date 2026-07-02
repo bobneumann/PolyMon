@@ -35,7 +35,13 @@ param(
     [string]$SqlInstance,
     [string]$DatabaseName,
     [string]$InstallDir,
-    [switch]$NonInteractive
+    [switch]$NonInteractive,
+    # When set, run ONLY the database create/upgrade section and skip all file
+    # copy, config writing, service install/start, shortcut, and Add/Remove
+    # Programs steps. Used by PolyMon-Setup.iss, which owns those steps itself
+    # and delegates only the database to this script (single source of truth
+    # for the version-gated SQL upgrade chain).
+    [switch]$DbOnly
 )
 
 Set-StrictMode -Version Latest
@@ -224,22 +230,47 @@ function Test-DatabaseExists {
 
 function Get-DbVersion {
     param([string]$ServerInstance, [string]$Database)
+
+    # The schema version lives in SysSettings.DBVersion, a decimal(5,2) — NOT in a
+    # generic "Settings" name/value table (which does not exist). The value must be
+    # returned as a two-decimal invariant string (e.g. "1.57") so the caller's exact
+    # string switch ('1.50','1.56',...) matches regardless of regional settings.
+    $normalize = {
+        param($raw)
+        if ($null -eq $raw) { return $null }
+        $s = ([string]$raw).Trim()
+        if ($s -eq '') { return $null }
+        $dec = 0.0
+        if ([decimal]::TryParse($s,
+                [System.Globalization.NumberStyles]::Float,
+                [System.Globalization.CultureInfo]::InvariantCulture, [ref]$dec)) {
+            return $dec.ToString('0.00', [System.Globalization.CultureInfo]::InvariantCulture)
+        }
+        # Fall back to a locale-tolerant parse (handles comma decimal separators)
+        if ([decimal]::TryParse($s,
+                [System.Globalization.NumberStyles]::Float,
+                [System.Globalization.CultureInfo]::CurrentCulture, [ref]$dec)) {
+            return $dec.ToString('0.00', [System.Globalization.CultureInfo]::InvariantCulture)
+        }
+        return $s
+    }
+
     try {
-        $query = "SELECT TOP 1 Value FROM Settings WHERE Name = 'DBVersion'"
-        $result = Invoke-SqlQuery -ServerInstance $ServerInstance -Database $Database -Query $query
+        if (-not (Invoke-SqlQuery -ServerInstance $ServerInstance -Database $Database `
+                -Query "SELECT 1")) { }
         if ($Script:SqlMethod -eq 'Manual') { return $null }
-        if ($result -is [System.Data.DataRow]) { return $result.Value }
-        return ($result | Out-String).Trim()
+
+        # Guard against the schema table being absent (pre-1.30 / empty DB).
+        $query = "IF OBJECT_ID('dbo.SysSettings','U') IS NOT NULL " +
+                 "SELECT TOP 1 CONVERT(varchar(20), CAST(DBVersion AS decimal(5,2))) AS DBVersion " +
+                 "FROM dbo.SysSettings ORDER BY Name"
+        $result = Invoke-SqlQuery -ServerInstance $ServerInstance -Database $Database -Query $query
+
+        if ($result -is [System.Data.DataRow]) { return (& $normalize $result.DBVersion) }
+        if ($result) { return (& $normalize (($result | Out-String).Trim())) }
+        return $null
     }
     catch {
-        # Table might not exist or column missing — try alternate approach
-        try {
-            $query = "IF OBJECT_ID('Settings','U') IS NOT NULL SELECT TOP 1 Value FROM Settings WHERE Name = 'DBVersion'"
-            $result = Invoke-SqlQuery -ServerInstance $ServerInstance -Database $Database -Query $query
-            if ($result -is [System.Data.DataRow]) { return $result.Value }
-            $text = ($result | Out-String).Trim()
-            if ($text -and $text -ne '') { return $text }
-        } catch {}
         return $null
     }
 }
@@ -553,7 +584,7 @@ else {
 # ============================================================
 # Step 1: Stop existing service
 # ============================================================
-if ($IsUpgrade) {
+if ($IsUpgrade -and -not $DbOnly) {
     Write-Step 'Step 1: Stopping existing service'
     $ServiceWasRunning = Stop-PolyMonService
     if ($ServiceWasRunning) {
@@ -567,7 +598,7 @@ if ($IsUpgrade) {
 # ============================================================
 # Step 2: Back up existing files
 # ============================================================
-if ($IsUpgrade -and (Test-Path $InstallDir)) {
+if ($IsUpgrade -and -not $DbOnly -and (Test-Path $InstallDir)) {
     Write-Step 'Step 2: Backing up existing installation'
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
     $BackupDir = Join-Path (Split-Path $InstallDir -Parent) "_backup_PolyMon_$timestamp"
@@ -586,7 +617,7 @@ if ($IsUpgrade -and (Test-Path $InstallDir)) {
 # ============================================================
 # Step 3: Uninstall old service
 # ============================================================
-if ($IsUpgrade) {
+if ($IsUpgrade -and -not $DbOnly) {
     Write-Step 'Step 3: Uninstalling old service'
     $oldExe = Join-Path $InstallDir 'PolyMon Executive\PolyMonExecutive.exe'
     if (Test-Path $oldExe) {
@@ -604,14 +635,17 @@ if ($IsUpgrade) {
     $CompletedSteps.Add('OldServiceUninstalled') | Out-Null
 }
 
-# ============================================================
-# Step 4: Create directories and copy files
-# ============================================================
-Write-Step "Step $(if ($IsUpgrade) {'4'} else {'1'}): Copying files"
-
+# Destination paths are needed by later steps regardless of mode.
 $mgrDest  = Join-Path $InstallDir 'PolyMon Manager'
 $monDest  = Join-Path $InstallDir 'PolyMon Manager\Monitors'
 $execDest = Join-Path $InstallDir 'PolyMon Executive'
+
+# ============================================================
+# Step 4: Create directories and copy files
+#   (skipped in -DbOnly: the installer/Inno has already placed files)
+# ============================================================
+if (-not $DbOnly) {
+Write-Step "Step $(if ($IsUpgrade) {'4'} else {'1'}): Copying files"
 
 foreach ($dir in @($mgrDest, $monDest, $execDest)) {
     if (-not (Test-Path $dir)) {
@@ -682,6 +716,8 @@ if ($IsUpgrade -and $OldExecId) {
     Set-ConfigValue -ConfigPath $execConfig -Key 'ExecutiveID' -Value $OldExecId
     Write-Ok "ExecutiveID preserved: $OldExecId"
 }
+
+} # end if (-not $DbOnly) — file copy / config / ExecutiveID
 
 # ============================================================
 # Step 7: Database setup
@@ -870,13 +906,15 @@ else {
         Write-Warn "  3. Run: $(Join-Path $PackageDir 'SQL\DB Version 1.30.sql')"
     }
     else {
-        Write-Warn '  2. Check the DB version in the Settings table'
+        Write-Warn '  2. Check the DB version: SELECT DBVersion FROM SysSettings'
         Write-Warn "  3. Run any needed update scripts from: $(Join-Path $PackageDir 'SQL')"
     }
     Write-Warn "  4. Run: $(Join-Path $PackageDir 'SQL\TSData-Extend.sql')"
     Write-Host ''
     Read-Host '   Press Enter to continue after completing database setup'
 }
+
+if (-not $DbOnly) {
 
 # ============================================================
 # Step 8: Install service
@@ -1002,6 +1040,14 @@ try {
 catch {
     Write-Warn "Add/Remove Programs registration failed: $_"
     Write-Warn 'PolyMon will still work, it just won''t appear in Add/Remove Programs.'
+}
+
+} # end if (-not $DbOnly) — service install / start / shortcuts / ARP
+
+if ($DbOnly) {
+    Write-Host ''
+    Write-Ok 'Database setup complete (-DbOnly mode). Skipped files, service, and shortcuts.'
+    exit 0
 }
 
 # ============================================================
