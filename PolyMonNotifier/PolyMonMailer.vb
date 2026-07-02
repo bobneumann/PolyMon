@@ -4,6 +4,7 @@ Imports System.Data.SqlClient
 Imports System.Xml
 Imports System.Text
 Imports System.IO
+Imports System.Diagnostics
 
 
 Namespace Notifier
@@ -85,6 +86,7 @@ Namespace Notifier
 						End If
 
 						'Send email if address is present
+						Dim emailSent As Boolean = String.IsNullOrEmpty(EmailAddress)
 						If Not String.IsNullOrEmpty(EmailAddress) Then
 							Try
 								If IncludeMessageBody Then
@@ -92,8 +94,9 @@ Namespace Notifier
 								Else
 									SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
 								End If
+								emailSent = True
 							Catch ex As Exception
-								'TODO: Log error somewhere???
+								EventLog.WriteEntry("PolyMon", "Email notification failed for " & Name & ": " & ex.Message, EventLogEntryType.Warning)
 							End Try
 						End If
 
@@ -103,15 +106,17 @@ Namespace Notifier
 						If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
 							Try
 								mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
-							Catch
-								' Push is best-effort
+							Catch ex As Exception
+								EventLog.WriteEntry("PolyMon", "Push notification failed for " & Name & ": " & ex.Message, EventLogEntryType.Warning)
 							End Try
 						End If
 
-						'Mark as sent
-						prmAlertID.Value = AlertID
-						prmOperatorID.Value = OperatorID
-						cmdMarkSent.ExecuteNonQuery()
+						'Mark as sent only if delivery succeeded (retries next cycle if email failed)
+						If emailSent Then
+							prmAlertID.Value = AlertID
+							prmOperatorID.Value = OperatorID
+							cmdMarkSent.ExecuteNonQuery()
+						End If
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception
@@ -190,6 +195,7 @@ Namespace Notifier
 						End If
 
 						'Send email if address is present
+						Dim emailSent As Boolean = String.IsNullOrEmpty(EmailAddress)
 						If Not String.IsNullOrEmpty(EmailAddress) Then
 							Try
 								If IncludeMessageBody Then
@@ -197,8 +203,9 @@ Namespace Notifier
 								Else
 									SendMail(EmailAddress, Name, MessageSubject, Nothing, False)
 								End If
+								emailSent = True
 							Catch ex As Exception
-								'TODO: Log error somewhere???
+								EventLog.WriteEntry("PolyMon", "Email notification failed for " & Name & ": " & ex.Message, EventLogEntryType.Warning)
 							End Try
 						End If
 
@@ -208,15 +215,17 @@ Namespace Notifier
 						If mPushNotifier.IsEnabled AndAlso Not String.IsNullOrEmpty(PushAddress) Then
 							Try
 								mPushNotifier.SendPush(PushAddress, MessageSubject, If(IncludeMessageBody, MessageBody, Nothing))
-							Catch
-								' Push is best-effort
+							Catch ex As Exception
+								EventLog.WriteEntry("PolyMon", "Push notification failed for " & Name & ": " & ex.Message, EventLogEntryType.Warning)
 							End Try
 						End If
 
-						'Mark as sent
-						prmAlertID.Value = AlertID
-						prmOperatorID.Value = OperatorID
-						cmdMarkSent.ExecuteNonQuery()
+						'Mark as sent only if delivery succeeded (retries next cycle if email failed)
+						If emailSent Then
+							prmAlertID.Value = AlertID
+							prmOperatorID.Value = OperatorID
+							cmdMarkSent.ExecuteNonQuery()
+						End If
 					Next
 				End If 'Tables > 0
 			Catch ex As Exception

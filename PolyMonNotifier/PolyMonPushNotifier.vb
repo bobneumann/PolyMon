@@ -56,6 +56,7 @@ Namespace Notifier
 
 			Dim url As String = ServerURL & "/" & Topic
 			Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+			request.Timeout = 10000
 			request.Method = "POST"
 			request.ContentType = "text/plain"
 
@@ -83,6 +84,7 @@ Namespace Notifier
 		Private Sub SendPushover(ByVal UserKey As String, ByVal Subject As String, ByVal Body As String)
 			Dim url As String = "https://api.pushover.net/1/messages.json"
 			Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+			request.Timeout = 10000
 			request.Method = "POST"
 			request.ContentType = "application/x-www-form-urlencoded"
 
@@ -112,6 +114,7 @@ Namespace Notifier
 
 			Dim url As String = "https://api.telegram.org/bot" & If(mPushToken, "") & "/sendMessage"
 			Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+			request.Timeout = 10000
 			request.Method = "POST"
 			request.ContentType = "application/x-www-form-urlencoded"
 
@@ -142,6 +145,7 @@ Namespace Notifier
 			Dim txnId As String = Guid.NewGuid().ToString()
 			Dim url As String = ServerURL & "/_matrix/client/v3/rooms/" & Uri.EscapeDataString(RoomId) & "/send/m.room.message/" & txnId
 			Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+			request.Timeout = 10000
 			request.Method = "PUT"
 			request.ContentType = "application/json"
 			request.Headers.Add("Authorization", "Bearer " & If(mPushToken, ""))
