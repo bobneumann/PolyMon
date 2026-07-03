@@ -56,6 +56,13 @@ Monitors use a plug-in architecture — new monitors can be added by inheriting 
 - **SQL-based run logging** — `MonitorRunLog` table records each monitor's start/end time every cycle. `EndDT IS NULL` identifies monitors that hung and were abandoned. Cycle-level timeouts are recorded as a sentinel row (`[CYCLE TIMEOUT]`)
 - **Cycle watchdog** — overlapping monitor cycles are now detected and blocked using a live thread reference check rather than a boolean flag, eliminating the race condition that could start a second concurrent cycle
 
+### v1.58 — Repo hygiene & CI
+- **GitHub Actions CI** — every push builds the full solution, stages the installer payload, compiles InnoSetup, and uploads `PolyMon-Setup.exe` as a workflow artifact. Tags push the artifact to a GitHub Release automatically
+- **Binaries removed from git** — tracked `bin/` and `obj/` output replaced by a clean build; repo size reduced significantly
+- **COM interop relocated** — `Interop.MSScriptControl.dll` moved from `bin/` to `lib/` in each referencing project
+- **SNMP PowerShell adapter** — `PSModules/SNMPMonitor/SNMPMonitor.ps1` ships as a working sample using `Indented.Net.Snmp`; native SNMP DLL projects removed
+- **TFS relics removed** — `.vspscc`, `.vssscc`, `BuildProcessTemplates/`, and other source-control artifacts cleaned from the tree
+
 ### UI Improvements
 - PowerShell Monitor Editor toolbar: font size selector, undo/redo buttons, Consolas default font
 - Ctrl+A shortcut conflict resolved (Alerts moved to Ctrl+Shift+A)
