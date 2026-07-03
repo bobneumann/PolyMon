@@ -34,10 +34,9 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      # The Microsoft Script Control interop (Interop.MSScriptControl.dll) is
-      # referenced via a hint path. Until it is relocated out of bin\ (Phase 2
-      # prerequisite), the tracked copy under each project's bin\ satisfies the
-      # reference and the build works as-is. No action needed here yet.
+      - name: Pre-create monitor output dir
+        run: New-Item -ItemType Directory -Force -Path "PolyMonManager\bin\Monitors" | Out-Null
+        shell: pwsh
 
       - name: Build solution
         run: msbuild "$env:SOLUTION" /t:Build /p:Configuration=$env:CONFIGURATION /p:Platform="Any CPU" /p:SignManifests=false /m /nologo /v:minimal
