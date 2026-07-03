@@ -330,6 +330,27 @@ foreach ($dir in @($ManagerBin, $ExecutiveBin)) {
     }
 }
 
+# --- Collect monitor DLLs from per-project bins if Monitors\ doesn't exist ---
+# Pre-Phase-2 these were tracked files; now MSBuild puts each in its own project bin
+if (-not (Test-Path $MonitorsDir)) {
+    Write-Host 'Collecting monitor DLLs from project bins...' -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $MonitorsDir -Force | Out-Null
+    $monitorProjOverride = @{ 'TCPPortMonitor.dll' = 'TCPMonitor'; 'TCPPortMonitorEditor.dll' = 'TCPPortMonitorEditor' }
+    foreach ($dll in ($MonitorDlls + $MonitorEditorDlls)) {
+        $base = [IO.Path]::GetFileNameWithoutExtension($dll)
+        $projDir = if ($monitorProjOverride.ContainsKey($dll)) { $monitorProjOverride[$dll] } else { $base }
+        $copied = $false
+        foreach ($sub in @('bin', 'bin\Release')) {
+            $src = Join-Path $RepoRoot "$projDir\$sub\$dll"
+            if (Test-Path $src) {
+                Copy-Item $src $MonitorsDir -Force
+                $copied = $true; break
+            }
+        }
+        if (-not $copied) { Write-Warning "Monitor DLL not found: $dll" }
+    }
+}
+
 # --- Clean and create staging directories ---
 if (Test-Path $StagingRoot) {
     Write-Host "Removing existing staging folder: $StagingRoot"
@@ -366,7 +387,7 @@ Copy-FileList -FileList $MonitorEditorDlls -SourceDir $MonitorsDir -DestDir $Sta
 # --- Copy Executive files ---
 Write-Host 'Copying Executive files...' -ForegroundColor Yellow
 Copy-FileList -FileList $ExecutiveFiles -SourceDir $ExecutiveBin -DestDir $StageExec
-Copy-FileList -FileList $ExecutiveMonitors -SourceDir $ExecutiveBin -DestDir $StageExec
+Copy-FileList -FileList $ExecutiveMonitors -SourceDir $MonitorsDir -DestDir $StageExec
 
 # --- Copy SQL scripts ---
 Write-Host 'Copying SQL scripts...' -ForegroundColor Yellow
@@ -420,7 +441,7 @@ $StagePSModules  = Join-Path $StagingRoot 'PSModules'
 
 if (Test-Path $PSModulesSource) {
     Copy-Item $PSModulesSource -Destination $StagePSModules -Recurse -Force
-    $psModCount = (Get-ChildItem $StagePSModules -Recurse -File).Count
+    $psModCount = @(Get-ChildItem $StagePSModules -Recurse -File).Count
     Write-Host "  $psModCount module files staged."
 }
 else {
@@ -437,11 +458,11 @@ Get-ChildItem $StagingRoot -Recurse -Include '*.pdb','*.xml','*.application','*.
 Write-Host ''
 Write-Host '===== Package Contents =====' -ForegroundColor Cyan
 
-$managerCount = (Get-ChildItem $StageManager -File).Count
-$monitorsCount = (Get-ChildItem $StageMonitors -File).Count
-$execCount = (Get-ChildItem $StageExec -File).Count
-$sqlCount = (Get-ChildItem $StageSql -File).Count
-$psModCount = if (Test-Path $StagePSModules) { (Get-ChildItem $StagePSModules -Recurse -File).Count } else { 0 }
+$managerCount = @(Get-ChildItem $StageManager -File).Count
+$monitorsCount = @(Get-ChildItem $StageMonitors -File).Count
+$execCount = @(Get-ChildItem $StageExec -File).Count
+$sqlCount = @(Get-ChildItem $StageSql -File).Count
+$psModCount = if (Test-Path $StagePSModules) { @(Get-ChildItem $StagePSModules -Recurse -File).Count } else { 0 }
 
 Write-Host "  PolyMon Manager:     $managerCount files"
 Write-Host "  Manager\Monitors:    $monitorsCount files"

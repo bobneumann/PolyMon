@@ -2,11 +2,6 @@
 bin/
 obj/
 
-# Include deployment binaries (but never .config — contains connection strings)
-!PolyMonExecutive/bin/
-!PolyMonManager/bin/
-PolyMonExecutive/bin/*.config
-PolyMonManager/bin/*.config
 *.InstallLog
 *.InstallState
 *.suo
@@ -35,3 +30,7 @@ ansible/
 *.dbmdl
 UpgradeLog*.htm
 BuildProcessTemplates/
+
+# Keep the relocated COM interop assembly tracked (regenerable but committed for offline build)
+!PolyMon/lib/Interop.MSScriptControl.dll
+!GenericMonitor/lib/Interop.MSScriptControl.dll
