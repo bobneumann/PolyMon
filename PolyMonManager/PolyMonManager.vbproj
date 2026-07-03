@@ -532,7 +532,7 @@
     <None Include="Resources\FillDownHS.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Notify.wav">
+    <Content Include="res\Notify.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="images\FullScreen.png" />
