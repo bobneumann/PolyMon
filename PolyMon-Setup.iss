@@ -35,8 +35,11 @@
 ; no compatibility-range logic needed.
 ; v1.59 and v1.60 predate this policy and are documented exceptions: DB tops
 ; out at 1.58 for both. Not retroactively fixed - not worth re-tagging an
-; already-built release for a numbering-only change.
-#define MyAppVersion "1.60"
+; already-built release for a numbering-only change. v1.61 is the first
+; release under this policy: no schema change, but DBVersion still jumps
+; to 1.61 via a trivial bump-only migration script, skipping the unused
+; 1.59/1.60 numbers at the DB level.
+#define MyAppVersion "1.61"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"

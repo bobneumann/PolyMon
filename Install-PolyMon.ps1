@@ -779,6 +779,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.10' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.10 to 1.30.sql'); Desc = 'Update 1.10 -> 1.30' }
@@ -792,6 +793,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.30' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.30 to 1.40.sql'); Desc = 'Update 1.30 -> 1.40' }
@@ -804,6 +806,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.40' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.40 to 1.50.sql'); Desc = 'Update 1.40 -> 1.50' }
@@ -815,6 +818,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.50' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.50 to 1.51.sql'); Desc = 'Update 1.50 -> 1.51' }
@@ -825,6 +829,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.51' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.51 to 1.52.sql'); Desc = 'Update 1.51 -> 1.52' }
@@ -834,6 +839,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.52' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.52 to 1.53.sql'); Desc = 'Update 1.52 -> 1.53' }
@@ -842,6 +848,7 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.53' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.53 to 1.54.sql'); Desc = 'Update 1.53 -> 1.54' }
@@ -849,27 +856,35 @@ if ($Script:SqlMethod -ne 'Manual') {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.54' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.54 to 1.55.sql'); Desc = 'Update 1.54 -> 1.55' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.55' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.55 to 1.56.sql'); Desc = 'Update 1.55 -> 1.56' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.56' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.56 to 1.57.sql'); Desc = 'Update 1.56 -> 1.57' }
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.57' {
                     $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.57 to 1.58.sql'); Desc = 'Update 1.57 -> 1.58' }
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
                 }
                 '1.58' {
-                    Write-Ok 'Database is already at version 1.58. No updates needed.'
+                    $updateScripts += @{ Path = (Join-Path $PackageDir 'SQL\Update DB 1.58 to 1.61.sql'); Desc = 'Update 1.58 -> 1.61' }
+                }
+                '1.61' {
+                    Write-Ok 'Database is already at version 1.61. No updates needed.'
                 }
                 default {
                     Write-Warn "Unknown DB version '$dbVersion'. Skipping update scripts."
