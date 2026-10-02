@@ -24,7 +24,7 @@
 ; ============================================================================
 
 #define MyAppName "PolyMon"
-#define MyAppVersion "1.58"
+#define MyAppVersion "1.59"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
