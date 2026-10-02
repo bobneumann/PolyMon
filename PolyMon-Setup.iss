@@ -29,8 +29,8 @@
 ; a DB migration). It is INDEPENDENT of SysSettings.DBVersion (the schema
 ; version chain in PolymonSQL\Update Scripts\) - the two numbers will not
 ; always match, and that's expected, not a bug. Current state: this package
-; is 1.59; the DB schema chain it ships against tops out at 1.58.
-#define MyAppVersion "1.59"
+; is 1.60; the DB schema chain it ships against tops out at 1.58.
+#define MyAppVersion "1.60"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
