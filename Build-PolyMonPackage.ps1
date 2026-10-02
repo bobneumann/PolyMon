@@ -392,29 +392,29 @@ Copy-FileList -FileList $ExecutiveMonitors -SourceDir $MonitorsDir -DestDir $Sta
 # --- Copy SQL scripts ---
 Write-Host 'Copying SQL scripts...' -ForegroundColor Yellow
 
-$sqlFiles = @(
-    @{ Src = (Join-Path $SqlCreate 'DB Version 1.30.sql');              Name = 'DB Version 1.30.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.00 to 1.10.sql');      Name = 'Update DB 1.00 to 1.10.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.10 to 1.30.sql');      Name = 'Update DB 1.10 to 1.30.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.30 to 1.40.sql');      Name = 'Update DB 1.30 to 1.40.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.40 to 1.50.sql');      Name = 'Update DB 1.40 to 1.50.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.50 to 1.51.sql');      Name = 'Update DB 1.50 to 1.51.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.51 to 1.52.sql');      Name = 'Update DB 1.51 to 1.52.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.52 to 1.53.sql');      Name = 'Update DB 1.52 to 1.53.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.53 to 1.54.sql');      Name = 'Update DB 1.53 to 1.54.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.54 to 1.55.sql');      Name = 'Update DB 1.54 to 1.55.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.55 to 1.56.sql');      Name = 'Update DB 1.55 to 1.56.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'Update DB 1.56 to 1.57.sql');      Name = 'Update DB 1.56 to 1.57.sql' }
-    @{ Src = (Join-Path $SqlUpdate 'insert_monitortypes.sql');         Name = 'insert_monitortypes.sql' }
-)
+# Full-creation script lives in a separate folder (Create Scripts, not Update Scripts).
+$createScript = Join-Path $SqlCreate 'DB Version 1.30.sql'
+if (Test-Path $createScript) {
+    Copy-Item $createScript -Destination (Join-Path $StageSql 'DB Version 1.30.sql') -Force
+}
+else {
+    Write-Warning "SQL script not found: $createScript"
+}
 
-foreach ($sf in $sqlFiles) {
-    if (Test-Path $sf.Src) {
-        Copy-Item $sf.Src -Destination (Join-Path $StageSql $sf.Name) -Force
+# Everything else (every "Update DB X to Y.sql" plus insert_monitortypes.sql) is
+# auto-discovered from the Update Scripts folder. Deliberately NOT a hardcoded
+# manifest - a static list here silently dropped "Update DB 1.57 to 1.58.sql" and
+# then "Update DB 1.58 to 1.61.sql" from two releases in a row (found 2026-10-02:
+# the compiled installer's SQL\ folder topped out at 1.56->1.57, so -DbOnly's
+# version-gated chain found its target script missing and silently no-opped the
+# upgrade). Any .sql file added to PolymonSQL\Update Scripts\ now ships automatically.
+if (Test-Path $SqlUpdate) {
+    Get-ChildItem $SqlUpdate -Filter '*.sql' -File | ForEach-Object {
+        Copy-Item $_.FullName -Destination (Join-Path $StageSql $_.Name) -Force
     }
-    else {
-        Write-Warning "SQL script not found: $($sf.Src)"
-    }
+}
+else {
+    Write-Warning "Update Scripts folder not found: $SqlUpdate"
 }
 
 # --- Generate TSData-Extend.sql ---

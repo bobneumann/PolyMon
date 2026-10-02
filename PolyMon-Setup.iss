@@ -29,17 +29,23 @@
 ; DB version bump, even on releases with no real schema change. For a
 ; no-schema release, add a trivial "Update DB X.XX to Y.YY.sql" to
 ; PolymonSQL\Update Scripts\ containing only "UPDATE SysSettings SET
-; DBVersion = Y.YY" (plus the standard header comment), and add the matching
-; case to Install-PolyMon.ps1's -DbOnly switch. Keeps the exact-equality
+; DBVersion = Y.YY" (plus the standard header comment), and append the new
+; version to Install-PolyMon.ps1's $VersionChain array (-DbOnly's upgrade
+; chain is computed from that single ordered list, not a hand-maintained
+; switch - see the comment there). Keeps the exact-equality
 ; Sys.DBVersion = mDBVersion check in frmMain.vb/PolyMonExecutive.vb simple -
 ; no compatibility-range logic needed.
 ; v1.59 and v1.60 predate this policy and are documented exceptions: DB tops
 ; out at 1.58 for both. Not retroactively fixed - not worth re-tagging an
-; already-built release for a numbering-only change. v1.61 is the first
-; release under this policy: no schema change, but DBVersion still jumps
-; to 1.61 via a trivial bump-only migration script, skipping the unused
-; 1.59/1.60 numbers at the DB level.
-#define MyAppVersion "1.61"
+; already-built release for a numbering-only change. v1.61 was the first
+; release under this policy. v1.62 fixes two installer bugs found testing
+; v1.61 on real hardware: Build-PolyMonPackage.ps1 was silently dropping new
+; "Update DB X to Y.sql" scripts from the shipped installer (hardcoded
+; manifest, now auto-discovered - this is how 1.57->1.58 AND 1.58->1.61 both
+; went missing from v1.61's actual SQL\ folder despite being in the repo),
+; and Install-PolyMon.ps1 could throw under -NonInteractive when no SQL
+; command-line tool was found (now fails fast with a clear message).
+#define MyAppVersion "1.62"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
