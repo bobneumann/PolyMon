@@ -24,6 +24,12 @@
 ; ============================================================================
 
 #define MyAppName "PolyMon"
+; This is the RELEASE/PACKAGE version - bumped for any release-worthy change,
+; schema or not (e.g. 1.58->1.59 here was a UI/service-registration fix, not
+; a DB migration). It is INDEPENDENT of SysSettings.DBVersion (the schema
+; version chain in PolymonSQL\Update Scripts\) - the two numbers will not
+; always match, and that's expected, not a bug. Current state: this package
+; is 1.59; the DB schema chain it ships against tops out at 1.58.
 #define MyAppVersion "1.59"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
