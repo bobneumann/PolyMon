@@ -24,12 +24,18 @@
 ; ============================================================================
 
 #define MyAppName "PolyMon"
-; This is the RELEASE/PACKAGE version - bumped for any release-worthy change,
-; schema or not (e.g. 1.58->1.59 here was a UI/service-registration fix, not
-; a DB migration). It is INDEPENDENT of SysSettings.DBVersion (the schema
-; version chain in PolymonSQL\Update Scripts\) - the two numbers will not
-; always match, and that's expected, not a bug. Current state: this package
-; is 1.60; the DB schema chain it ships against tops out at 1.58.
+; Policy (effective v1.61 onward, decided 2026-10-02): this and
+; SysSettings.DBVersion are COUPLED - every release bump here gets a matching
+; DB version bump, even on releases with no real schema change. For a
+; no-schema release, add a trivial "Update DB X.XX to Y.YY.sql" to
+; PolymonSQL\Update Scripts\ containing only "UPDATE SysSettings SET
+; DBVersion = Y.YY" (plus the standard header comment), and add the matching
+; case to Install-PolyMon.ps1's -DbOnly switch. Keeps the exact-equality
+; Sys.DBVersion = mDBVersion check in frmMain.vb/PolyMonExecutive.vb simple -
+; no compatibility-range logic needed.
+; v1.59 and v1.60 predate this policy and are documented exceptions: DB tops
+; out at 1.58 for both. Not retroactively fixed - not worth re-tagging an
+; already-built release for a numbering-only change.
 #define MyAppVersion "1.60"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
