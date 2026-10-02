@@ -52,8 +52,15 @@
 ; and the Executive service silently picking up a placeholder config
 ; instead of the wizard's entered values (an Inno-level "onlyifdoesntexist"
 ; config copy raced ahead of WriteConfigIfAbsent on every fresh install).
-; v1.66 adds the AssemblyInfo.vb sync described above.
-#define MyAppVersion "1.66"
+; v1.66 adds the AssemblyInfo.vb sync described above. v1.67 fixes a
+; destructive bug: ssInstall unconditionally stopped+deleted an existing
+; Executive service to free its file locks, but ssPostInstall only
+; reinstalled it if the Tasks checkbox was checked - so upgrading a machine
+; that already had Executive running, with the box left unchecked (its
+; default), tore the service down with no restore. An existing service is
+; now always preserved across an upgrade; the checkbox only gates ADDING
+; Executive to a machine that didn't already have it.
+#define MyAppVersion "1.67"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
@@ -153,6 +160,7 @@ Filename: "{sys}\sc.exe"; Parameters: "delete {#ServiceName}"; Flags: runhidden;
 var
   SqlPage: TInputQueryWizardPage;
   DbSetupPage: TInputOptionWizardPage;
+  ExistingServiceFound: Boolean;
 
 // ---- service helpers -------------------------------------------------------
 
@@ -360,10 +368,19 @@ var
 begin
   case CurStep of
     ssInstall:
-      // BEFORE copying files: stop + remove the existing service so its
-      // .exe/.dll are not locked. Safe whether or not it exists.
-      if ServiceExists('{#ServiceName}') then
-        StopAndDeleteService('{#ServiceName}');
+      begin
+        // BEFORE copying files: stop + remove the existing service so its
+        // .exe/.dll are not locked. Remember whether it existed - an
+        // upgrade must never silently remove monitoring that was already
+        // running here just because the Tasks checkbox happens to be
+        // unchecked this run (confirmed 2026-10-02: exactly this happened -
+        // an upgrade with the box left unchecked tore down an existing
+        // service with no restore, since the reinstall below used to be
+        // gated ONLY on the checkbox).
+        ExistingServiceFound := ServiceExists('{#ServiceName}');
+        if ExistingServiceFound then
+          StopAndDeleteService('{#ServiceName}');
+      end;
 
     ssPostInstall:
       begin
@@ -389,12 +406,18 @@ begin
               mbInformation, MB_OK);
         end;
 
-        // Executive install requires BOTH the opt-in checkbox AND an
-        // explicit confirmation - never happens just by running the
-        // installer. /MANAGERONLY always skips it regardless of the
-        // checkbox state (that mode is for desktop-only client upgrades).
-        if (not IsManagerOnlyMode()) and WizardIsTaskSelected('installExecutive') then
+        if ExistingServiceFound then
+          // This machine already had Executive running before this install -
+          // an upgrade restores it with the new binaries regardless of the
+          // checkbox or /MANAGERONLY. Those gates are for ADDING Executive
+          // to a machine that didn't have it, not for silently removing it
+          // from one that already legitimately runs it.
+          InstallAndStartService()
+        else if (not IsManagerOnlyMode()) and WizardIsTaskSelected('installExecutive') then
         begin
+          // No existing service - this is a genuine opt-in to ADD Executive
+          // to a new machine, so it still requires BOTH the checkbox AND an
+          // explicit confirmation. /MANAGERONLY always blocks this branch.
           if MsgBox('Install and start the PolyMon Executive monitoring service on THIS machine?'
             + #13#10#13#10
             + 'Only do this on the single machine meant to run monitoring centrally. '
