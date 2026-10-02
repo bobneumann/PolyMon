@@ -35,31 +35,19 @@
 ; switch - see the comment there). Keeps the exact-equality
 ; Sys.DBVersion = mDBVersion check in frmMain.vb/PolyMonExecutive.vb simple -
 ; no compatibility-range logic needed.
-; v1.59 and v1.60 predate this policy and are documented exceptions: DB tops
-; out at 1.58 for both. Not retroactively fixed - not worth re-tagging an
-; already-built release for a numbering-only change. v1.61 was the first
-; release under this policy. v1.62 fixes two installer bugs found testing
-; v1.61 on real hardware: Build-PolyMonPackage.ps1 was silently dropping new
-; "Update DB X to Y.sql" scripts from the shipped installer (hardcoded
-; manifest, now auto-discovered - this is how 1.57->1.58 AND 1.58->1.61 both
-; went missing from v1.61's actual SQL\ folder despite being in the repo),
-; and Install-PolyMon.ps1 could throw under -NonInteractive when no SQL
-; command-line tool was found (now fails fast with a clear message). v1.63:
-; v1.62's fail-fast still produced the SAME generic "did not complete"
-; dialog as any other failure (Inno can't tell them apart from an exit
-; code alone), so Install-PolyMon.ps1 now writes a full transcript to
-; {app}\DbSetup.log on every run - the dialog references that file instead
-; of leaving the real cause invisible. Also widened sqlcmd.exe detection to
-; check Program Files (x86), a common install location this was missing.
-; v1.64: DbSetup.log from the v1.63 run on mt7060 finally showed the real
-; cause - Invoke-Sqlcmd on an older SqlServer module build doesn't support
-; -TrustServerCertificate (passed unconditionally; added for SQL Server
-; 2022-era encryption-by-default). Now detected via Get-Command and only
-; passed if supported. Also fixed a genuine PowerShell parsing bug this
-; crash's fallback path exposed: "$Var?" in a double-quoted string parses
-; as variable name "Var?", not "$Var" + literal "?" (confirmed via direct
-; testing) - two prompts were silently broken under -NonInteractive/Manual.
-#define MyAppVersion "1.64"
+; v1.59/v1.60 predate this policy (DB tops out at 1.58 for both, not
+; retroactively fixed). v1.61 was the first release under it. v1.62-v1.65
+; were a rapid bugfix sequence from testing the real compiled installer on
+; mt7060 for the first time (see git log for full detail on each): a
+; hardcoded SQL-script manifest silently dropping new migration scripts, a
+; NonInteractive crash with no SQL tool found, zero diagnostic output on
+; failure (fixed by {app}\DbSetup.log), an Invoke-Sqlcmd parameter mismatch
+; on an older SqlServer module, a "$Var?" string-interpolation parsing bug,
+; and finally the Executive service silently picking up a placeholder
+; config instead of the wizard's entered values (an Inno-level
+; "onlyifdoesntexist" config copy raced ahead of WriteConfigIfAbsent on
+; every fresh install).
+#define MyAppVersion "1.65"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
@@ -108,15 +96,24 @@ Name: installExecutive; Description: "Install and start the PolyMon Executive mo
 ; ---- Manager (GUI) ----
 Source: "{#StagingDir}\PolyMon Manager\*"; DestDir: "{app}\PolyMon Manager"; \
     Excludes: "*.config"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Manager config: written by the installer only if absent (preserved on upgrade)
-Source: "{#StagingDir}\PolyMon Manager\PolyMonManager.exe.config"; DestDir: "{app}\PolyMon Manager"; \
-    Flags: onlyifdoesntexist skipifsourcedoesntexist
+; Manager config is written ONLY by WriteConfigIfAbsent in ssPostInstall (see
+; below), using the user's actual entered SQL instance/database - NOT copied
+; here. An earlier version also had an Inno-level "onlyifdoesntexist" copy of
+; the checked-in placeholder config (Data Source=.\SQLEXPRESS;Initial
+; Catalog=PolyMon) as a belt-and-suspenders fallback - but [Files] copying
+; happens during ssInstall, BEFORE ssPostInstall runs WriteConfigIfAbsent, so
+; on every fresh install that placeholder landed FIRST and WriteConfigIfAbsent
+; then found a file already present (the one this very install run had just
+; created) and silently skipped writing the real values. Confirmed 2026-10-02:
+; a real install pointed Executive at the placeholder .\SQLEXPRESS/PolyMon
+; instead of the instance/database actually entered in the wizard. Removed -
+; WriteConfigIfAbsent is now the sole source of truth for config creation.
 
 ; ---- Executive (service) ----
 Source: "{#StagingDir}\PolyMon Executive\*"; DestDir: "{app}\PolyMon Executive"; \
     Excludes: "*.config"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#StagingDir}\PolyMon Executive\PolyMonExecutive.exe.config"; DestDir: "{app}\PolyMon Executive"; \
-    Flags: onlyifdoesntexist skipifsourcedoesntexist
+; Executive config: same story as Manager above - written only by
+; WriteConfigIfAbsent in ssPostInstall, not copied here.
 
 ; ---- PowerShell modules ----
 Source: "{#StagingDir}\PSModules\*"; DestDir: "{app}\PSModules"; \

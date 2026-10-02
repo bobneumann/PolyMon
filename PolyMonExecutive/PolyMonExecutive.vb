@@ -80,7 +80,7 @@ Namespace Executive
 
 
 #Region "Private Attributes"
-		Private Const mDBVersion As Single = 1.64
+		Private Const mDBVersion As Single = 1.65
 
 		Private mEventLog As String = "PolyMon"
 
