@@ -181,6 +181,9 @@ Public Class frmMain
     Private Sub NotifyIcon1_DoubleClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles NotifyIcon1.DoubleClick
         RestoreFromTray()
     End Sub
+    Private Sub NotifyIcon1_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles NotifyIcon1.MouseClick
+        If e.Button = System.Windows.Forms.MouseButtons.Left Then RestoreFromTray()
+    End Sub
 #End Region
 #End Region
 
@@ -289,6 +292,7 @@ Public Class frmMain
 		Me.NotifyIcon1.BalloonTipTitle = "PolyMon Manager"
 		Me.NotifyIcon1.BalloonTipText = Nothing
 		Me.NotifyIcon1.Icon = My.Resources.icoPolyMon
+        Me.NotifyIcon1.Text = "PolyMon Manager - click to open"
 
 		Dim Sys As New PolyMon.General.SysSettings
 		If Sys.DBVersion <> mDBVersion Then
