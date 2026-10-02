@@ -148,6 +148,38 @@ begin
   Exec(ExpandConstant('{sys}\sc.exe'), 'delete ' + Name, '', SW_HIDE, ewWaitUntilTerminated, RC);
   Sleep(1000);
 end;
+// ---- /MANAGERONLY support ---------------------------------------------------
+// For coworkers upgrading their own desktop Manager GUI - no SQL/DB prompts,
+// no automatic DB setup, and critically, does NOT install/start the
+// PolyMonExecutive service (that would otherwise happen unconditionally on
+// every machine the installer runs on, which is wrong for a per-user client
+// upgrade - the service belongs on one central server, not every desktop).
+// Combine with standard Inno switches for a fully unattended run, e.g.:
+//   PolyMon-Setup.exe /MANAGERONLY /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+// UPGRADES ONLY - the config file must already exist. On a machine with no
+// prior install, the SQL page is still skipped but PolyMonManager.exe.config
+// gets written with the placeholder ".\SQLEXPRESS"/"PolyMon" defaults (since
+// WriteConfigIfAbsent only no-ops when the file already exists) - wrong for
+// a fresh install. Don't use this switch for first-time installs.
+
+function HasCmdLineSwitch(const Switch: String): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 1 to ParamCount do
+    if CompareText(ParamStr(i), Switch) = 0 then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+function IsManagerOnlyMode(): Boolean;
+begin
+  Result := HasCmdLineSwitch('/MANAGERONLY');
+end;
+
 
 // ---- wizard pages ----------------------------------------------------------
 
@@ -172,6 +204,16 @@ begin
   DbSetupPage.Add('Create and/or upgrade the database automatically (recommended)');
   DbSetupPage.Add('Skip database setup (I will run the SQL scripts myself)');
   DbSetupPage.SelectedValueIndex := 0;
+
+  if IsManagerOnlyMode() then
+    DbSetupPage.SelectedValueIndex := 1;  // force "skip" even though the page is hidden
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if IsManagerOnlyMode() and ((PageID = SqlPage.ID) or (PageID = DbSetupPage.ID)) then
+    Result := True;
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
@@ -314,8 +356,11 @@ begin
               mbInformation, MB_OK);
         end;
 
-        // Always (re)install the service after files are in place.
-        InstallAndStartService();
+        // Always (re)install the service after files are in place -
+        // except in /MANAGERONLY mode, where this machine should never run
+        // the Executive service at all (it belongs on one central server).
+        if not IsManagerOnlyMode() then
+          InstallAndStartService();
       end;
   end;
 end;
