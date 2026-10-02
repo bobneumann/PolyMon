@@ -465,7 +465,22 @@ Namespace Executive
 			SQLConn.Dispose()
 		End Try
 	End Sub
+	Private Sub ActivateScheduledMaintenance()
+		Dim SQLConn As New SqlConnection(mSQLConn)
+		Dim SQLCmd As New SqlCommand("polymon_upd_ActivateScheduledMaintenance", SQLConn)
+		SQLCmd.CommandType = CommandType.StoredProcedure
+		Try
+			SQLConn.Open()
+			SQLCmd.ExecuteNonQuery()
+		Catch
+			'Non-fatal - window will activate on next tick
+		Finally
+			If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
+			SQLConn.Dispose()
+		End Try
+	End Sub
 	Private Sub RunMonitors()
+			ActivateScheduledMaintenance()
 			ExpireMaintenanceMode()
 			RefreshMonitorList()
 

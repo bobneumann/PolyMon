@@ -5,6 +5,7 @@ Public Class frmCurrentStatus
 #Region "Private Attributes"
     Private mCurrMonitorID As Integer = -1
     Private mMaintenanceStatus As New Dictionary(Of Integer, Boolean)
+    Private mScheduledMaintenance As New Dictionary(Of Integer, DateTime)
 #End Region
 
 #Region "Public Interface"
@@ -68,6 +69,14 @@ Public Class frmCurrentStatus
 				End If
 				mMaintenanceStatus(MonitorID) = InMaintenance
 
+				Dim HasScheduledMaintenance As Boolean = False
+				If IsEnabled AndAlso Not IsDBNull(rdResults.Item("ScheduledMaintenanceStart")) Then
+					mScheduledMaintenance(MonitorID) = CDate(rdResults.Item("ScheduledMaintenanceStart"))
+					HasScheduledMaintenance = True
+				Else
+					mScheduledMaintenance.Remove(MonitorID)
+				End If
+
 				Dim lvItem As ListViewItem
 				lvItem = lvMonitors.Items.Add(CStr(MonitorID), MonitorName, 0)
 				lvItem.Tag = CStr(MonitorID)
@@ -97,8 +106,9 @@ Public Class frmCurrentStatus
 
 
 					lvItem.SubItems.Add(Format(LifetimePercUptime, "##0.00 \%"))			'LifetimePercUp
-					lvItem.SubItems.Add(Status)												'Status Message
+					lvItem.SubItems.Add(If(HasScheduledMaintenance, Status & " (maint. scheduled " & Format(mScheduledMaintenance(MonitorID).ToLocalTime(), "MMM dd h:mm tt") & ")", Status))	'Status Message
 
+					If HasScheduledMaintenance Then lvItem.ForeColor = Color.Goldenrod
 					lvItem.SubItems(1).ForeColor = Color.Gray
 				Else
 					'Monitor is disabled
@@ -346,22 +356,73 @@ Public Class frmCurrentStatus
 	Private Sub tbtnMaintenance_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tbtnMaintenance.Click
 		If mCurrMonitorID <= -1 Then Exit Sub
 		Dim IsInMaintenance As Boolean = mMaintenanceStatus.ContainsKey(mCurrMonitorID) AndAlso mMaintenanceStatus(mCurrMonitorID)
+		Dim HasSchedule As Boolean = mScheduledMaintenance.ContainsKey(mCurrMonitorID)
+
 		If IsInMaintenance Then
 			If MsgBox("This monitor is in maintenance mode. Cancel maintenance now?", MsgBoxStyle.YesNo Or MsgBoxStyle.Question, "PolyMon") = MsgBoxResult.Yes Then
 				SetMaintenanceMode(mCurrMonitorID, 0)
 				CType(Me.MdiParent, frmMain).RefreshMonitorStatuses(False, frmMain.StatusForms.CurrentStatus)
 			End If
-		Else
-			Dim MinutesStr As String = InputBox("Enter maintenance duration in minutes:" & vbCrLf & "(Alerts will be suppressed for this period.)", "Maintenance Mode", "30")
-			If MinutesStr = "" Then Exit Sub
-			Dim Minutes As Integer = 0
-			If Not Integer.TryParse(MinutesStr, Minutes) OrElse Minutes <= 0 Then
-				MsgBox("Please enter a valid positive number of minutes.", MsgBoxStyle.Exclamation, "PolyMon")
-				Exit Sub
+		ElseIf HasSchedule Then
+			Dim SchedLocal As DateTime = mScheduledMaintenance(mCurrMonitorID).ToLocalTime()
+			If MsgBox("Maintenance is scheduled to start " & Format(SchedLocal, "MMM dd h:mm tt") & ". Cancel this scheduled window?", MsgBoxStyle.YesNo Or MsgBoxStyle.Question, "PolyMon") = MsgBoxResult.Yes Then
+				ScheduleMaintenanceMode(mCurrMonitorID, Nothing, 0)
+				CType(Me.MdiParent, frmMain).RefreshMonitorStatuses(False, frmMain.StatusForms.CurrentStatus)
 			End If
-			SetMaintenanceMode(mCurrMonitorID, Minutes)
+		Else
+			Dim Choice As MsgBoxResult = MsgBox("Start maintenance now?" & vbCrLf & "(Choose No to schedule a future maintenance window instead.)", MsgBoxStyle.YesNoCancel Or MsgBoxStyle.Question, "Maintenance Mode")
+			If Choice = MsgBoxResult.Cancel Then Exit Sub
+
+			If Choice = MsgBoxResult.Yes Then
+				Dim MinutesStr As String = InputBox("Enter maintenance duration in minutes:" & vbCrLf & "(Alerts will be suppressed for this period.)", "Maintenance Mode", "30")
+				If MinutesStr = "" Then Exit Sub
+				Dim Minutes As Integer = 0
+				If Not Integer.TryParse(MinutesStr, Minutes) OrElse Minutes <= 0 Then
+					MsgBox("Please enter a valid positive number of minutes.", MsgBoxStyle.Exclamation, "PolyMon")
+					Exit Sub
+				End If
+				SetMaintenanceMode(mCurrMonitorID, Minutes)
+			Else
+				Dim DefaultStart As String = Format(DateTime.Now.AddDays(1), "MM/dd/yyyy h:mm tt")
+				Dim StartStr As String = InputBox("Enter the date/time maintenance should start:", "Schedule Maintenance", DefaultStart)
+				If StartStr = "" Then Exit Sub
+				Dim StartLocal As DateTime
+				If Not DateTime.TryParse(StartStr, StartLocal) OrElse StartLocal <= DateTime.Now Then
+					MsgBox("Please enter a valid future date/time.", MsgBoxStyle.Exclamation, "PolyMon")
+					Exit Sub
+				End If
+				Dim MinutesStr As String = InputBox("Enter maintenance duration in minutes:" & vbCrLf & "(Alerts will be suppressed for this period.)", "Schedule Maintenance", "30")
+				If MinutesStr = "" Then Exit Sub
+				Dim Minutes As Integer = 0
+				If Not Integer.TryParse(MinutesStr, Minutes) OrElse Minutes <= 0 Then
+					MsgBox("Please enter a valid positive number of minutes.", MsgBoxStyle.Exclamation, "PolyMon")
+					Exit Sub
+				End If
+				ScheduleMaintenanceMode(mCurrMonitorID, StartLocal.ToUniversalTime(), Minutes)
+			End If
 			CType(Me.MdiParent, frmMain).RefreshMonitorStatuses(False, frmMain.StatusForms.CurrentStatus)
 		End If
+	End Sub
+	Private Sub ScheduleMaintenanceMode(ByVal MonitorID As Integer, ByVal StartUtc As DateTime?, ByVal Minutes As Integer)
+		Dim strSQLConn As String = CStr(System.Configuration.ConfigurationManager.AppSettings("SQLConn"))
+		Dim SQLConn As New SqlConnection(strSQLConn)
+		Dim SQLCmd As New SqlCommand("polymon_upd_ScheduleMaintenanceMode", SQLConn)
+		SQLCmd.CommandType = CommandType.StoredProcedure
+		SQLCmd.Parameters.AddWithValue("@MonitorID", MonitorID)
+		SQLCmd.Parameters.AddWithValue("@StartUtc", If(StartUtc.HasValue, CType(StartUtc.Value, Object), CType(DBNull.Value, Object)))
+		SQLCmd.Parameters.AddWithValue("@Minutes", Minutes)
+		Try
+			SQLConn.Open()
+			SQLCmd.ExecuteNonQuery()
+			If StartUtc.HasValue Then
+				MsgBox("Maintenance scheduled to start " & Format(StartUtc.Value.ToLocalTime(), "MMM dd h:mm tt") & " for " & Minutes & " minutes.", MsgBoxStyle.Information, "PolyMon")
+			End If
+		Catch ex As Exception
+			MsgBox("Error scheduling maintenance: " & ex.Message, MsgBoxStyle.Critical, "PolyMon")
+		Finally
+			If SQLConn.State <> ConnectionState.Closed Then SQLConn.Close()
+			SQLConn.Dispose()
+		End Try
 	End Sub
 	Private Sub SetMaintenanceMode(ByVal MonitorID As Integer, ByVal Minutes As Integer)
 		Dim strSQLConn As String = CStr(System.Configuration.ConfigurationManager.AppSettings("SQLConn"))
