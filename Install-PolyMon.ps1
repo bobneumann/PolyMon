@@ -106,6 +106,8 @@ function Find-SqlMethod {
     # Try Invoke-Sqlcmd
     if (Get-Command Invoke-Sqlcmd -ErrorAction SilentlyContinue) {
         $Script:SqlMethod = 'InvokeSqlcmd'
+        $Script:SqlcmdSupportsTrustCert =
+            (Get-Command Invoke-Sqlcmd).Parameters.ContainsKey('TrustServerCertificate')
         Write-Ok 'SQL tool: Invoke-Sqlcmd (SqlServer module)'
         return
     }
@@ -115,10 +117,13 @@ function Find-SqlMethod {
         Import-Module SqlServer -ErrorAction Stop
         if (Get-Command Invoke-Sqlcmd -ErrorAction SilentlyContinue) {
             $Script:SqlMethod = 'InvokeSqlcmd'
+            $Script:SqlcmdSupportsTrustCert =
+                (Get-Command Invoke-Sqlcmd).Parameters.ContainsKey('TrustServerCertificate')
             Write-Ok 'SQL tool: Invoke-Sqlcmd (SqlServer module, just imported)'
             return
         }
     } catch {}
+
 
     # Try sqlcmd.exe
     if (Get-Command sqlcmd.exe -ErrorAction SilentlyContinue) {
@@ -161,13 +166,13 @@ function Invoke-SqlScript {
     switch ($Script:SqlMethod) {
         'InvokeSqlcmd' {
             $params = @{
-                ServerInstance         = $ServerInstance
-                Database               = $Database
-                InputFile              = $ScriptPath
-                QueryTimeout           = 300
-                TrustServerCertificate = $true
-                ErrorAction            = 'Stop'
+                ServerInstance = $ServerInstance
+                Database       = $Database
+                InputFile      = $ScriptPath
+                QueryTimeout   = 300
+                ErrorAction    = 'Stop'
             }
+            if ($Script:SqlcmdSupportsTrustCert) { $params['TrustServerCertificate'] = $true }
             Invoke-Sqlcmd @params
         }
         'Sqlcmd' {
@@ -200,8 +205,14 @@ function Invoke-SqlQuery {
     )
     switch ($Script:SqlMethod) {
         'InvokeSqlcmd' {
-            return Invoke-Sqlcmd -ServerInstance $ServerInstance -Database $Database `
-                -Query $Query -TrustServerCertificate -ErrorAction Stop
+            $params = @{
+                ServerInstance = $ServerInstance
+                Database       = $Database
+                Query          = $Query
+                ErrorAction    = 'Stop'
+            }
+            if ($Script:SqlcmdSupportsTrustCert) { $params['TrustServerCertificate'] = $true }
+            return Invoke-Sqlcmd @params
         }
         'Sqlcmd' {
             $result = sqlcmd.exe -S $ServerInstance -d $Database -Q $Query -C -h -1 -W 2>&1
@@ -223,7 +234,7 @@ function Test-DatabaseExists {
         $query = "SELECT DB_ID('$Database')"
         $result = Invoke-SqlQuery -ServerInstance $ServerInstance -Database 'master' -Query $query
         if ($Script:SqlMethod -eq 'Manual') {
-            return (Prompt-YesNo "Does database '$Database' already exist on $ServerInstance?")
+            return (Prompt-YesNo "Does database '$Database' already exist on ${ServerInstance}?")
         }
         # Invoke-Sqlcmd returns DataRow, sqlcmd returns string
         if ($result -is [System.Data.DataRow]) {
@@ -234,7 +245,7 @@ function Test-DatabaseExists {
     }
     catch {
         Write-Warn "Could not check database existence: $_"
-        return (Prompt-YesNo "Does database '$Database' already exist on $ServerInstance?")
+        return (Prompt-YesNo "Does database '$Database' already exist on ${ServerInstance}?")
     }
 }
 
@@ -794,7 +805,7 @@ if ($Script:SqlMethod -ne 'Manual') {
             # every new release and had already silently missed steps once.
             $VersionChain = @(
                 '1.00', '1.10', '1.30', '1.40', '1.50', '1.51', '1.52', '1.53',
-                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62', '1.63'
+                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62', '1.63', '1.64'
             )
             $startIndex = [array]::IndexOf($VersionChain, $dbVersion)
             if ($startIndex -ge 0) {

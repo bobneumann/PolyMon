@@ -51,7 +51,15 @@
 ; {app}\DbSetup.log on every run - the dialog references that file instead
 ; of leaving the real cause invisible. Also widened sqlcmd.exe detection to
 ; check Program Files (x86), a common install location this was missing.
-#define MyAppVersion "1.63"
+; v1.64: DbSetup.log from the v1.63 run on mt7060 finally showed the real
+; cause - Invoke-Sqlcmd on an older SqlServer module build doesn't support
+; -TrustServerCertificate (passed unconditionally; added for SQL Server
+; 2022-era encryption-by-default). Now detected via Get-Command and only
+; passed if supported. Also fixed a genuine PowerShell parsing bug this
+; crash's fallback path exposed: "$Var?" in a double-quoted string parses
+; as variable name "Var?", not "$Var" + literal "?" (confirmed via direct
+; testing) - two prompts were silently broken under -NonInteractive/Manual.
+#define MyAppVersion "1.64"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
