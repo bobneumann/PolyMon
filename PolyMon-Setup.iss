@@ -24,17 +24,23 @@
 ; ============================================================================
 
 #define MyAppName "PolyMon"
-; Policy (effective v1.61 onward, decided 2026-10-02): this and
-; SysSettings.DBVersion are COUPLED - every release bump here gets a matching
-; DB version bump, even on releases with no real schema change. For a
-; no-schema release, add a trivial "Update DB X.XX to Y.YY.sql" to
+; Policy (effective v1.61 onward, decided 2026-10-02): this,
+; SysSettings.DBVersion, and both PolyMonManager/PolyMonExecutive's
+; AssemblyVersion/AssemblyFileVersion are COUPLED - every release bump here
+; gets a matching DB version bump AND a matching AssemblyInfo.vb update in
+; both My Project folders, even on releases with no real schema change. For
+; a no-schema DB release, add a trivial "Update DB X.XX to Y.YY.sql" to
 ; PolymonSQL\Update Scripts\ containing only "UPDATE SysSettings SET
 ; DBVersion = Y.YY" (plus the standard header comment), and append the new
 ; version to Install-PolyMon.ps1's $VersionChain array (-DbOnly's upgrade
 ; chain is computed from that single ordered list, not a hand-maintained
-; switch - see the comment there). Keeps the exact-equality
-; Sys.DBVersion = mDBVersion check in frmMain.vb/PolyMonExecutive.vb simple -
-; no compatibility-range logic needed.
+; switch - see the comment there). For AssemblyInfo.vb, set both
+; AssemblyVersion("X.YY.0.*") and AssemblyFileVersion("X.YY.0.0") to match
+; MyAppVersion. Keeps the exact-equality Sys.DBVersion = mDBVersion check in
+; frmMain.vb/PolyMonExecutive.vb simple - no compatibility-range logic
+; needed - and keeps the About box from silently going stale (both
+; AssemblyInfo.vb files sat at a hardcoded "1.5.5" for years, completely
+; disconnected from the real shipped version, until fixed in v1.66).
 ; v1.59/v1.60 predate this policy (DB tops out at 1.58 for both, not
 ; retroactively fixed). v1.61 was the first release under it. v1.62-v1.65
 ; were a rapid bugfix sequence from testing the real compiled installer on
@@ -43,11 +49,11 @@
 ; NonInteractive crash with no SQL tool found, zero diagnostic output on
 ; failure (fixed by {app}\DbSetup.log), an Invoke-Sqlcmd parameter mismatch
 ; on an older SqlServer module, a "$Var?" string-interpolation parsing bug,
-; and finally the Executive service silently picking up a placeholder
-; config instead of the wizard's entered values (an Inno-level
-; "onlyifdoesntexist" config copy raced ahead of WriteConfigIfAbsent on
-; every fresh install).
-#define MyAppVersion "1.65"
+; and the Executive service silently picking up a placeholder config
+; instead of the wizard's entered values (an Inno-level "onlyifdoesntexist"
+; config copy raced ahead of WriteConfigIfAbsent on every fresh install).
+; v1.66 adds the AssemblyInfo.vb sync described above.
+#define MyAppVersion "1.66"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"

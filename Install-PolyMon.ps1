@@ -805,7 +805,7 @@ if ($Script:SqlMethod -ne 'Manual') {
             # every new release and had already silently missed steps once.
             $VersionChain = @(
                 '1.00', '1.10', '1.30', '1.40', '1.50', '1.51', '1.52', '1.53',
-                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62', '1.63', '1.64', '1.65'
+                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62', '1.63', '1.64', '1.65', '1.66'
             )
             $startIndex = [array]::IndexOf($VersionChain, $dbVersion)
             if ($startIndex -ge 0) {
