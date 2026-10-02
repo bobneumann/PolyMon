@@ -61,6 +61,13 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 # Globals & state tracking for rollback
 # ============================================================
 $PackageDir    = $PSScriptRoot
+
+# Diagnostic logging - every run (interactive or from the installer) gets a
+# full transcript. The installer runs this hidden with no console, so
+# without this the ONLY failure signal anyone gets is a generic Inno Setup
+# dialog with zero detail (confirmed blocking real diagnosis 2026-10-02).
+$LogPath = Join-Path $PackageDir 'DbSetup.log'
+try { Start-Transcript -Path $LogPath -Append -ErrorAction SilentlyContinue | Out-Null } catch {}
 $CompletedSteps = [System.Collections.ArrayList]::new()
 $BackupDir     = $null
 $OldExecId     = $null
@@ -120,10 +127,13 @@ function Find-SqlMethod {
         return
     }
 
-    # Check common paths for sqlcmd
+    # Check common paths for sqlcmd - both Program Files roots, since SQL Server
+    # command-line tools commonly install 32-bit even on 64-bit Windows.
     $sqlcmdPaths = @(
         "${env:ProgramFiles}\Microsoft SQL Server\Client SDK\ODBC\*\Tools\Binn\sqlcmd.exe"
         "${env:ProgramFiles}\Microsoft SQL Server\*\Tools\Binn\sqlcmd.exe"
+        "${env:ProgramFiles(x86)}\Microsoft SQL Server\Client SDK\ODBC\*\Tools\Binn\sqlcmd.exe"
+        "${env:ProgramFiles(x86)}\Microsoft SQL Server\*\Tools\Binn\sqlcmd.exe"
     )
     foreach ($pattern in $sqlcmdPaths) {
         $found = Get-Item $pattern -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -784,7 +794,7 @@ if ($Script:SqlMethod -ne 'Manual') {
             # every new release and had already silently missed steps once.
             $VersionChain = @(
                 '1.00', '1.10', '1.30', '1.40', '1.50', '1.51', '1.52', '1.53',
-                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62'
+                '1.54', '1.55', '1.56', '1.57', '1.58', '1.61', '1.62', '1.63'
             )
             $startIndex = [array]::IndexOf($VersionChain, $dbVersion)
             if ($startIndex -ge 0) {

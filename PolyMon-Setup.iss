@@ -44,8 +44,14 @@
 ; manifest, now auto-discovered - this is how 1.57->1.58 AND 1.58->1.61 both
 ; went missing from v1.61's actual SQL\ folder despite being in the repo),
 ; and Install-PolyMon.ps1 could throw under -NonInteractive when no SQL
-; command-line tool was found (now fails fast with a clear message).
-#define MyAppVersion "1.62"
+; command-line tool was found (now fails fast with a clear message). v1.63:
+; v1.62's fail-fast still produced the SAME generic "did not complete"
+; dialog as any other failure (Inno can't tell them apart from an exit
+; code alone), so Install-PolyMon.ps1 now writes a full transcript to
+; {app}\DbSetup.log on every run - the dialog references that file instead
+; of leaving the real cause invisible. Also widened sqlcmd.exe detection to
+; check Program Files (x86), a common install location this was missing.
+#define MyAppVersion "1.63"
 #define MyAppPublisher "Bob Neumann"
 #define StagingDir "PolyMonInstall"
 #define ServiceName "PolyMonExecutive"
@@ -360,8 +366,9 @@ begin
         if DbSetupPage.SelectedValueIndex = 0 then
         begin
           if not RunDatabaseSetup(Instance, Db) then
-            MsgBox('Automatic database setup did not complete. Set up the '
-              + 'database manually:' + #13#10#13#10
+            MsgBox('Automatic database setup did not complete. See '
+              + ExpandConstant('{app}\DbSetup.log')
+              + ' for the exact error, or set up the database manually:' + #13#10#13#10
               + '  1. Create the database if needed: CREATE DATABASE [' + Db + ']' + #13#10
               + '  2. If new, run: {app}\SQL\DB Version 1.30.sql' + #13#10
               + '  3. Run the "Update DB x.xx to y.yy.sql" scripts in {app}\SQL '
