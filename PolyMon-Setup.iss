@@ -69,6 +69,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
+; Unchecked by default - installing/starting Executive is an opt-in, confirmed
+; action (see ssPostInstall), not something that happens just by running this
+; installer. Only the ONE machine meant to run monitoring centrally should
+; ever have this checked - every instance hardcodes ExecutiveID=1, so a
+; second one means duplicate monitor cycles against the same database.
+Name: installExecutive; Description: "Install and start the PolyMon Executive monitoring service on THIS machine"; GroupDescription: "PolyMon Executive (monitoring service):"; Flags: unchecked
 
 ; ============================================================================
 ; Files — Inno embeds and tracks all of these (clean uninstall).
@@ -356,11 +362,22 @@ begin
               mbInformation, MB_OK);
         end;
 
-        // Always (re)install the service after files are in place -
-        // except in /MANAGERONLY mode, where this machine should never run
-        // the Executive service at all (it belongs on one central server).
-        if not IsManagerOnlyMode() then
-          InstallAndStartService();
+        // Executive install requires BOTH the opt-in checkbox AND an
+        // explicit confirmation - never happens just by running the
+        // installer. /MANAGERONLY always skips it regardless of the
+        // checkbox state (that mode is for desktop-only client upgrades).
+        if (not IsManagerOnlyMode()) and WizardIsTaskSelected('installExecutive') then
+        begin
+          if MsgBox('Install and start the PolyMon Executive monitoring service on THIS machine?'
+            + #13#10#13#10
+            + 'Only do this on the single machine meant to run monitoring centrally. '
+            + 'Every Executive instance uses ExecutiveID=1 - installing it on more than '
+            + 'one machine means duplicate monitor cycles and duplicate writes against '
+            + 'the same production database.'
+            + #13#10#13#10 + 'Are you sure this is the right machine?',
+            mbConfirmation, MB_YESNO) = IDYES then
+            InstallAndStartService();
+        end;
       end;
   end;
 end;
